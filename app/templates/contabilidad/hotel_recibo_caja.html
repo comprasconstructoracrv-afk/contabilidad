@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ empresa_nombre }} - Recibo de caja</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        :root{
+            --hotel-primary: {{ config.color_primario if config and config.color_primario else '#0f3d26' }};
+            --hotel-secondary: {{ config.color_secundario if config and config.color_secundario else '#d4af37' }};
+            --hotel-bg: #f3f6f8;
+            --hotel-card: #ffffff;
+            --hotel-border: #d9e1e7;
+            --hotel-text: #0f172a;
+        }
+
+        *{ box-sizing: border-box; }
+
+        body{
+            margin: 0;
+            background: var(--hotel-bg);
+            font-family: Arial, Helvetica, sans-serif;
+            color: var(--hotel-text);
+        }
+
+        .hotel-recibo-wrap{
+            max-width: 900px;
+            margin: 8px auto;
+            padding: 0 8px;
+        }
+
+        .hotel-recibo{
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 10px 28px rgba(15, 23, 42, .08);
+            padding: 12px;
+        }
+
+        .hotel-head{
+            display: grid;
+            grid-template-columns: 96px 1fr 230px;
+            gap: 10px;
+            align-items: start;
+            margin-bottom: 8px;
+        }
+
+        .hotel-logo{
+            width: 72px;
+            max-height: 72px;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        .hotel-center{
+            text-align: center;
+        }
+
+        .hotel-title{
+            margin: 0;
+            font-size: 24px;
+            line-height: 1;
+            font-weight: 900;
+            color: var(--hotel-primary);
+        }
+
+        .hotel-subtitle{
+            margin: 3px 0 0;
+            font-size: 14px;
+            font-weight: 900;
+            color: #000;
+        }
+
+        .hotel-company-lines{
+            margin-top: 4px;
+            font-size: 11px;
+            line-height: 1.25;
+            font-weight: 800;
+            color: #000;
+        }
+
+        .hotel-top-info{
+            display: grid;
+            gap: 5px;
+        }
+
+        .hotel-chip{
+            background: #f3f4f6;
+            border-radius: 10px;
+            padding: 7px 11px;
+            font-size: 12px;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .hotel-bar{
+            background: linear-gradient(90deg, var(--hotel-primary) 0%, #124a2e 50%, #0f3d26 100%);
+            color: #fff;
+            padding: 8px 12px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .hotel-bar-left{
+            font-size: 11px;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .hotel-recibo-badge{
+            background: #fff;
+            color: #111827;
+            border-radius: 999px;
+            padding: 5px 14px;
+            font-size: 12px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .hotel-table{
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 9px;
+        }
+
+        .hotel-table td,
+        .hotel-table th{
+            border: 1px solid #cfd8df;
+            padding: 6px 8px;
+            font-size: 12px;
+            vertical-align: middle;
+        }
+
+        .hotel-table th{
+            background: linear-gradient(90deg, var(--hotel-primary) 0%, #124a2e 100%);
+            color: #fff;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .hotel-label{
+            width: 145px;
+            background: #f8fafc;
+            font-weight: 900;
+            color: #102a43;
+        }
+
+        .hotel-summary td:first-child{
+            width: 145px;
+            font-weight: 900;
+            background: #f8fafc;
+        }
+
+        .hotel-summary td:last-child{
+            font-weight: 700;
+        }
+
+        .hotel-observacion{
+            border: 1px solid #cfd8df;
+            border-radius: 10px;
+            padding: 9px 12px;
+            margin-bottom: 8px;
+            background: #fcfdff;
+        }
+
+        .hotel-observacion-title{
+            font-size: 12px;
+            font-weight: 900;
+            color: var(--hotel-primary);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .hotel-observacion-text{
+            font-size: 12px;
+            line-height: 1.35;
+            min-height: 18px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .hotel-note{
+            margin: 6px 0 8px;
+            padding: 8px 10px 0;
+            border-top: 1px solid #dbe4ea;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #111827;
+            white-space: normal;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            text-align: justify;
+        }
+
+        .hotel-note strong{
+            font-weight: 900;
+        }
+
+        .hotel-firmas{
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 26px;
+            margin-top: 18px;
+            margin-bottom: 8px;
+        }
+
+        .firma-recibido,
+        .firma-centro,
+        .firma-derecha{
+            flex: 1;
+        }
+
+        .firma-recibido{
+            text-align: left;
+        }
+
+        .firma-centro{
+            text-align: center;
+        }
+
+        .firma-derecha{
+            text-align: right;
+        }
+
+        .firma-recibido .linea-firma,
+        .firma-centro .linea-firma,
+        .firma-derecha .linea-firma{
+            border-top: 1px solid #b8c2cc;
+            height: 0;
+            margin-bottom: 6px;
+        }
+
+        .firma-recibido .linea-firma{
+            width: 88%;
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        .firma-centro .linea-firma{
+            width: 88%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .firma-derecha .linea-firma{
+            width: 88%;
+            margin-left: auto;
+            margin-right: 0;
+        }
+
+        .label-firma{
+            font-size: 12px;
+            line-height: 1.2;
+            color: #1f2937;
+        }
+
+        .firma-recibido .label-firma{
+            text-align: center;
+            width: 88%;
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        .firma-centro .label-firma{
+            text-align: center;
+            width: 88%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .firma-derecha .label-firma{
+            text-align: center;
+            width: 88%;
+            margin-left: auto;
+            margin-right: 0;
+        }
+
+        .hotel-acciones{
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .btn-primary,
+        .btn-secondary{
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            padding: 11px 22px;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 15px;
+        }
+
+        .btn-primary{
+            background: #163355;
+            color: #fff;
+            box-shadow: 0 8px 16px rgba(15, 23, 42, .16);
+        }
+
+        .btn-secondary{
+            background: #e8eef3;
+            color: #111827;
+        }
+
+        @page{
+            size: A4 portrait;
+            margin: 10mm;
+        }
+
+        @media print{
+            body{
+                background: #fff;
+            }
+
+            .hotel-recibo-wrap{
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            .hotel-recibo{
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0;
+            }
+
+            .hotel-acciones{
+                display: none !important;
+            }
+
+            .hotel-head{
+                grid-template-columns: 88px 1fr 220px;
+                gap: 8px;
+                margin-bottom: 6px;
+            }
+
+            .hotel-logo{
+                width: 66px;
+                max-height: 66px;
+            }
+
+            .hotel-title{
+                font-size: 22px;
+            }
+
+            .hotel-subtitle{
+                font-size: 13px;
+            }
+
+            .hotel-company-lines{
+                font-size: 10.5px;
+            }
+
+            .hotel-chip{
+                font-size: 11px;
+                padding: 6px 9px;
+            }
+
+            .hotel-bar{
+                padding: 7px 10px;
+                margin-bottom: 8px;
+            }
+
+            .hotel-table td,
+            .hotel-table th{
+                padding: 5px 7px;
+                font-size: 11px;
+            }
+
+            .hotel-observacion{
+                padding: 8px 10px;
+                margin-bottom: 6px;
+            }
+
+            .hotel-observacion-title,
+            .hotel-observacion-text{
+                font-size: 11px;
+            }
+
+            .hotel-note{
+                font-size: 10px;
+                line-height: 1.35;
+                margin: 4px 0 6px;
+                padding: 6px 8px 0;
+                page-break-inside: avoid;
+            }
+
+            .hotel-firmas{
+                gap: 18px;
+                margin-top: 14px;
+                margin-bottom: 0;
+            }
+
+            .label-firma{
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="hotel-recibo-wrap">
+    <div class="hotel-recibo">
+
+        <div class="hotel-head">
+            <div>
+                {% if config and config.logo_url %}
+                    <img src="{{ config.logo_url }}" alt="Logo" class="hotel-logo">
+                {% else %}
+                    <img src="{{ url_for('static', filename='logo_hotel_sky_view.png.jpg') }}" alt="Logo" class="hotel-logo">
+                {% endif %}
+            </div>
+
+            <div class="hotel-center">
+                <h1 class="hotel-title">{{ empresa_nombre }}</h1>
+                <div class="hotel-subtitle">RECIBO DE CAJA</div>
+                <div class="hotel-company-lines">
+                    {% if config and config.nit %}<div>NIT {{ config.nit }}</div>{% endif %}
+                    {% if config and config.ciudad %}<div>{{ config.ciudad }}</div>{% endif %}
+                </div>
+            </div>
+
+            <div class="hotel-top-info">
+                <div class="hotel-chip">Fecha: {{ pago.fecha.strftime('%d/%m/%Y') if pago.fecha else '' }}</div>
+                <div class="hotel-chip">Forma pago: {{ pago.forma_pago if pago.forma_pago else '' }}</div>
+                <div class="hotel-chip">Entidad: {{ pago.entidad_pago if pago.entidad_pago else '' }}</div>
+            </div>
+        </div>
+
+        <div class="hotel-bar">
+            <div class="hotel-bar-left">
+                {{ config.correo if config and config.correo else '' }}
+                {% if config and config.correo and config.telefono %} | {% endif %}
+                {{ config.telefono if config and config.telefono else '' }}
+            </div>
+            <div class="hotel-recibo-badge">
+                RECIBO DE CAJA N° {{ "%02d"|format(pago.consecutivo_recibo or 0) }}
+            </div>
+        </div>
+
+        <table class="hotel-table">
+            <tr>
+                <td class="hotel-label">Nombre</td>
+                <td>{{ venta.cliente if venta.cliente else '' }}</td>
+            </tr>
+            <tr>
+                <td class="hotel-label">Identificación</td>
+                <td>{{ venta.cliente_identificacion if venta.cliente_identificacion else '' }}</td>
+            </tr>
+            <tr>
+                <td class="hotel-label">Dirección</td>
+                <td>{{ venta.cliente_direccion if venta.cliente_direccion else '' }}</td>
+            </tr>
+            <tr>
+                <td class="hotel-label">Teléfono</td>
+                <td>{{ venta.cliente_telefono if venta.cliente_telefono else '' }}</td>
+            </tr>
+            <tr>
+                <td class="hotel-label">Ciudad</td>
+                <td>{{ venta.cliente_ciudad if venta.cliente_ciudad else '' }}</td>
+            </tr>
+        </table>
+
+        <table class="hotel-table">
+            <thead>
+                <tr>
+                    <th>DESCRIPCIÓN</th>
+                    <th style="width: 140px;">ACCIONES</th>
+                    <th style="width: 110px;">CUOTA</th>
+                    <th style="width: 170px;">VALOR PAGO</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ pago.descripcion if pago.descripcion else '' }}</td>
+                    <td style="text-align:center;">{{ pago.cantidad_acciones if pago.cantidad_acciones else venta.cantidad_acciones }}</td>
+                    <td style="text-align:center;">
+                        {% if pago.cuota_aplicada_numero == 0 %}
+                            Inicial
+                        {% elif pago.cuota_aplicada_numero %}
+                            {{ pago.cuota_aplicada_numero }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td style="text-align:right; font-weight:900;">
+                        ${{ "{:,.0f}".format(pago.valor_pagado or 0) }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <table class="hotel-table hotel-summary">
+            <tr>
+                <td>Valor total final</td>
+                <td>${{ "{:,.0f}".format(venta.valor_total_final or 0) }}</td>
+            </tr>
+            <tr>
+                <td>Total recibido</td>
+                <td>${{ "{:,.0f}".format(venta.valor_recibido or 0) }}</td>
+            </tr>
+            <tr>
+                <td>Saldo pendiente</td>
+                <td>${{ "{:,.0f}".format(venta.saldo_pendiente or 0) }}</td>
+            </tr>
+            <tr>
+                <td>Total pago recibido</td>
+                <td>${{ "{:,.0f}".format(pago.valor_pagado or 0) }}</td>
+            </tr>
+        </table>
+
+        <div class="hotel-observacion">
+            <div class="hotel-observacion-title">Observación</div>
+            <div class="hotel-observacion-text">
+                {{ pago.observacion if pago.observacion else venta.observacion if venta.observacion else "Sin observaciones." }}
+            </div>
+        </div>
+
+        <div class="hotel-note">
+            <strong>NOTA ACLARATORIA:</strong>
+            {{ config.texto_legal if config and config.texto_legal else "Este recibo valida y reemplaza la consignación realizada en la fecha descrita inicialmente a la cuenta de ahorros BANCOLOMBIA N° 718-000020-23 a nombre de CRV CONSTRUCCIONES Y URBANIZACIONES SAS." }}
+        </div>
+
+        <div class="hotel-firmas">
+            <div class="firma-recibido">
+                <div class="linea-firma"></div>
+                <div class="label-firma">FIRMA RECIBIDO<br>CC.</div>
+            </div>
+
+            <div class="firma-centro">
+                <div class="linea-firma"></div>
+                <div class="label-firma">Elaborado por</div>
+            </div>
+
+            <div class="firma-derecha">
+                <div class="linea-firma"></div>
+                <div class="label-firma">Aprobado por</div>
+            </div>
+        </div>
+
+        <div class="hotel-acciones">
+            <button onclick="window.print()" class="btn-primary" type="button">Imprimir</button>
+            <a href="/hotel-sky-view/recibo-pdf/{{ pago.id }}" class="btn-primary" style="background:#0f3d26;">Descargar PDF</a>
+            <a href="/hotel-sky-view/ventas" class="btn-secondary">Volver</a>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

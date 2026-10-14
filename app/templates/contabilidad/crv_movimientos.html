@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CRV CONSTRUCTORA - Movimientos</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            color: #17283f;
+        }
+
+        .page {
+            min-height: 100vh;
+            padding: 28px;
+        }
+
+        .shell {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .header img {
+            width: 95px;
+            max-height: 85px;
+            object-fit: contain;
+            margin-bottom: 5px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 30px;
+            color: #17304f;
+            font-weight: 900;
+        }
+
+        .header p {
+            margin: 7px 0 0;
+            color: #6d7f93;
+            font-size: 14px;
+        }
+
+        .topbar {
+            background: white;
+            border-radius: 16px;
+            padding: 15px 18px;
+            box-shadow: 0 10px 26px rgba(18, 40, 64, .07);
+            margin-bottom: 18px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .topbar-left,
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            flex-wrap: wrap;
+        }
+
+        .empresa-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 7px 11px;
+            border-radius: 999px;
+            background: #e8f7ee;
+            color: #168446;
+            font-weight: 800;
+            font-size: 12px;
+        }
+
+        .empresa-badge::before {
+            content: "●";
+            font-size: 8px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            border: none;
+            border-radius: 9px;
+            padding: 10px 14px;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+            transition: .15s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-dark {
+            background: #111;
+            color: white;
+        }
+
+        .btn-primary {
+            background: #17304f;
+            color: white;
+        }
+
+        .btn-gold {
+            background: #d8b541;
+            color: white;
+        }
+
+        .btn-light {
+            background: #edf2f7;
+            color: #17304f;
+        }
+
+        .btn-smart {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #ef2b2d;
+            color: white;
+        }
+
+        .btn-small {
+            padding: 8px 10px;
+            font-size: 12px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 15px;
+            padding: 17px;
+            box-shadow: 0 8px 24px rgba(18, 40, 64, .06);
+            border-top: 4px solid #17304f;
+        }
+
+        .summary-card.ingresos {
+            border-top-color: #16a05b;
+        }
+
+        .summary-card.compras {
+            border-top-color: #d8b541;
+        }
+
+        .summary-card.gastos {
+            border-top-color: #ef2b2d;
+        }
+
+        .summary-card.total {
+            border-top-color: #17283f;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: #63758a;
+            font-weight: 800;
+            margin-bottom: 7px;
+        }
+
+        .summary-value {
+            font-size: 21px;
+            font-weight: 900;
+            color: #17283f;
+        }
+
+        .summary-note {
+            margin-top: 6px;
+            font-size: 11px;
+            color: #75869a;
+        }
+
+        .filters-card {
+            background: white;
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 10px 26px rgba(18, 40, 64, .07);
+            margin-bottom: 18px;
+        }
+
+        .filters-title {
+            font-size: 17px;
+            font-weight: 900;
+            margin-bottom: 13px;
+            color: #17304f;
+        }
+
+        .filters-form {
+            display: grid;
+            grid-template-columns: 180px 190px 190px 1fr auto auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .field label {
+            font-size: 11px;
+            font-weight: 800;
+            color: #566b81;
+        }
+
+        input,
+        select {
+            width: 100%;
+            border: 1px solid #d3dce6;
+            border-radius: 8px;
+            padding: 10px 11px;
+            font-size: 12px;
+            background: white;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #d8b541;
+            box-shadow: 0 0 0 3px rgba(216, 181, 65, .11);
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 12px 30px rgba(18, 40, 64, .07);
+            overflow: hidden;
+        }
+
+        .table-card-header {
+            padding: 19px 20px 14px;
+            border-bottom: 1px solid #e6ebf0;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .table-card-header h2 {
+            margin: 0;
+            font-size: 20px;
+            color: #17304f;
+        }
+
+        .table-card-header p {
+            margin: 4px 0 0;
+            color: #738397;
+            font-size: 12px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            padding: 0 16px 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1350px;
+        }
+
+        thead th {
+            background: #17304f;
+            color: white;
+            text-align: left;
+            padding: 12px 9px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        thead th:first-child {
+            border-radius: 10px 0 0 0;
+        }
+
+        thead th:last-child {
+            border-radius: 0 10px 0 0;
+        }
+
+        tbody td {
+            padding: 12px 9px;
+            border-bottom: 1px solid #e6ebf0;
+            font-size: 11px;
+            vertical-align: top;
+        }
+
+        tbody tr:hover {
+            background: #fafbfc;
+        }
+
+        .tipo {
+            display: inline-flex;
+            padding: 5px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 900;
+        }
+
+        .tipo-ingreso {
+            background: #dcf7e7;
+            color: #087b3a;
+        }
+
+        .tipo-compra {
+            background: #fff3c8;
+            color: #956e00;
+        }
+
+        .tipo-gasto {
+            background: #ffe0e0;
+            color: #be191d;
+        }
+
+        .tipo-nomina {
+            background: #e7edff;
+            color: #3452a4;
+        }
+
+        .tipo-anticipo {
+            background: #fff0d7;
+            color: #a65d00;
+        }
+
+        .tipo-otro {
+            background: #edf1f5;
+            color: #4c6178;
+        }
+
+        .valor {
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .tercero-principal {
+            font-weight: 800;
+            color: #17283f;
+        }
+
+        .tercero-doc {
+            margin-top: 3px;
+            color: #74869a;
+            font-size: 10px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .actions form {
+            margin: 0;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 50px 20px;
+            color: #78899c;
+        }
+
+        .empty strong {
+            display: block;
+            color: #17304f;
+            font-size: 17px;
+            margin-bottom: 9px;
+        }
+
+        .footer-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 1100px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filters-form {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .page {
+                padding: 14px;
+            }
+
+            .summary-grid,
+            .filters-form {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 23px;
+            }
+        }
+    
+        /* =====================================================
+           MENÚ LATERAL PERMANENTE CRV
+        ===================================================== */
+        .crv-layout {
+            max-width: 1760px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 245px minmax(0, 1fr);
+            gap: 20px;
+            align-items: start;
+        }
+
+        .crv-sidebar {
+            position: sticky;
+            top: 18px;
+            background: #fff;
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 12px 30px rgba(18,40,64,.08);
+        }
+
+        .crv-sidebar-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 10px;
+            margin-bottom: 10px;
+            border-radius: 999px;
+            background: #e8f7ee;
+            color: #168446;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .crv-sidebar-badge::before {
+            content: "●";
+            font-size: 8px;
+        }
+
+        .crv-sidebar-company {
+            color: #17304f;
+            font-size: 18px;
+            line-height: 1.2;
+            font-weight: 900;
+        }
+
+        .crv-sidebar-subtitle {
+            margin: 3px 0 15px;
+            color: #cda52b;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .crv-sidebar-menu {
+            display: grid;
+            gap: 7px;
+        }
+
+        .crv-sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            min-height: 40px;
+            padding: 8px 10px;
+            border-radius: 9px;
+            background: #eef3f8;
+            color: #17304f;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 800;
+            transition: .15s ease;
+        }
+
+        .crv-sidebar-menu a:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 14px rgba(18,40,64,.08);
+        }
+
+        .crv-menu-icon {
+            width: 25px;
+            height: 25px;
+            min-width: 25px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 7px;
+            background: rgba(23,48,79,.08);
+            font-size: 13px;
+        }
+
+        .crv-sidebar-menu a.active {
+            background: #17304f;
+            color: #fff;
+        }
+
+        .crv-sidebar-menu a.active .crv-menu-icon,
+        .crv-sidebar-menu a.gold .crv-menu-icon,
+        .crv-sidebar-menu a.smart .crv-menu-icon,
+        .crv-sidebar-menu a.danger .crv-menu-icon {
+            background: rgba(255,255,255,.16);
+        }
+
+        .crv-sidebar-menu a.gold {
+            background: #d8b541;
+            color: #fff;
+        }
+
+        .crv-sidebar-menu a.smart {
+            background: #8b5cf6;
+            color: #fff;
+        }
+
+        .crv-sidebar-menu a.danger {
+            justify-content: center;
+            margin-top: 5px;
+            background: #ef2b2d;
+            color: #fff;
+        }
+
+        .crv-main { min-width: 0; }
+
+        @media (max-width: 1050px) {
+            .crv-layout { grid-template-columns: 1fr; }
+            .crv-sidebar { position: static; }
+            .crv-sidebar-menu {
+                grid-template-columns: repeat(3,minmax(0,1fr));
+            }
+        }
+
+        @media (max-width: 720px) {
+            .crv-sidebar-menu { grid-template-columns: 1fr; }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="page">
+
+<div class="crv-layout">
+
+    <aside class="crv-sidebar">
+        <div class="crv-sidebar-badge">Empresa activa</div>
+
+        <div class="crv-sidebar-company">
+            CRV<br>CONSTRUCTORA
+        </div>
+
+        <div class="crv-sidebar-subtitle">
+            Módulo Contable
+        </div>
+
+        <nav class="crv-sidebar-menu">
+            <a href="/empresas">
+                <span class="crv-menu-icon">🏢</span>
+                <span>Cambiar empresa</span>
+            </a>
+
+            <a href="/crv/movimientos/nuevo" class="gold">
+                <span class="crv-menu-icon">＋</span>
+                <span>Registrar movimiento</span>
+            </a>
+
+            <a href="/crv/carga-inteligente" class="smart">
+                <span class="crv-menu-icon">✨</span>
+                <span>Carga inteligente</span>
+            </a>
+
+            <a href="/crv/movimientos" class="active">
+                <span class="crv-menu-icon">📋</span>
+                <span>Movimientos</span>
+            </a>
+
+            <a href="/crv/terceros">
+                <span class="crv-menu-icon">👤</span>
+                <span>Terceros</span>
+            </a>
+
+            <a href="/crv/terceros?buscar=">
+                <span class="crv-menu-icon">👥</span>
+                <span>Proveedores / Clientes</span>
+            </a>
+
+            <a href="/crv/cuentas-por-pagar">
+                <span class="crv-menu-icon">🧾</span>
+                <span>Cuentas por pagar</span>
+            </a>
+
+            <a href="#">
+                <span class="crv-menu-icon">💰</span>
+                <span>Cuentas por cobrar</span>
+            </a>
+
+            <a href="/crv/bancos-caja">
+                <span class="crv-menu-icon">🏦</span>
+                <span>Bancos y caja</span>
+            </a>
+
+            <a href="#">
+                <span class="crv-menu-icon">🏗️</span>
+                <span>Proyectos / obras</span>
+            </a>
+
+            <a href="/crv/reportes-contador">
+                <span class="crv-menu-icon">📊</span>
+                <span>Reportes contador</span>
+            </a>
+
+            <a href="#">
+                <span class="crv-menu-icon">📅</span>
+                <span>Cierre mensual</span>
+            </a>
+
+            <a href="/crv/exportaciones">
+                <span class="crv-menu-icon">⬇️</span>
+                <span>Importar / Exportar</span>
+            </a>
+
+            <a href="/logout" class="danger">
+                <span class="crv-menu-icon">⏻</span>
+                <span>Cerrar sesión</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main class="crv-main">
+
+<div class="shell">
+
+    <div class="header">
+
+        <img
+            src="{{ url_for('static', filename='logo_crv.png') }}"
+            alt="CRV"
+        >
+
+        <h1>CRV CONSTRUCTORA - Movimientos</h1>
+
+        <p>
+            Consulta detallada de los registros contables de la empresa
+        </p>
+
+    </div>
+
+    <div class="topbar">
+
+        <div class="topbar-left">
+
+            <a href="/crv/dashboard" class="btn btn-dark">
+                ← Volver
+            </a>
+
+            <span class="empresa-badge">
+                Empresa activa
+            </span>
+
+            <strong>{{ empresa_nombre }}</strong>
+
+        </div>
+
+        <div class="topbar-right">
+
+            <a href="/crv/carga-inteligente" class="btn btn-smart">
+                ✨ Carga inteligente
+            </a>
+
+            <a href="/crv/movimientos/pdf" class="btn btn-light">
+                📄 Exportar PDF
+            </a>
+
+            <a href="/crv/movimientos/excel" class="btn btn-primary">
+                📊 Exportar Excel
+            </a>
+
+            <a href="/crv/terceros" class="btn btn-light">
+                Terceros
+            </a>
+
+            <a href="/crv/movimientos/nuevo" class="btn btn-gold">
+                + Nuevo movimiento
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- =====================================================
+         CÁLCULO DEL RESUMEN DE LA CONSULTA
+    ====================================================== -->
+
+    {% set ns = namespace(
+        ingresos=0,
+        compras=0,
+        gastos=0
+    ) %}
+
+    {% for m in movimientos %}
+
+        {% set valor_movimiento = (m.valor_neto or m.valor or 0) %}
+
+        {% if m.tipo == "INGRESO" %}
+
+            {% set ns.ingresos = ns.ingresos + valor_movimiento %}
+
+        {% elif m.tipo == "COMPRA" %}
+
+            {% set ns.compras = ns.compras + valor_movimiento %}
+
+        {% elif m.tipo in [
+            "GASTO",
+            "NOMINA AFILIADOS",
+            "NÓMINA AFILIADOS",
+            "NOMINA OBRA",
+            "NÓMINA OBRA",
+            "ANTICIPO",
+            "PRESTAMO EMPLEADO",
+            "PRÉSTAMO EMPLEADO",
+            "EGRESO",
+            "OTRO EGRESO"
+        ] %}
+
+            {% set ns.gastos = ns.gastos + valor_movimiento %}
+
+        {% else %}
+
+            {% set ns.gastos = ns.gastos + valor_movimiento %}
+
+        {% endif %}
+
+    {% endfor %}
+
+    <div class="summary-grid">
+
+        <div class="summary-card ingresos">
+
+            <div class="summary-label">
+                INGRESOS CONSULTADOS
+            </div>
+
+            <div class="summary-value">
+                ${{ "{:,.0f}".format(ns.ingresos) }}
+            </div>
+
+        </div>
+
+        <div class="summary-card compras">
+
+            <div class="summary-label">
+                COMPRAS CONSULTADAS
+            </div>
+
+            <div class="summary-value">
+                ${{ "{:,.0f}".format(ns.compras) }}
+            </div>
+
+        </div>
+
+        <div class="summary-card gastos">
+
+            <div class="summary-label">
+                GASTOS CONSULTADOS
+            </div>
+
+            <div class="summary-value">
+                ${{ "{:,.0f}".format(ns.gastos) }}
+            </div>
+
+            <div class="summary-note">
+                Incluye gasto general, nómina, anticipos y otros egresos
+            </div>
+
+        </div>
+
+        <div class="summary-card total">
+
+            <div class="summary-label">
+                REGISTROS EN CONSULTA
+            </div>
+
+            <div class="summary-value">
+                {{ movimientos|length }}
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="filters-card">
+
+        <div class="filters-title">
+            Filtros de consulta
+        </div>
+
+        <form
+            method="GET"
+            action="/crv/movimientos"
+            class="filters-form"
+        >
+
+            <div class="field">
+
+                <label>Mes</label>
+
+                <input
+                    type="month"
+                    name="mes"
+                    value="{{ mes_actual }}"
+                >
+
+            </div>
+
+            <div class="field">
+
+                <label>Sede</label>
+
+                <select name="sede_id">
+
+                    <option value="">
+                        Todas las sedes
+                    </option>
+
+                    {% for sede in sedes %}
+
+                    <option
+                        value="{{ sede.id }}"
+                        {% if sede_actual == sede.id|string %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ sede.nombre }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+            <div class="field">
+
+                <label>Tipo</label>
+
+                <select name="tipo">
+
+                    <option value="">
+                        Todos
+                    </option>
+
+                    <option
+                        value="INGRESO"
+                        {% if tipo_actual == "INGRESO" %}selected{% endif %}
+                    >
+                        Ingreso
+                    </option>
+
+                    <option
+                        value="COMPRA"
+                        {% if tipo_actual == "COMPRA" %}selected{% endif %}
+                    >
+                        Compra
+                    </option>
+
+                    <option
+                        value="GASTO"
+                        {% if tipo_actual == "GASTO" %}selected{% endif %}
+                    >
+                        Gasto
+                    </option>
+
+                    <option
+                        value="NOMINA AFILIADOS"
+                        {% if tipo_actual == "NOMINA AFILIADOS" %}selected{% endif %}
+                    >
+                        Nómina afiliados
+                    </option>
+
+                    <option
+                        value="NOMINA OBRA"
+                        {% if tipo_actual == "NOMINA OBRA" %}selected{% endif %}
+                    >
+                        Nómina obra
+                    </option>
+
+                    <option
+                        value="ANTICIPO"
+                        {% if tipo_actual == "ANTICIPO" %}selected{% endif %}
+                    >
+                        Anticipo
+                    </option>
+
+                    <option
+                        value="PRESTAMO EMPLEADO"
+                        {% if tipo_actual == "PRESTAMO EMPLEADO" %}selected{% endif %}
+                    >
+                        Préstamo empleado
+                    </option>
+
+                    <option
+                        value="TRANSFERENCIA"
+                        {% if tipo_actual == "TRANSFERENCIA" %}selected{% endif %}
+                    >
+                        Transferencia
+                    </option>
+
+                    <option
+                        value="OTRO"
+                        {% if tipo_actual == "OTRO" %}selected{% endif %}
+                    >
+                        Otro
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="field">
+
+                <label>Proveedor / cliente / tercero</label>
+
+                <input
+                    type="text"
+                    name="tercero"
+                    value="{{ tercero_actual }}"
+                    placeholder="Nombre del tercero..."
+                >
+
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Filtrar
+            </button>
+
+            <a href="/crv/movimientos" class="btn btn-light">
+                Limpiar
+            </a>
+
+        </form>
+
+    </div>
+
+    <div class="table-card">
+
+        <div class="table-card-header">
+
+            <div>
+
+                <h2>
+                    Listado de movimientos
+                </h2>
+
+                <p>
+                    La fecha mostrada corresponde a la fecha contable,
+                    no a la fecha de digitación.
+                </p>
+
+            </div>
+
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+
+                <a
+                    href="/crv/carga-inteligente"
+                    class="btn btn-smart"
+                >
+                    ✨ Carga inteligente
+                </a>
+
+                <a
+                    href="/crv/movimientos/nuevo"
+                    class="btn btn-primary"
+                >
+                    + Registrar movimiento
+                </a>
+
+            </div>
+
+        </div>
+
+        {% if movimientos %}
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Tercero</th>
+                        <th>Categoría</th>
+                        <th>Concepto</th>
+                        <th>Documento</th>
+                        <th>Cuenta</th>
+                        <th>Proyecto</th>
+                        <th>Centro costo</th>
+                        <th>Base</th>
+                        <th>IVA</th>
+                        <th>Total doc.</th>
+                        <th>Neto</th>
+                        <th>Acciones</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for m in movimientos %}
+
+                    <tr>
+
+                        <td>
+                            {{ m.fecha.strftime('%d/%m/%Y') if m.fecha else '' }}
+                        </td>
+
+                        <td>
+
+                            {% if m.tipo == "INGRESO" %}
+
+                                <span class="tipo tipo-ingreso">
+                                    INGRESO
+                                </span>
+
+                            {% elif m.tipo == "COMPRA" %}
+
+                                <span class="tipo tipo-compra">
+                                    COMPRA
+                                </span>
+
+                            {% elif m.tipo == "GASTO" %}
+
+                                <span class="tipo tipo-gasto">
+                                    GASTO
+                                </span>
+
+                            {% elif m.tipo in [
+                                "NOMINA AFILIADOS",
+                                "NÓMINA AFILIADOS",
+                                "NOMINA OBRA",
+                                "NÓMINA OBRA"
+                            ] %}
+
+                                <span class="tipo tipo-nomina">
+                                    {{ m.tipo }}
+                                </span>
+
+                            {% elif m.tipo == "ANTICIPO" %}
+
+                                <span class="tipo tipo-anticipo">
+                                    ANTICIPO
+                                </span>
+
+                            {% elif m.tipo in [
+                                "PRESTAMO EMPLEADO",
+                                "PRÉSTAMO EMPLEADO"
+                            ] %}
+
+                                <span class="tipo tipo-gasto">
+                                    {{ m.tipo }}
+                                </span>
+
+                            {% else %}
+
+                                <span class="tipo tipo-otro">
+                                    {{ m.tipo }}
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            <div class="tercero-principal">
+                                {{ m.nombre_tercero or m.tercero_nombre or '' }}
+                            </div>
+
+                            {% if m.tercero_identificacion %}
+
+                                <div class="tercero-doc">
+                                    {{ m.tercero_identificacion }}
+                                </div>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {{ m.categoria or '' }}
+
+                            {% if m.subcategoria %}
+
+                                <br>
+
+                                <small>
+                                    {{ m.subcategoria }}
+                                </small>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+                            {{ m.concepto or '' }}
+                        </td>
+
+                        <td>
+
+                            {% if m.numero_documento %}
+
+                                {{ m.numero_documento }}
+
+                            {% else %}
+
+                                {{ m.numero_soporte or '' }}
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+                            {{ m.cuenta or '' }}
+                        </td>
+
+                        <td>
+                            {{ m.proyecto or '' }}
+                        </td>
+
+                        <td>
+                            {{ m.centro_costo or '' }}
+                        </td>
+
+                        <td class="valor">
+                            ${{ "{:,.0f}".format(m.base_gravable or 0) }}
+                        </td>
+
+                        <td class="valor">
+                            ${{ "{:,.0f}".format(m.valor_iva or 0) }}
+                            {% if m.valor_iva %}<br><small>{{ m.tarifa_iva or 0 }}% · {{ m.tipo_iva or 'NO_APLICA' }}</small>{% endif %}
+                        </td>
+
+                        <td class="valor">
+                            ${{ "{:,.0f}".format(m.valor or 0) }}
+                        </td>
+
+                        <td class="valor">
+                            ${{ "{:,.0f}".format(m.valor_neto or m.valor or 0) }}
+                        </td>
+
+                        <td>
+
+                            <div class="actions">
+
+                                <a
+                                    href="/crv/movimientos/{{ m.id }}/comprobante-pdf"
+                                    class="btn btn-primary btn-small"
+                                    target="_blank"
+                                    title="Generar comprobante individual en PDF"
+                                >
+                                    📄 Comprobante
+                                </a>
+
+                                <a
+                                    href="/crv/movimientos/editar/{{ m.id }}"
+                                    class="btn btn-light btn-small"
+                                >
+                                    Editar
+                                </a>
+
+                                <form
+                                    method="POST"
+                                    action="/crv/movimientos/eliminar/{{ m.id }}"
+                                    onsubmit="return confirm('¿Seguro que deseas eliminar este movimiento?');"
+                                >
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-danger btn-small"
+                                    >
+                                        Eliminar
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty">
+
+            <strong>
+                No hay movimientos para esta consulta.
+            </strong>
+
+            Puedes registrar un nuevo movimiento o cambiar los filtros.
+
+            <br><br>
+
+            <a
+                href="/crv/movimientos/nuevo"
+                class="btn btn-primary"
+            >
+                Registrar movimiento
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+    <div class="footer-actions">
+
+        <a
+            href="/crv/dashboard"
+            class="btn btn-light"
+        >
+            ← Volver al panel CRV
+        </a>
+
+        <a
+            href="/crv/carga-inteligente"
+            class="btn btn-smart"
+        >
+            ✨ Carga inteligente
+        </a>
+
+        <a
+            href="/crv/movimientos/nuevo"
+            class="btn btn-gold"
+        >
+            + Nuevo movimiento
+        </a>
+
+    </div>
+
+</div>
+
+    </main>
+</div>
+
+</div>
+
+</body>
+</html>

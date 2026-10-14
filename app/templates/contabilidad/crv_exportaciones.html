@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CRV CONSTRUCTORA - Exportaciones</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            color: #17283f;
+        }
+
+        .ex-page {
+            min-height: 100vh;
+            padding: 26px;
+        }
+
+        .ex-shell {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .ex-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .ex-header img {
+            width: 86px;
+            height: 68px;
+            object-fit: contain;
+        }
+
+        .ex-header h1 {
+            margin: 5px 0 0;
+            color: #17304f;
+            font-size: 29px;
+            font-weight: 900;
+        }
+
+        .ex-header p {
+            margin: 7px 0 0;
+            color: #718398;
+            font-size: 12px;
+        }
+
+        .ex-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 14px 16px;
+            margin-bottom: 17px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 28px rgba(18,40,64,.07);
+        }
+
+        .ex-left {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            flex-wrap: wrap;
+        }
+
+        .ex-back,
+        .ex-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: 9px 14px;
+            border-radius: 9px;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .ex-back {
+            background: #111;
+            color: white;
+        }
+
+        .ex-badge {
+            padding: 7px 11px;
+            border-radius: 999px;
+            background: #e4f8eb;
+            color: #138246;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .ex-grid {
+            display: grid;
+            grid-template-columns: repeat(2,minmax(0,1fr));
+            gap: 15px;
+        }
+
+        .ex-card {
+            background: white;
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 8px 24px rgba(18,40,64,.06);
+            border-top: 4px solid #17304f;
+        }
+
+        .ex-card.gold { border-top-color: #d8b541; }
+        .ex-card.green { border-top-color: #15a05a; }
+
+        .ex-card h2 {
+            margin: 0;
+            color: #17304f;
+            font-size: 18px;
+        }
+
+        .ex-card p {
+            margin: 7px 0 16px;
+            color: #718398;
+            font-size: 11px;
+            line-height: 1.45;
+        }
+
+        .ex-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .ex-pdf {
+            background: #17304f;
+            color: white;
+        }
+
+        .ex-excel {
+            background: #149653;
+            color: white;
+        }
+
+        .ex-open {
+            background: #edf2f7;
+            color: #17304f;
+        }
+
+        .ex-note {
+            margin-top: 17px;
+            padding: 13px 15px;
+            border-radius: 11px;
+            background: #eaf3ff;
+            color: #285c96;
+            font-size: 10px;
+        }
+
+        @media (max-width: 800px) {
+            .ex-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="ex-page">
+<div class="ex-shell">
+
+    <div class="ex-header">
+        <img
+            src="{{ url_for('static', filename='logo_crv.png') }}"
+            alt="CRV"
+        >
+        <h1>CRV CONSTRUCTORA - Importar / Exportar</h1>
+        <p>
+            Centro de descarga de información contable por módulo
+        </p>
+    </div>
+
+    <div class="ex-topbar">
+        <div class="ex-left">
+            <a href="/crv/dashboard" class="ex-back">
+                ← Volver
+            </a>
+
+            <span class="ex-badge">
+                • Empresa activa
+            </span>
+
+            <strong>{{ empresa_nombre }}</strong>
+        </div>
+    </div>
+
+    <div class="ex-grid">
+
+        <section class="ex-card">
+            <h2>📋 Movimientos</h2>
+            <p>
+                Listado completo de ingresos, compras, gastos, nómina,
+                anticipos, pagos, cuentas, proyectos y soportes.
+            </p>
+
+            <div class="ex-actions">
+                <a href="/crv/movimientos" class="ex-btn ex-open">
+                    Abrir módulo
+                </a>
+                <a href="/crv/movimientos/pdf" class="ex-btn ex-pdf">
+                    PDF
+                </a>
+                <a href="/crv/movimientos/excel" class="ex-btn ex-excel">
+                    Excel
+                </a>
+            </div>
+        </section>
+
+        <section class="ex-card gold">
+            <h2>👥 Terceros</h2>
+            <p>
+                Directorio de proveedores, clientes, empleados y terceros
+                con identificación, contacto e información bancaria.
+            </p>
+
+            <div class="ex-actions">
+                <a href="/crv/terceros" class="ex-btn ex-open">
+                    Abrir módulo
+                </a>
+                <a href="/crv/terceros/pdf" class="ex-btn ex-pdf">
+                    PDF
+                </a>
+                <a href="/crv/terceros/excel" class="ex-btn ex-excel">
+                    Excel
+                </a>
+            </div>
+        </section>
+
+        <section class="ex-card">
+            <h2>🧾 Cuentas por pagar</h2>
+            <p>
+                Facturado, pagos, saldo, vencimiento y estado de las
+                obligaciones de proveedores de CRV.
+            </p>
+
+            <div class="ex-actions">
+                <a href="/crv/cuentas-por-pagar" class="ex-btn ex-open">
+                    Abrir módulo
+                </a>
+                <a href="/crv/cuentas-por-pagar/pdf" class="ex-btn ex-pdf">
+                    PDF
+                </a>
+                <a href="/crv/cuentas-por-pagar/excel" class="ex-btn ex-excel">
+                    Excel
+                </a>
+            </div>
+        </section>
+
+        <section class="ex-card green">
+            <h2>🏦 Bancos y caja</h2>
+            <p>
+                Reporte para conciliación con extractos: saldos,
+                movimientos, cuentas propias y estado de conciliación.
+            </p>
+
+            <div class="ex-actions">
+                <a href="/crv/bancos-caja" class="ex-btn ex-open">
+                    Abrir módulo
+                </a>
+                <a href="/crv/bancos-caja/pdf" class="ex-btn ex-pdf">
+                    PDF
+                </a>
+                <a href="/crv/bancos-caja/excel" class="ex-btn ex-excel">
+                    Excel
+                </a>
+            </div>
+        </section>
+
+        
+        <section class="ex-card gold">
+            <h2>🏗️ Proyectos / obras</h2>
+            <p>
+                Presupuesto, ingresos, compras, gastos, costos,
+                resultado, cuentas por pagar y cuentas por cobrar
+                consolidadas por proyecto.
+            </p>
+
+            <div class="ex-actions">
+                <a href="/crv/proyectos" class="ex-btn ex-open">
+                    Abrir módulo
+                </a>
+                <a href="/crv/proyectos/pdf" class="ex-btn ex-pdf">
+                    PDF
+                </a>
+                <a href="/crv/proyectos/excel" class="ex-btn ex-excel">
+                    Excel
+                </a>
+            </div>
+        </section>
+
+        <section class="ex-card gold">
+            <h2>📊 Reportes contador</h2>
+            <p>
+                Informe consolidado profesional con resumen,
+                movimientos, proveedores, proyectos, terceros
+                y cuentas por pagar.
+            </p>
+
+            <div class="ex-actions">
+                <a href="/crv/reportes-contador" class="ex-btn ex-open">
+                    Abrir módulo
+                </a>
+                <a href="/crv/reportes-contador/pdf" class="ex-btn ex-pdf">
+                    PDF
+                </a>
+                <a href="/crv/reportes-contador/excel" class="ex-btn ex-excel">
+                    Excel
+                </a>
+            </div>
+        </section>
+
+        <section class="ex-card green">
+            <h2>💰 Cuentas por cobrar</h2>
+            <p>
+                Cartera de clientes, facturación, cobros, vencimientos,
+                saldos y estado de cada cuenta por cobrar de CRV.
+            </p>
+
+            <div class="ex-actions">
+                <a href="/crv/cuentas-por-cobrar" class="ex-btn ex-open">Abrir módulo</a>
+                <a href="/crv/cuentas-por-cobrar/pdf" class="ex-btn ex-pdf">PDF</a>
+                <a href="/crv/cuentas-por-cobrar/excel" class="ex-btn ex-excel">Excel</a>
+            </div>
+        </section>
+
+        
+        
+        <section class="ex-card green">
+            <h2>⚖️ Conciliación bancaria</h2>
+            <p>
+                Compara el saldo del sistema con el saldo del extracto,
+                revisa movimientos pendientes y descarga el soporte de
+                conciliación en PDF y Excel.
+            </p>
+
+            <div class="ex-actions">
+                <a href="/crv/conciliacion-bancaria" class="ex-btn ex-open">
+                    Abrir módulo
+                </a>
+            </div>
+        </section>
+
+        <section class="ex-card green">
+            <h2>📅 Cierre mensual</h2>
+            <p>
+                Consolida el periodo, valida conciliaciones,
+                bloquea modificaciones después del cierre y permite
+                exportar el soporte mensual a PDF y Excel.
+            </p>
+
+            <div class="ex-actions">
+                <a href="/crv/cierre-mensual" class="ex-btn ex-open">
+                    Abrir módulo
+                </a>
+                <a href="/crv/cierre-mensual/pdf" class="ex-btn ex-pdf">
+                    PDF
+                </a>
+                <a href="/crv/cierre-mensual/excel" class="ex-btn ex-excel">
+                    Excel
+                </a>
+            </div>
+        </section>
+
+        <section class="ex-card">
+            <h2>Próximos módulos</h2>
+            <p>
+                Proyectos y obras y Cierre mensual tendrán sus propios
+                PDF y Excel cuando terminemos de implementar su información.
+            </p>
+        </section>
+
+    </div>
+
+    <div class="ex-note">
+        ℹ️ Las exportaciones se generan exclusivamente con datos de
+        CRV CONSTRUCTORA. No mezclan HOTEL SKY VIEW, ECOBIKE,
+        Comercializadora ni Financiera.
+    </div>
+
+</div>
+</div>
+
+</body>
+</html>

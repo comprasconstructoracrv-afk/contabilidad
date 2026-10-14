@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ empresa_nombre }} - Ventas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .reportes-page-layout {
+            max-width: 1400px;
+            margin: 0 auto 40px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 270px minmax(0, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .reportes-sidebar {
+            position: sticky;
+            top: 20px;
+        }
+
+        .reportes-sidebar-card {
+            background: linear-gradient(180deg, #ffffff 0%, #fcfcfd 100%);
+            border-radius: 22px;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.10);
+            border: 1px solid #e5e7eb;
+            padding: 20px;
+        }
+
+        .reportes-sidebar-card h3 {
+            margin: 0 0 16px 0;
+            font-size: 24px;
+            color: #111827;
+        }
+
+        .reportes-sidebar-card p {
+            margin: 0 0 18px 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .sidebar-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sidebar-actions a {
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .reportes-main {
+            min-width: 0;
+        }
+
+        .table-container {
+            margin: 0;
+        }
+
+        .ventas-card {
+            background: linear-gradient(180deg, #ffffff 0%, #fcfcfd 100%);
+            border-radius: 22px;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.10);
+            border: 1px solid #e5e7eb;
+            padding: 20px;
+        }
+
+        .icon-back {
+            margin-right: 8px;
+            font-weight: 800;
+        }
+
+        .empresa-badge {
+            background: #dcfce7 !important;
+            color: #166534 !important;
+            border: 1px solid #bbf7d0;
+        }
+
+        @media (max-width: 992px) {
+            .reportes-page-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .reportes-sidebar {
+                position: static;
+                order: 2;
+            }
+
+            .reportes-main {
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <h1>{{ empresa_nombre }} - Ventas</h1>
+    <p>Registro de ventas de bicicletas por sede</p>
+</div>
+
+<div class="empresa-actual-bar">
+    <div class="empresa-actual-info">
+        <span class="empresa-badge">Empresa activa</span>
+        <strong>{{ empresa_nombre }}</strong>
+    </div>
+
+    <div class="empresa-actual-actions">
+        <a href="/dashboard" class="btn-secondary">Dashboard</a>
+        <a href="/ventas-ecobike/reporte" class="btn-secondary">Reporte ventas</a>
+    </div>
+</div>
+
+<div class="reportes-page-layout">
+
+    <aside class="reportes-sidebar">
+        <div class="reportes-sidebar-card">
+            <h3>Acciones</h3>
+            <p>Accesos rápidos del módulo de ventas ECOBIKE</p>
+
+            <div class="sidebar-actions">
+                <a href="/ventas-ecobike/nueva" class="btn-primary">+ Nueva venta</a>
+                <a href="/ventas-ecobike/reporte" class="btn-secondary">Ver reporte</a>
+                <a href="/dashboard" class="btn-secondary"><span class="icon-back">←</span>Volver</a>
+                <a href="/empresas" class="btn-secondary">Cambiar empresa</a>
+                <a href="/sedes" class="btn-secondary">Gestionar sedes</a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="reportes-main">
+        <div class="ventas-card">
+            <div class="table-container">
+                <form method="GET" action="/ventas-ecobike" class="filters" style="margin-bottom:20px;">
+                    <input type="month" name="mes" value="{{ mes_actual }}">
+
+                    {% if sedes %}
+                    <select name="sede_id">
+                        <option value="">Todas las sedes</option>
+                        {% for sede in sedes %}
+                        <option value="{{ sede.id }}" {% if sede_actual == sede.id|string %}selected{% endif %}>{{ sede.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    {% endif %}
+
+                    <select name="tipo_venta">
+                        <option value="">Todos los tipos</option>
+                        <option value="CONTADO" {% if tipo_venta_actual == "CONTADO" %}selected{% endif %}>Contado</option>
+                        <option value="CREDITO" {% if tipo_venta_actual == "CREDITO" %}selected{% endif %}>Crédito</option>
+                        <option value="SEPARADO" {% if tipo_venta_actual == "SEPARADO" %}selected{% endif %}>Separado</option>
+                    </select>
+
+                    <button type="submit" class="btn-primary">Filtrar</button>
+                    <a href="/ventas-ecobike" class="btn-secondary">Limpiar</a>
+                </form>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Sede</th>
+                            <th>Referencia</th>
+                            <th>Cant.</th>
+                            <th>Tipo</th>
+                            <th>Recibido</th>
+                            <th>Pendiente</th>
+                            <th>Cliente</th>
+                            <th>Cuenta</th>
+                            <th style="width:300px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in ventas %}
+                        <tr>
+                            <td>{{ v.fecha }}</td>
+                            <td>{{ v.sede.nombre if v.sede else "General" }}</td>
+                            <td>{{ v.referencia }}</td>
+                            <td>{{ v.cantidad }}</td>
+                            <td>{{ v.tipo_venta }}</td>
+                            <td class="ingreso-text">${{ "{:,.0f}".format(v.valor_recibido) }}</td>
+                            <td class="{{ 'gasto-text' if v.saldo_pendiente > 0 else '' }}">${{ "{:,.0f}".format(v.saldo_pendiente) }}</td>
+                            <td>{{ v.cliente if v.cliente else "" }}</td>
+                            <td>{{ v.cuenta if v.cuenta else "" }}</td>
+                            <td>
+                                <div class="acciones-inline">
+                                    <a href="/ventas-ecobike/editar/{{ v.id }}" class="btn-secondary btn-small">Editar</a>
+                                    <a href="/ventas-ecobike/recibo/{{ v.id }}" class="btn-primary btn-small">Recibo</a>
+                                    <form method="POST" action="/ventas-ecobike/eliminar/{{ v.id }}" onsubmit="return confirm('¿Seguro que deseas eliminar esta venta?');" style="display:inline;">
+                                        <button type="submit" class="btn-danger btn-small">Eliminar</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+</div>
+
+</body>
+</html>

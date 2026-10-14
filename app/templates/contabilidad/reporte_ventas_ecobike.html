@@ -1,0 +1,329 @@
+<<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ empresa_nombre }} - Reporte de Ventas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .reportes-page-layout {
+            max-width: 1400px;
+            margin: 0 auto 40px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 270px minmax(0, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .reportes-sidebar {
+            position: sticky;
+            top: 20px;
+        }
+
+        .reportes-sidebar-card {
+            background: linear-gradient(180deg, #ffffff 0%, #fcfcfd 100%);
+            border-radius: 22px;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.10);
+            border: 1px solid #e5e7eb;
+            padding: 20px;
+        }
+
+        .reportes-sidebar-card h3 {
+            margin: 0 0 16px 0;
+            font-size: 24px;
+            color: #111827;
+        }
+
+        .reportes-sidebar-card p {
+            margin: 0 0 18px 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .sidebar-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sidebar-actions a {
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .reportes-main {
+            min-width: 0;
+        }
+
+        .report-card-full {
+            max-width: 1200px;
+            margin: 0 auto 30px;
+        }
+
+        .icon-back {
+            margin-right: 8px;
+            font-weight: 800;
+        }
+
+        .empresa-badge {
+            background: #dcfce7 !important;
+            color: #166534 !important;
+            border: 1px solid #bbf7d0;
+        }
+
+        @media (max-width: 992px) {
+            .reportes-page-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .reportes-sidebar {
+                position: static;
+                order: 2;
+            }
+
+            .reportes-main {
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <div class="logo-header">
+        <img src="{{ url_for('static', filename='logo_crv.png') }}" alt="Logo CRV" class="logo-principal">
+    </div>
+
+    <h1>{{ empresa_nombre }} - Reporte de Ventas</h1>
+    <p>Ventas de bicicletas, recaudo real, crédito, separados y utilidad bruta</p>
+</div>
+
+<div class="empresa-actual-bar">
+    <div class="empresa-actual-info">
+        <span class="empresa-badge">Empresa activa</span>
+        <strong>{{ empresa_nombre }}</strong>
+    </div>
+
+    <div class="empresa-actual-actions">
+        <a href="/dashboard" class="btn-secondary">Dashboard</a>
+        <a href="/ventas-ecobike" class="btn-secondary">Ver ventas</a>
+    </div>
+</div>
+
+<div class="reportes-page-layout">
+
+    <aside class="reportes-sidebar no-print">
+        <div class="reportes-sidebar-card">
+            <h3>Acciones</h3>
+            <p>Accesos rápidos del reporte de ventas ECOBIKE</p>
+
+            <div class="sidebar-actions">
+                <a href="/dashboard" class="btn-secondary"><span class="icon-back">←</span>Volver</a>
+                <a href="/ventas-ecobike/nueva" class="btn-primary">Registrar venta</a>
+                <a href="/ventas-ecobike" class="btn-secondary">Ver ventas</a>
+                <a href="/ventas-ecobike/reporte" class="btn-secondary">Actualizar reporte</a>
+                <a href="/ventas-ecobike/exportar-excel?mes={{ mes_actual }}&sede_id={{ sede_actual }}&tipo_venta={{ tipo_venta_actual }}" class="btn-primary">Exportar Excel</a>
+                <a href="/ventas-ecobike/exportar-pdf?mes={{ mes_actual }}&sede_id={{ sede_actual }}&tipo_venta={{ tipo_venta_actual }}" class="btn-primary">Exportar PDF</a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="reportes-main">
+
+        <div class="report-toolbar no-print">
+            <form method="GET" action="/ventas-ecobike/reporte" class="filters-form">
+                <div class="filters">
+                    <input type="month" name="mes" value="{{ mes_actual }}">
+
+                    {% if sedes %}
+                    <select name="sede_id">
+                        <option value="">Todas las sedes</option>
+                        {% for sede in sedes %}
+                        <option value="{{ sede.id }}" {% if sede_actual == sede.id|string %}selected{% endif %}>{{ sede.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    {% endif %}
+
+                    <select name="tipo_venta">
+                        <option value="">Todos los tipos</option>
+                        <option value="CONTADO" {% if tipo_venta_actual == "CONTADO" %}selected{% endif %}>Contado</option>
+                        <option value="CREDITO" {% if tipo_venta_actual == "CREDITO" %}selected{% endif %}>Crédito</option>
+                        <option value="SEPARADO" {% if tipo_venta_actual == "SEPARADO" %}selected{% endif %}>Separado</option>
+                    </select>
+
+                    <button type="submit" class="btn-primary">Aplicar filtros</button>
+                    <a href="/ventas-ecobike/reporte" class="btn-secondary">Limpiar</a>
+                </div>
+            </form>
+
+            <div class="print-actions">
+                <a href="/ventas-ecobike/exportar-excel?mes={{ mes_actual }}&sede_id={{ sede_actual }}&tipo_venta={{ tipo_venta_actual }}" class="btn-primary">Exportar Excel</a>
+                <a href="/ventas-ecobike/exportar-pdf?mes={{ mes_actual }}&sede_id={{ sede_actual }}&tipo_venta={{ tipo_venta_actual }}" class="btn-secondary">Exportar PDF</a>
+            </div>
+        </div>
+
+        <div class="report-summary">
+            <div class="card ingreso">
+                <h2>Total vendidas</h2>
+                <p>{{ resumen.total_unidades }}</p>
+                <div style="margin-top:10px; font-size:14px; line-height:1.8;">
+                    <div><strong>Contado:</strong> {{ resumen.unidades_contado }}</div>
+                    <div><strong>Crédito:</strong> {{ resumen.unidades_credito }}</div>
+                    <div><strong>Separado:</strong> {{ resumen.unidades_separado }}</div>
+                </div>
+            </div>
+
+            <div class="card ingreso">
+                <h2>Recaudo real</h2>
+                <p>${{ "{:,.0f}".format(resumen.recaudo_real) }}</p>
+            </div>
+
+            <div class="card ingreso">
+                <h2>Venta total</h2>
+                <p>${{ "{:,.0f}".format(resumen.valor_total_ventas) }}</p>
+            </div>
+        </div>
+
+        <div class="report-summary">
+            <div class="card ingreso">
+                <h2>Ventas a crédito</h2>
+                <p>${{ "{:,.0f}".format(resumen.valor_credito) }}</p>
+            </div>
+
+            <div class="card ingreso">
+                <h2>Ventas separadas</h2>
+                <p>${{ "{:,.0f}".format(resumen.valor_separado) }}</p>
+            </div>
+
+            <div class="card utilidad {{ 'utilidad-positiva' if resumen.utilidad_bruta >= 0 else 'utilidad-negativa' }}">
+                <h2>Utilidad bruta</h2>
+                <p>${{ "{:,.0f}".format(resumen.utilidad_bruta) }}</p>
+            </div>
+        </div>
+
+        <div class="report-grid">
+            <div class="report-card">
+                <h2>Cuentas / medios donde ingresó dinero</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cuenta / Medio</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cuenta, total in resumen.cuentas_resumen %}
+                        <tr>
+                            <td>{{ cuenta }}</td>
+                            <td class="ingreso-text">${{ "{:,.0f}".format(total) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="report-card">
+                <h2>Comparativo por sedes</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sede</th>
+                            <th>Vendidas</th>
+                            <th>Recaudo</th>
+                            <th>Utilidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in comparativo_sedes %}
+                        <tr>
+                            <td>{{ item.sede }}</td>
+                            <td>{{ item.unidades }}</td>
+                            <td class="ingreso-text">${{ "{:,.0f}".format(item.recaudo_real) }}</td>
+                            <td class="{{ 'ingreso-text' if item.utilidad_bruta >= 0 else 'gasto-text' }}">
+                                ${{ "{:,.0f}".format(item.utilidad_bruta) }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="report-card report-card-full">
+            <h2>Gráfica comparativa por sedes</h2>
+            <canvas id="graficaSedes"></canvas>
+        </div>
+
+        <div class="report-card report-card-full" style="margin-bottom: 40px;">
+            <h2>Detalle de ventas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Sede</th>
+                        <th>Referencia</th>
+                        <th>Cant.</th>
+                        <th>Tipo</th>
+                        <th>Precio</th>
+                        <th>Descuento</th>
+                        <th>Total venta</th>
+                        <th>Recibido</th>
+                        <th>Pendiente</th>
+                        <th>Cliente</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in ventas %}
+                    <tr>
+                        <td>{{ v.fecha }}</td>
+                        <td>{{ v.sede.nombre if v.sede else "General" }}</td>
+                        <td>{{ v.referencia }}</td>
+                        <td>{{ v.cantidad }}</td>
+                        <td>{{ v.tipo_venta }}</td>
+                        <td>${{ "{:,.0f}".format(v.precio_unitario) }}</td>
+                        <td>${{ "{:,.0f}".format(v.descuento if v.descuento else 0) }}</td>
+                        <td>${{ "{:,.0f}".format(v.valor_total) }}</td>
+                        <td class="ingreso-text">${{ "{:,.0f}".format(v.valor_recibido) }}</td>
+                        <td class="{{ 'gasto-text' if v.saldo_pendiente > 0 else '' }}">${{ "{:,.0f}".format(v.saldo_pendiente) }}</td>
+                        <td>{{ v.cliente if v.cliente else "" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('graficaSedes');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: {{ labels_sedes | tojson }},
+        datasets: [
+            {
+                label: 'Ventas',
+                data: {{ ventas_sedes | tojson }}
+            },
+            {
+                label: 'Recaudo real',
+                data: {{ recaudo_sedes | tojson }}
+            },
+            {
+                label: 'Utilidad bruta',
+                data: {{ utilidad_sedes | tojson }}
+            }
+        ]
+    },
+    options: {
+        responsive: true
+    }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar empresa</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="page-header">
+    <div class="logo-header">
+        <img src="{{ url_for('static', filename='logo_crv.png') }}" alt="Logo CRV" class="logo-principal">
+    </div>
+
+    <h1>Editar empresa</h1>
+    <p>Corrige el nombre de la empresa seleccionada</p>
+</div>
+
+<div class="form-container">
+    <div class="form-card" style="max-width:700px; margin:0 auto;">
+        {% if error %}
+        <div class="alert-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST">
+            <div class="form-group">
+                <label for="nombre">Nombre de la empresa</label>
+                <input type="text" id="nombre" name="nombre" value="{{ empresa.nombre }}" required>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Guardar cambios</button>
+                <a href="/empresas" class="btn-secondary">Volver</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

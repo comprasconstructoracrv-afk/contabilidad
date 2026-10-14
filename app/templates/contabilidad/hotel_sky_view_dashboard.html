@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ empresa_nombre }} - Panel principal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root{
+            --bg:#eef2f5;
+            --card:#ffffff;
+            --text:#102a43;
+            --muted:#5f7287;
+            --navy:#17304f;
+            --green:#15803d;
+            --green-soft:#dcfce7;
+            --gold:#d8b541;
+            --red:#dc2626;
+            --line:#d9e2ec;
+            --shadow:0 6px 16px rgba(15, 23, 42, .07);
+            --radius:18px;
+        }
+
+        *{box-sizing:border-box}
+
+        body{
+            margin:0;
+            font-family:Arial, Helvetica, sans-serif;
+            background:var(--bg);
+            color:var(--text);
+        }
+
+        .page{
+            max-width:1380px;
+            margin:0 auto;
+            padding:16px 18px 28px;
+        }
+
+        .top-brand{
+            text-align:center;
+            margin-bottom:14px;
+        }
+
+        .top-brand img{
+            width:72px;
+            max-height:72px;
+            object-fit:contain;
+            display:block;
+            margin:0 auto 6px;
+        }
+
+        .top-brand h1{
+            margin:0;
+            font-size:26px;
+            line-height:1.1;
+            color:#16361c;
+            letter-spacing:.4px;
+        }
+
+        .top-brand p{
+            margin:7px 0 0;
+            color:var(--muted);
+            font-size:13px;
+        }
+
+        .layout{
+            display:grid;
+            grid-template-columns:240px 1fr;
+            gap:18px;
+            align-items:start;
+        }
+
+        .sidebar{
+            background:var(--card);
+            border:1px solid var(--line);
+            border-radius:22px;
+            box-shadow:var(--shadow);
+            padding:14px;
+            position:sticky;
+            top:16px;
+        }
+
+        .sidebar-logo{
+            text-align:center;
+            margin-bottom:10px;
+        }
+
+        .sidebar-logo img{
+            width:82px;
+            max-height:82px;
+            object-fit:contain;
+            border-radius:15px;
+        }
+
+        .badge-active{
+            display:inline-flex;
+            align-items:center;
+            gap:7px;
+            background:var(--green-soft);
+            color:var(--green);
+            border-radius:999px;
+            padding:6px 11px;
+            font-weight:700;
+            font-size:12px;
+            margin-bottom:10px;
+        }
+
+        .badge-active::before{
+            content:"●";
+            font-size:10px;
+        }
+
+        .sidebar h2{
+            margin:0 0 6px;
+            font-size:18px;
+            line-height:1.2;
+            color:#16361c;
+        }
+
+        .sidebar h3{
+            margin:14px 0 10px;
+            font-size:16px;
+            color:#16361c;
+        }
+
+        .menu{
+            display:grid;
+            gap:8px;
+        }
+
+        .menu a{
+            text-decoration:none;
+            background:#eef3f8;
+            color:var(--navy);
+            border:1px solid #d7e0ea;
+            border-radius:12px;
+            padding:10px 12px;
+            font-weight:700;
+            font-size:13px;
+            text-align:center;
+            transition:.2s ease;
+        }
+
+        .menu a:hover{
+            transform:translateY(-1px);
+        }
+
+        .menu a.primary{
+            background:var(--navy);
+            color:#fff;
+            border-color:var(--navy);
+            box-shadow:var(--shadow);
+        }
+
+        .menu a.danger{
+            background:#ef2b2b;
+            color:#fff;
+            border-color:#ef2b2b;
+        }
+
+        .quick-panel{
+            margin-top:14px;
+            padding-top:14px;
+            border-top:1px solid #e5edf5;
+        }
+
+        .quick-panel h4{
+            margin:0 0 10px;
+            font-size:14px;
+            color:#17361f;
+        }
+
+        .quick-grid{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:8px;
+        }
+
+        .quick-link{
+            text-decoration:none;
+            border-radius:14px;
+            min-height:70px;
+            padding:9px 8px;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            gap:6px;
+            font-weight:700;
+            text-align:center;
+            transition:.2s ease;
+            border:1px solid transparent;
+            box-shadow:0 4px 10px rgba(15, 23, 42, .05);
+        }
+
+        .quick-link:hover{
+            transform:translateY(-1px);
+            box-shadow:0 8px 16px rgba(15, 23, 42, .08);
+        }
+
+        .quick-icon{
+            font-size:18px;
+            line-height:1;
+        }
+
+        .quick-label{
+            font-size:11px;
+            line-height:1.2;
+        }
+
+        .quick-pdf{
+            background:linear-gradient(180deg, #fff8e8 0%, #ffffff 100%);
+            color:#8a5a00;
+            border-color:#f4dfaa;
+        }
+
+        .quick-cierre{
+            background:linear-gradient(180deg, #fff1f2 0%, #ffffff 100%);
+            color:#b42318;
+            border-color:#fecdd3;
+        }
+
+        .content{
+            display:grid;
+            gap:16px;
+        }
+
+        .toolbar{
+            background:var(--card);
+            border:1px solid var(--line);
+            border-radius:20px;
+            box-shadow:var(--shadow);
+            padding:14px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:12px;
+            flex-wrap:wrap;
+        }
+
+        .toolbar-left,
+        .toolbar-right{
+            display:flex;
+            gap:10px;
+            align-items:center;
+            flex-wrap:wrap;
+        }
+
+        .btn{
+            text-decoration:none;
+            border:none;
+            cursor:pointer;
+            border-radius:12px;
+            padding:10px 14px;
+            font-weight:700;
+            font-size:13px;
+            transition:.2s ease;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        .btn:hover{transform:translateY(-1px)}
+        .btn-navy{background:var(--navy); color:#fff; box-shadow:var(--shadow)}
+        .btn-light{background:#eef3f8; color:var(--navy); border:1px solid #d7e0ea}
+        .btn-gold{background:var(--gold); color:#1f2937}
+        .btn-green{background:var(--green); color:#fff}
+
+        .month-input{
+            padding:10px 12px;
+            border-radius:12px;
+            border:1px solid #c9d5e2;
+            background:#fff;
+            min-width:170px;
+            font-size:13px;
+        }
+
+        .hero-grid{
+            display:grid;
+            grid-template-columns:repeat(4, minmax(160px, 1fr));
+            gap:14px;
+        }
+
+        .hero-card{
+            background:var(--card);
+            border-radius:20px;
+            box-shadow:var(--shadow);
+            border:1px solid var(--line);
+            padding:18px 18px 14px;
+            position:relative;
+            overflow:hidden;
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+            min-height:132px;
+        }
+
+        .hero-card::before{
+            content:"";
+            position:absolute;
+            left:0;
+            top:0;
+            width:100%;
+            height:4px;
+        }
+
+        .hero-card.gold::before{background:var(--gold)}
+        .hero-card.green::before{background:#22c55e}
+        .hero-card.navy::before{background:#1f4b2e}
+        .hero-card.red::before{background:#ef4444}
+
+        .hero-card .label{
+            font-size:13px;
+            font-weight:700;
+            color:#17361f;
+            margin-bottom:0;
+        }
+
+        .hero-card .value{
+            font-size:19px;
+            font-weight:800;
+            color:#000;
+        }
+
+        .hero-card .hero-actions{
+            margin-top:auto;
+            display:flex;
+            gap:8px;
+            flex-wrap:wrap;
+        }
+
+        .section{
+            background:var(--card);
+            border:1px solid var(--line);
+            border-radius:22px;
+            box-shadow:var(--shadow);
+            overflow:hidden;
+        }
+
+        .section-header{
+            padding:18px 20px 10px;
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap:12px;
+            flex-wrap:wrap;
+        }
+
+        .section-header h2{
+            margin:0;
+            font-size:18px;
+            color:#17361f;
+        }
+
+        .section-header p{
+            margin:5px 0 0;
+            color:var(--muted);
+            font-size:13px;
+        }
+
+        .stats-grid{
+            display:grid;
+            grid-template-columns:repeat(3, 1fr);
+            gap:14px;
+            padding:0 20px 20px;
+        }
+
+        .mini-stat{
+            border-radius:18px;
+            padding:16px;
+            border:1px solid var(--line);
+            background:#fff;
+            box-shadow:0 4px 12px rgba(15,23,42,.04);
+            display:flex;
+            flex-direction:column;
+            gap:9px;
+            min-height:150px;
+        }
+
+        .mini-stat .kicker{
+            font-size:13px;
+            font-weight:700;
+            margin-bottom:0;
+            color:#17361f;
+        }
+
+        .mini-stat .big{
+            font-size:24px;
+            font-weight:900;
+            margin-bottom:0;
+        }
+
+        .mini-stat .helper{
+            color:var(--muted);
+            font-size:12px;
+            line-height:1.25;
+        }
+
+        .mini-stat .mini-actions{
+            margin-top:auto;
+            display:flex;
+            gap:8px;
+            flex-wrap:wrap;
+        }
+
+        .mini-gold{background:linear-gradient(180deg, #fffdf5 0%, #ffffff 100%)}
+        .mini-green{background:linear-gradient(180deg, #f2fff6 0%, #ffffff 100%)}
+        .mini-red{background:linear-gradient(180deg, #fff7f7 0%, #ffffff 100%)}
+
+        .alerts-wrap{
+            padding:0 20px 20px;
+            display:grid;
+            gap:10px;
+        }
+
+        .alert-box{
+            border-radius:14px;
+            padding:13px 14px;
+            font-weight:700;
+            font-size:13px;
+            border:1px solid;
+        }
+
+        .alert-red{
+            background:#fff5f5;
+            border-color:#fecaca;
+            color:#991b1b;
+        }
+
+        .alert-gold{
+            background:#fffbea;
+            border-color:#fde68a;
+            color:#92400e;
+        }
+
+        .alert-green{
+            background:#f0fdf4;
+            border-color:#bbf7d0;
+            color:#166534;
+        }
+
+        .money-green{color:#15803d; font-weight:800}
+        .money-red{color:#dc2626; font-weight:800}
+        .money-navy{color:var(--navy); font-weight:800}
+
+        @media (max-width: 1200px){
+            .hero-grid{grid-template-columns:repeat(2, 1fr)}
+            .stats-grid{grid-template-columns:1fr}
+        }
+
+        @media (max-width: 980px){
+            .layout{grid-template-columns:1fr}
+            .sidebar{position:static}
+        }
+
+        @media (max-width: 640px){
+            .page{padding:14px}
+            .hero-grid{grid-template-columns:1fr}
+            .top-brand h1{font-size:24px}
+            .quick-grid{grid-template-columns:1fr 1fr}
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <div class="top-brand">
+        {% if config and config.logo_url %}
+            <img src="{{ config.logo_url }}" alt="Logo">
+        {% else %}
+            <img src="{{ url_for('static', filename='logo_hotel_sky_view.png.jpg') }}" alt="Logo">
+        {% endif %}
+        <h1>{{ empresa_nombre }}</h1>
+        <p>Módulo de venta de acciones, recaudo, financiación y control comercial del proyecto hotelero</p>
+    </div>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                {% if config and config.logo_url %}
+                    <img src="{{ config.logo_url }}" alt="Logo">
+                {% else %}
+                    <img src="{{ url_for('static', filename='logo_hotel_sky_view.png.jpg') }}" alt="Logo">
+                {% endif %}
+            </div>
+
+            <div class="badge-active">Empresa activa</div>
+            <h2>{{ empresa_nombre }}</h2>
+            <h3>Acciones</h3>
+
+            <nav class="menu">
+                <a href="/empresas">Cambiar empresa</a>
+                <a href="/nuevo" class="primary">+ Crear movimiento</a>
+                <a href="/hotel-sky-view/nueva-venta" class="primary">Registrar venta de acciones</a>
+                <a href="/hotel-sky-view/ventas">Ver ventas de acciones</a>
+                <a href="/hotel-sky-view/cartera">Cartera y alertas</a>
+                <a href="/hotel-sky-view/cierre-mensual">Cierre mensual</a>
+                <a href="/reportes">Ver reportes contables</a>
+                <a href="/movimientos">Ver movimientos</a>
+                <a href="/logout" class="danger">Cerrar sesión</a>
+            </nav>
+
+            <div class="quick-panel">
+                <h4>Reportes rápidos</h4>
+
+                <div class="quick-grid">
+                    <a href="/hotel-sky-view/cartera-pdf" class="quick-link quick-pdf">
+                        <span class="quick-icon">📄</span>
+                        <span class="quick-label">PDF cartera</span>
+                    </a>
+
+                    <a href="/hotel-sky-view/ventas-pdf" class="quick-link quick-pdf">
+                        <span class="quick-icon">📄</span>
+                        <span class="quick-label">PDF ventas</span>
+                    </a>
+
+                    <a href="/hotel-sky-view/movimientos-pdf" class="quick-link quick-pdf">
+                        <span class="quick-icon">📄</span>
+                        <span class="quick-label">PDF movimientos</span>
+                    </a>
+
+                    <a href="/hotel-sky-view/cierre-mensual" class="quick-link quick-cierre">
+                        <span class="quick-icon">📅</span>
+                        <span class="quick-label">Cierre mensual</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <main class="content">
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <a href="/empresas" class="btn btn-navy">← Volver</a>
+                </div>
+
+                <form method="GET" action="/hotel-sky-view/dashboard" class="toolbar-right">
+                    <input type="month" name="mes" value="{{ mes_actual }}" class="month-input">
+                    <button type="submit" class="btn btn-navy">Aplicar filtro</button>
+                    <a href="/hotel-sky-view/dashboard" class="btn btn-light">Limpiar</a>
+                </form>
+            </div>
+
+            <div class="hero-grid">
+                <div class="hero-card gold">
+                    <div class="label">Valor total final vendido</div>
+                    <div class="value">${{ "{:,.0f}".format(total_ventas) }}</div>
+                    <div class="hero-actions">
+                        <a href="/hotel-sky-view/ventas" class="btn btn-light">Ver detalle</a>
+                    </div>
+                </div>
+
+                <div class="hero-card green">
+                    <div class="label">Total recaudado</div>
+                    <div class="value">${{ "{:,.0f}".format(total_recaudado) }}</div>
+                    <div class="hero-actions">
+                        <a href="/hotel-sky-view/ventas" class="btn btn-light">Ver recibos</a>
+                    </div>
+                </div>
+
+                <div class="hero-card navy">
+                    <div class="label">Saldo pendiente</div>
+                    <div class="value">${{ "{:,.0f}".format(total_saldo) }}</div>
+                    <div class="hero-actions">
+                        <a href="/hotel-sky-view/cartera" class="btn btn-light">Ver detalle</a>
+                    </div>
+                </div>
+
+                <div class="hero-card red">
+                    <div class="label">Acciones vendidas</div>
+                    <div class="value">{{ total_acciones }}</div>
+                    <div class="hero-actions">
+                        <a href="/hotel-sky-view/ventas" class="btn btn-light">Ver detalle</a>
+                    </div>
+                </div>
+            </div>
+
+            <section class="section">
+                <div class="section-header">
+                    <div>
+                        <h2>Resumen financiero principal</h2>
+                        <p>Vista ejecutiva del comportamiento comercial y contable del proyecto</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="mini-stat mini-green">
+                        <div class="kicker">Ingresos</div>
+                        <div class="big">${{ "{:,.0f}".format(total_ingresos) }}</div>
+                        <div class="helper">Recaudos y registros de ingreso del periodo</div>
+                        <div class="mini-actions">
+                            <a href="/reportes?tipo=INGRESO{% if mes_actual %}&mes={{ mes_actual }}{% endif %}" class="btn btn-navy">Ver detalle</a>
+                        </div>
+                    </div>
+
+                    <div class="mini-stat mini-red">
+                        <div class="kicker">Gastos</div>
+                        <div class="big">${{ "{:,.0f}".format(total_gastos) }}</div>
+                        <div class="helper">Egresos cargados al módulo contable de la empresa</div>
+                        <div class="mini-actions">
+                            <a href="/reportes?tipo=GASTO{% if mes_actual %}&mes={{ mes_actual }}{% endif %}" class="btn btn-navy">Ver detalle</a>
+                        </div>
+                    </div>
+
+                    <div class="mini-stat mini-gold">
+                        <div class="kicker">Utilidad</div>
+                        <div class="big {% if total_utilidad >= 0 %}money-green{% else %}money-red{% endif %}">
+                            ${{ "{:,.0f}".format(total_utilidad) }}
+                        </div>
+                        <div class="helper">Resultado neto del periodo seleccionado</div>
+                        <div class="mini-actions">
+                            <a href="/reportes{% if mes_actual %}?mes={{ mes_actual }}{% endif %}" class="btn btn-navy">Ver detalle</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-header">
+                    <div>
+                        <h2>Alertas de cartera</h2>
+                        <p>Control rápido de vencimientos, compromisos cercanos y estado general de clientes</p>
+                    </div>
+                </div>
+
+                <div class="alerts-wrap">
+                    <div class="alert-box alert-red">
+                        Cuotas vencidas: {{ alertas_vencidas|length }}
+                    </div>
+
+                    <div class="alert-box alert-gold">
+                        Por vencer en 7 días: {{ alertas_por_vencer|length }}
+                    </div>
+
+                    <div class="alert-box alert-green">
+                        Clientes al día: {{ clientes_al_dia }}
+                    </div>
+
+                    <div>
+                        <a href="/hotel-sky-view/cartera" class="btn btn-navy">Ver cartera completa</a>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</div>
+</body>
+</html>

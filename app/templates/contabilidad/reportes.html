@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ empresa_nombre }} - Reportes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .reportes-page-layout {
+            max-width: 1400px;
+            margin: 0 auto 40px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 270px minmax(0, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .reportes-sidebar {
+            position: sticky;
+            top: 20px;
+        }
+
+        .reportes-sidebar-card {
+            background: linear-gradient(180deg, #ffffff 0%, #fcfcfd 100%);
+            border-radius: 22px;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.10);
+            border: 1px solid #e5e7eb;
+            padding: 20px;
+        }
+
+        .reportes-sidebar-card h3 {
+            margin: 0 0 16px 0;
+            font-size: 24px;
+            color: #111827;
+        }
+
+        .reportes-sidebar-card p {
+            margin: 0 0 18px 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .sidebar-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sidebar-actions a {
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .reportes-main {
+            min-width: 0;
+        }
+
+        .report-card-full {
+            max-width: 1200px;
+            margin: 0 auto 30px;
+        }
+
+        .report-card-header-inline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .icon-back {
+            margin-right: 8px;
+            font-weight: 800;
+        }
+
+        .empresa-badge {
+            background: #dcfce7 !important;
+            color: #166534 !important;
+            border: 1px solid #bbf7d0;
+        }
+
+        @media (max-width: 992px) {
+            .reportes-page-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .reportes-sidebar {
+                position: static;
+                order: 2;
+            }
+
+            .reportes-main {
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page-header">
+        <h1>{{ empresa_nombre }} - Reportes</h1>
+        <p>Resumen general de ingresos, gastos y utilidad del negocio</p>
+    </div>
+
+    <div class="empresa-actual-bar">
+        <div class="empresa-actual-info">
+            <span class="empresa-badge">Empresa activa</span>
+            <strong>{{ empresa_nombre }}</strong>
+        </div>
+
+        <div class="empresa-actual-actions">
+            <a href="/empresas" class="btn-secondary">Cambiar empresa</a>
+            <a href="/sedes" class="btn-secondary">Gestionar sedes</a>
+        </div>
+    </div>
+
+    <div class="reportes-page-layout">
+
+        <aside class="reportes-sidebar no-print">
+            <div class="reportes-sidebar-card">
+                <h3>Acciones</h3>
+                <p>Accesos rápidos del módulo de reportes</p>
+
+                <div class="sidebar-actions">
+                    <a href="/dashboard" class="btn-secondary"><span class="icon-back">←</span>Volver</a>
+                    <a href="/nuevo" class="btn-primary">Registrar movimiento</a>
+                    <a href="/movimientos" class="btn-secondary">Ver movimientos</a>
+                    <a href="/sedes" class="btn-secondary">Gestionar sedes</a>
+                    <a href="/empresas" class="btn-secondary">Cambiar empresa</a>
+                    <a href="/exportar_excel?mes={{ mes_seleccionado }}&tipo={{ tipo_seleccionado }}&sede_id={{ sede_actual }}" class="btn-primary">Exportar a Excel</a>
+                    <a href="/exportar_pdf?mes={{ mes_seleccionado }}&tipo={{ tipo_seleccionado }}&sede_id={{ sede_actual }}" class="btn-primary">Exportar a PDF</a>
+                </div>
+            </div>
+        </aside>
+
+        <main class="reportes-main">
+
+            <div class="report-toolbar no-print">
+                <form method="GET" action="/reportes" class="filters-form">
+                    <div class="filters">
+                        <input type="month" name="mes" value="{{ mes_seleccionado }}">
+
+                        <select name="tipo">
+                            <option value="" {% if tipo_seleccionado == "" %}selected{% endif %}>Todos</option>
+                            <option value="INGRESO" {% if tipo_seleccionado == "INGRESO" %}selected{% endif %}>Ingresos</option>
+                            <option value="GASTO" {% if tipo_seleccionado == "GASTO" %}selected{% endif %}>Gastos</option>
+                        </select>
+
+                        {% if sedes %}
+                        <select name="sede_id">
+                            <option value="">Todas las sedes</option>
+                            {% for sede in sedes %}
+                            <option value="{{ sede.id }}" {% if sede_actual == sede.id|string %}selected{% endif %}>{{ sede.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+
+                        <button type="submit" class="btn-primary">Aplicar filtros</button>
+                        <a href="/reportes" class="btn-secondary">Limpiar</a>
+                    </div>
+                </form>
+
+                <div class="print-actions">
+                    <button type="button" class="btn-secondary" onclick="imprimirResumen()">Imprimir resumen</button>
+                    <button type="button" class="btn-secondary" onclick="window.print()">Imprimir reporte completo</button>
+                </div>
+            </div>
+
+            <div id="zona-resumen">
+                <div class="report-summary">
+                    <div class="card ingreso">
+                        <h2>Total Ingresos</h2>
+                        <p>${{ "{:,.0f}".format(ingresos) }}</p>
+                    </div>
+
+                    <div class="card gasto">
+                        <h2>Total Gastos</h2>
+                        <p>${{ "{:,.0f}".format(gastos) }}</p>
+                    </div>
+
+                    <div class="card utilidad {{ 'utilidad-positiva' if utilidad >= 0 else 'utilidad-negativa' }}">
+                        <h2>{{ 'Ganancia' if utilidad >= 0 else 'Pérdida' }}</h2>
+                        <p>${{ "{:,.0f}".format(utilidad) }}</p>
+                    </div>
+                </div>
+
+                <div class="report-grid">
+                    <div class="report-card">
+                        <h2>Categorías de ingresos</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for categoria, total in categorias_ingresos %}
+                                <tr>
+                                    <td>{{ categoria }}</td>
+                                    <td class="ingreso-text">${{ "{:,.0f}".format(total) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="report-card">
+                        <h2>Categorías de gastos</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for categoria, total in categorias_gastos %}
+                                <tr>
+                                    <td>{{ categoria }}</td>
+                                    <td class="gasto-text">${{ "{:,.0f}".format(total) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="report-card report-card-full">
+                    <h2>Detalle por cuenta / medio</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cuenta / Medio</th>
+                                <th>Total ingresos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cuenta, total in cuentas_resumen %}
+                            <tr>
+                                <td>{{ cuenta }}</td>
+                                <td class="ingreso-text">${{ "{:,.0f}".format(total) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% if comparativo_sedes %}
+                <div class="report-card report-card-full">
+                    <div class="report-card-header-inline">
+                        <h2 style="margin:0;">Comparativo por sedes</h2>
+                        <div class="print-actions no-print">
+                            <a href="/exportar_excel_sedes?mes={{ mes_seleccionado }}" class="btn-primary">Excel sedes</a>
+                            <a href="/exportar_pdf_sedes?mes={{ mes_seleccionado }}" class="btn-secondary">PDF sedes</a>
+                        </div>
+                    </div>
+
+                    <table style="margin-top:18px;">
+                        <thead>
+                            <tr>
+                                <th>Sede</th>
+                                <th>Ingresos</th>
+                                <th>Gastos</th>
+                                <th>Utilidad / Pérdida</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in comparativo_sedes %}
+                            <tr>
+                                <td>{{ item.sede }}</td>
+                                <td class="ingreso-text">${{ "{:,.0f}".format(item.ingresos) }}</td>
+                                <td class="gasto-text">${{ "{:,.0f}".format(item.gastos) }}</td>
+                                <td class="{{ 'ingreso-text' if item.utilidad >= 0 else 'gasto-text' }}">
+                                    ${{ "{:,.0f}".format(item.utilidad) }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="report-card report-card-full">
+                    <h2>Gráfica comparativa por sedes</h2>
+                    <canvas id="graficaSedes"></canvas>
+                </div>
+                {% endif %}
+
+                <div class="report-grid">
+                    <div class="report-card">
+                        <h2>Gráfica Ingresos vs Gastos</h2>
+                        <canvas id="graficaGeneral"></canvas>
+                    </div>
+
+                    <div class="report-card">
+                        <h2>Distribución de Gastos</h2>
+                        <canvas id="graficaGastos"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="report-card report-card-full" style="margin-bottom: 40px;">
+                <h2>Detalle de movimientos</h2>
+
+                <div class="filters no-print">
+                    <input type="text" id="busquedaReporte" placeholder="Buscar..." onkeyup="filtrarReporte()">
+
+                    <select id="filtroTipoReporte" onchange="filtrarReporte()">
+                        <option value="">Todos</option>
+                        <option value="INGRESO">Ingresos</option>
+                        <option value="GASTO">Gastos</option>
+                    </select>
+                </div>
+
+                <table id="tablaReporte">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Sede</th>
+                            <th>Categoría</th>
+                            <th>Cuenta / Medio</th>
+                            <th>Tercero</th>
+                            <th>Valor</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in movimientos %}
+                        <tr>
+                            <td>{{ m.fecha }}</td>
+                            <td class="{{ 'ingreso-text' if m.tipo == 'INGRESO' else 'gasto-text' }}">
+                                {{ m.tipo }}
+                            </td>
+                            <td>{{ m.sede.nombre if m.sede else "General" }}</td>
+                            <td>{{ m.categoria }}</td>
+                            <td>{{ m.cuenta if m.cuenta else "" }}</td>
+                            <td>{{ m.tercero if m.tercero else "" }}</td>
+                            <td>${{ "{:,.0f}".format(m.valor) }}</td>
+                            <td>{{ m.descripcion }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        function filtrarReporte() {
+            const texto = document.getElementById("busquedaReporte").value.toLowerCase();
+            const tipo = document.getElementById("filtroTipoReporte").value;
+            const filas = document.querySelectorAll("#tablaReporte tbody tr");
+
+            filas.forEach(fila => {
+                const contenido = fila.innerText.toLowerCase();
+                const tipoFila = fila.children[1].innerText.trim();
+
+                const coincideTexto = contenido.includes(texto);
+                const coincideTipo = tipo === "" || tipoFila === tipo;
+
+                fila.style.display = (coincideTexto && coincideTipo) ? "" : "none";
+            });
+        }
+
+        function imprimirResumen() {
+            const contenido = document.getElementById("zona-resumen").innerHTML;
+            const ventana = window.open("", "_blank", "width=1000,height=700");
+            ventana.document.write(`
+                <html>
+                <head>
+                    <title>Resumen financiero</title>
+                    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+                </head>
+                <body>
+                    <div class="page-header">
+                        <h1>Resumen Financiero</h1>
+                    </div>
+                    ${contenido}
+                </body>
+                </html>
+            `);
+            ventana.document.close();
+            ventana.focus();
+            ventana.print();
+        }
+
+        const ctx1 = document.getElementById('graficaGeneral');
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: ['Ingresos', 'Gastos'],
+                datasets: [{
+                    label: 'Valores',
+                    data: [{{ ingresos }}, {{ gastos }}]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        const ctx2 = document.getElementById('graficaGastos');
+        new Chart(ctx2, {
+            type: 'pie',
+            data: {
+                labels: {{ labels_gastos | tojson }},
+                datasets: [{
+                    data: {{ valores_gastos | tojson }}
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+
+        {% if comparativo_sedes %}
+        const ctx3 = document.getElementById('graficaSedes');
+        new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: {{ labels_sedes | tojson }},
+                datasets: [
+                    {
+                        label: 'Ingresos',
+                        data: {{ ingresos_sedes | tojson }}
+                    },
+                    {
+                        label: 'Gastos',
+                        data: {{ gastos_sedes | tojson }}
+                    },
+                    {
+                        label: 'Utilidad',
+                        data: {{ utilidad_sedes | tojson }}
+                    }
+                ]
+            },
+            options: {
+                responsive: true
+            }
+        });
+        {% endif %}
+    </script>
+
+</body>
+</html>

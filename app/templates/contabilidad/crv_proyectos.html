@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRV CONSTRUCTORA - Proyectos y obras</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;color:#17283f}
+body.modal-open{overflow:hidden}
+.page{min-height:100vh;padding:28px}
+.shell{max-width:1500px;margin:0 auto}
+.header{text-align:center;margin-bottom:20px}
+.header img{width:90px;max-height:76px;object-fit:contain}
+.header h1{margin:5px 0 0;color:#17304f;font-size:29px;font-weight:900}
+.header p{margin:7px 0 0;color:#6d7f93;font-size:12px}
+.topbar,.card{background:#fff;border-radius:16px;box-shadow:0 10px 27px rgba(18,40,64,.07)}
+.topbar{padding:14px 16px;margin-bottom:17px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.left,.right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{padding:7px 10px;border-radius:999px;background:#e8f7ee;color:#168446;font-size:11px;font-weight:900}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:9px 13px;border:0;border-radius:9px;text-decoration:none;cursor:pointer;font-size:11px;font-weight:900}
+.black{background:#111;color:#fff}.navy{background:#17304f;color:#fff}.gold{background:#d8b541;color:#fff}.light{background:#edf2f7;color:#17304f}.green{background:#149653;color:#fff}.red{background:#ef2b2d;color:#fff}
+.summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px;margin-bottom:17px}
+.sum{background:#fff;border-radius:15px;padding:16px;border-top:4px solid #17304f;box-shadow:0 8px 24px rgba(18,40,64,.06)}
+.sum.goldline{border-top-color:#d8b541}.sum.greenline{border-top-color:#16a05b}.sum.redline{border-top-color:#ef2b2d}
+.sum span{display:block;color:#63758a;font-size:9px;font-weight:900}.sum strong{display:block;margin-top:6px;color:#17304f;font-size:20px}.sum small{display:block;margin-top:5px;color:#8493a3;font-size:8.5px}
+.card{margin-bottom:17px;overflow:hidden}
+.card-head{padding:17px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid #e6ebf0}
+.card-head h2{margin:0;color:#17304f;font-size:19px}.card-head p{margin:4px 0 0;color:#738397;font-size:10px}
+.filters{padding:13px 18px;display:grid;grid-template-columns:minmax(250px,1fr) 190px auto auto;gap:9px;align-items:end;border-bottom:1px solid #e6ebf0;background:#fbfcfd}
+.field{display:flex;flex-direction:column;gap:5px}.field label{color:#586d82;font-size:9px;font-weight:900}
+input,select,textarea{width:100%;padding:10px 11px;border:1px solid #d4dde7;border-radius:8px;background:#fff;color:#17283f;font-family:inherit;font-size:11px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#d8b541;box-shadow:0 0 0 3px rgba(216,181,65,.12)}
+.table-wrap{overflow-x:auto;padding:0 14px 16px}table{width:100%;border-collapse:collapse;min-width:1280px}
+th{background:#17304f;color:#fff;text-align:left;padding:11px 8px;font-size:9.5px}td{padding:11px 8px;border-bottom:1px solid #e7ecf1;font-size:10px;vertical-align:middle}
+.proj-name{font-weight:900;color:#17304f}.muted{color:#7d8c9c;font-size:8.5px;margin-top:3px}.money{white-space:nowrap;font-weight:900}
+.status{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:8px;font-weight:900;background:#e4f8eb;color:#138246}.status.archivado{background:#edf1f5;color:#56697d}.status.finalizado{background:#e7edff;color:#3452a4}
+.progress{width:110px;height:7px;border-radius:99px;background:#edf1f5;overflow:hidden}.progress>span{display:block;height:100%;background:#d8b541;border-radius:99px}.actions{display:flex;gap:5px;white-space:nowrap}
+.empty{text-align:center;padding:45px 20px;color:#78899c}.empty strong{display:block;color:#17304f;font-size:15px;margin-bottom:6px}
+.overlay{position:fixed;inset:0;z-index:9998;background:rgba(13,29,48,.52);backdrop-filter:blur(3px);opacity:0;visibility:hidden;transition:.18s}.overlay.active{opacity:1;visibility:visible}
+.modal{position:fixed;inset:0;z-index:9999;padding:20px;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;pointer-events:none;transform:scale(.98);transition:.18s}.modal.active{opacity:1;visibility:visible;pointer-events:auto;transform:scale(1)}
+.modal-box{width:100%;max-width:980px;max-height:92vh;display:flex;flex-direction:column;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(10,28,48,.30)}
+.modal-head{padding:17px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e6ebf0}.modal-head h2{margin:0;color:#17304f;font-size:18px}.modal-head p{margin:4px 0 0;color:#7b8b9d;font-size:10px}
+.close{width:36px;height:36px;border:0;border-radius:9px;background:#edf2f7;color:#17304f;font-size:19px;cursor:pointer}
+.modal-body{padding:19px 21px 22px;overflow-y:auto;background:#fbfcfd}
+.form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px 14px}.span2{grid-column:span 2}.span3{grid-column:span 3}.field textarea{min-height:78px;resize:vertical}.modal-actions{display:flex;justify-content:flex-end;gap:8px;padding-top:16px;margin-top:18px;border-top:1px solid #e5eaf0}
+@media(max-width:1150px){.summary{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.page{padding:12px}.summary,.filters,.form-grid{grid-template-columns:1fr}.span2,.span3{grid-column:auto}}
+
+        /* =====================================================
+           MENÚ LATERAL PERMANENTE CRV
+        ===================================================== */
+        .pr-layout {
+            max-width: 1760px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 245px minmax(0, 1fr);
+            gap: 20px;
+            align-items: start;
+        }
+
+        .pr-sidebar {
+            position: sticky;
+            top: 18px;
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 12px 30px rgba(18,40,64,.08);
+        }
+
+        .pr-side-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 10px;
+            margin-bottom: 10px;
+            border-radius: 999px;
+            background: #e8f7ee;
+            color: #168446;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .pr-side-badge::before {
+            content: "●";
+            font-size: 8px;
+        }
+
+        .pr-side-company {
+            color: #17304f;
+            font-size: 18px;
+            line-height: 1.2;
+            font-weight: 900;
+        }
+
+        .pr-side-subtitle {
+            margin: 3px 0 15px;
+            color: #cda52b;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .pr-side-menu {
+            display: grid;
+            gap: 7px;
+        }
+
+        .pr-side-menu a {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            min-height: 40px;
+            padding: 8px 10px;
+            border-radius: 9px;
+            background: #eef3f8;
+            color: #17304f;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 800;
+            transition: .15s ease;
+        }
+
+        .pr-side-menu a:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 14px rgba(18,40,64,.08);
+        }
+
+        .pr-side-icon {
+            width: 25px;
+            height: 25px;
+            min-width: 25px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 7px;
+            background: rgba(23,48,79,.08);
+            font-size: 13px;
+        }
+
+        .pr-side-menu a.active {
+            background: #17304f;
+            color: #ffffff;
+        }
+
+        .pr-side-menu a.gold {
+            background: #d8b541;
+            color: #ffffff;
+        }
+
+        .pr-side-menu a.danger {
+            justify-content: center;
+            margin-top: 5px;
+            background: #ef2b2d;
+            color: #ffffff;
+        }
+
+        .pr-side-menu a.active .pr-side-icon,
+        .pr-side-menu a.gold .pr-side-icon,
+        .pr-side-menu a.danger .pr-side-icon {
+            background: rgba(255,255,255,.16);
+        }
+
+        .pr-main {
+            min-width: 0;
+        }
+
+        @media (max-width: 1050px) {
+            .pr-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .pr-sidebar {
+                position: static;
+            }
+
+            .pr-side-menu {
+                grid-template-columns: repeat(3,minmax(0,1fr));
+            }
+        }
+
+        @media (max-width: 720px) {
+            .pr-side-menu {
+                grid-template-columns: 1fr;
+            }
+        }
+
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="pr-layout">
+
+    <aside class="pr-sidebar">
+
+        <div class="pr-side-badge">
+            Empresa activa
+        </div>
+
+        <div class="pr-side-company">
+            CRV<br>CONSTRUCTORA
+        </div>
+
+        <div class="pr-side-subtitle">
+            Módulo Contable
+        </div>
+
+        <nav class="pr-side-menu">
+
+            <a href="/empresas">
+                <span class="pr-side-icon">🏢</span>
+                <span>Cambiar empresa</span>
+            </a>
+
+            <a href="/crv/movimientos/nuevo" class="gold">
+                <span class="pr-side-icon">＋</span>
+                <span>Registrar movimiento</span>
+            </a>
+
+            <a href="/crv/movimientos">
+                <span class="pr-side-icon">📋</span>
+                <span>Movimientos</span>
+            </a>
+
+            <a href="/crv/terceros">
+                <span class="pr-side-icon">👤</span>
+                <span>Terceros</span>
+            </a>
+
+            <a href="/crv/terceros?buscar=">
+                <span class="pr-side-icon">👥</span>
+                <span>Proveedores / Clientes</span>
+            </a>
+
+            <a href="/crv/cuentas-por-pagar">
+                <span class="pr-side-icon">🧾</span>
+                <span>Cuentas por pagar</span>
+            </a>
+
+            <a href="/crv/cuentas-por-cobrar">
+                <span class="pr-side-icon">💰</span>
+                <span>Cuentas por cobrar</span>
+            </a>
+
+            <a href="/crv/bancos-caja">
+                <span class="pr-side-icon">🏦</span>
+                <span>Bancos y caja</span>
+            </a>
+
+            <a href="/crv/proyectos" class="active">
+                <span class="pr-side-icon">🏗️</span>
+                <span>Proyectos / obras</span>
+            </a>
+
+            <a href="/crv/reportes-contador">
+                <span class="pr-side-icon">📊</span>
+                <span>Reportes contador</span>
+            </a>
+
+            <a href="#">
+                <span class="pr-side-icon">📅</span>
+                <span>Cierre mensual</span>
+            </a>
+
+            <a href="/crv/exportaciones">
+                <span class="pr-side-icon">⬇️</span>
+                <span>Importar / Exportar</span>
+            </a>
+
+            <a href="/logout" class="danger">
+                <span class="pr-side-icon">⏻</span>
+                <span>Cerrar sesión</span>
+            </a>
+
+        </nav>
+
+    </aside>
+
+    <main class="pr-main">
+
+<div class="shell">
+
+<header class="header">
+<img src="{{ url_for('static', filename='logo_crv.png') }}" alt="CRV">
+<h1>CRV CONSTRUCTORA - Proyectos y obras</h1>
+<p>Control financiero por proyecto, presupuesto, costos, cartera y resultado</p>
+</header>
+
+<section class="topbar">
+<div class="left">
+<a href="/crv/dashboard" class="btn black">← Volver</a>
+<span class="badge">● Empresa activa</span>
+<strong>{{ empresa_nombre }}</strong>
+</div>
+<div class="right">
+<a href="/crv/proyectos/pdf" class="btn light">📄 Exportar PDF</a>
+<a href="/crv/proyectos/excel" class="btn green">📊 Exportar Excel</a>
+<button type="button" class="btn gold" onclick="abrirProyecto()">＋ Nuevo proyecto</button>
+</div>
+</section>
+
+<section class="summary">
+<div class="sum"><span>PROYECTOS CONSULTADOS</span><strong>{{ total_proyectos }}</strong><small>Proyectos y obras en consulta</small></div>
+<div class="sum goldline"><span>PRESUPUESTO</span><strong>${{ "{:,.0f}".format(total_presupuesto or 0) }}</strong><small>Presupuesto acumulado</small></div>
+<div class="sum greenline"><span>INGRESOS</span><strong>${{ "{:,.0f}".format(total_ingresos or 0) }}</strong><small>Ingresos reconocidos por proyecto</small></div>
+<div class="sum redline"><span>COSTOS</span><strong>${{ "{:,.0f}".format(total_costos or 0) }}</strong><small>Compras + gastos</small></div>
+<div class="sum"><span>RESULTADO</span><strong>${{ "{:,.0f}".format(total_resultado or 0) }}</strong><small>Ingresos menos costos</small></div>
+</section>
+
+<section class="card">
+<div class="card-head">
+<div><h2>🏗️ Directorio de proyectos y obras</h2><p>Consulta costos, presupuesto, cartera y resultado de cada proyecto</p></div>
+<button type="button" class="btn gold" onclick="abrirProyecto()">＋ Registrar proyecto</button>
+</div>
+
+<form method="GET" action="/crv/proyectos" class="filters">
+<div class="field"><label>Buscar</label><input type="text" name="buscar" value="{{ buscar_actual or '' }}" placeholder="Código, proyecto, cliente, ubicación o responsable..."></div>
+<div class="field"><label>Estado</label><select name="estado">
+<option value="">Todos</option>
+{% for estado in ['ACTIVO','EN EJECUCION','PAUSADO','FINALIZADO','ARCHIVADO'] %}
+<option value="{{ estado }}" {% if estado_actual == estado %}selected{% endif %}>{{ estado }}</option>
+{% endfor %}
+</select></div>
+<button type="submit" class="btn navy">Filtrar</button>
+<a href="/crv/proyectos" class="btn light">Limpiar</a>
+</form>
+
+{% if filas %}
+<div class="table-wrap">
+<table>
+<thead><tr>
+<th>Código / Proyecto</th><th>Cliente</th><th>Estado</th><th>Presupuesto</th><th>Ingresos</th><th>Costos</th><th>Resultado</th><th>CxP pendiente</th><th>CxC pendiente</th><th>Presupuesto usado</th><th>Acciones</th>
+</tr></thead>
+<tbody>
+{% for fila in filas %}
+{% set p = fila.proyecto %}
+{% set r = fila.resumen %}
+<tr>
+<td><div class="proj-name">{{ p.nombre }}</div><div class="muted">{{ p.codigo }}{% if p.ubicacion %} · {{ p.ubicacion }}{% endif %}</div></td>
+<td>{{ p.cliente.razon_social if p.cliente else '-' }}</td>
+<td><span class="status {% if not p.activo %}archivado{% elif p.estado == 'FINALIZADO' %}finalizado{% endif %}">{{ p.estado }}</span></td>
+<td class="money">${{ "{:,.0f}".format(p.presupuesto or 0) }}</td>
+<td class="money">${{ "{:,.0f}".format(r.ingresos or 0) }}</td>
+<td class="money">${{ "{:,.0f}".format(r.costos or 0) }}</td>
+<td class="money">${{ "{:,.0f}".format(r.resultado or 0) }}</td>
+<td class="money">${{ "{:,.0f}".format(r.cxp_pendiente or 0) }}</td>
+<td class="money">${{ "{:,.0f}".format(r.cxc_pendiente or 0) }}</td>
+<td>
+<div class="progress"><span style="width: {{ [r.porcentaje_presupuesto, 100]|min }}%;"></span></div>
+<div class="muted">{{ "{:.1f}".format(r.porcentaje_presupuesto or 0) }}%</div>
+</td>
+<td><div class="actions"><a href="/crv/proyectos/{{ p.id }}" class="btn navy">Ver detalle</a></div></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% else %}
+<div class="empty"><strong>No hay proyectos registrados</strong>Registra el primer proyecto para comenzar el control por obra.<br><br><button type="button" class="btn gold" onclick="abrirProyecto()">＋ Registrar primer proyecto</button></div>
+{% endif %}
+</section>
+
+</div>
+</main>
+</div>
+</div>
+
+<div id="overlayProyecto" class="overlay" onclick="cerrarProyecto()"></div>
+<div id="modalProyecto" class="modal">
+<div class="modal-box">
+<div class="modal-head"><div><h2>Registrar proyecto / obra</h2><p>Datos administrativos y financieros principales</p></div><button type="button" class="close" onclick="cerrarProyecto()">×</button></div>
+<div class="modal-body">
+<form method="POST" action="/crv/proyectos">
+<div class="form-grid">
+<div class="field"><label>Código *</label><input type="text" name="codigo" required placeholder="Ej: EDEN-01"></div>
+<div class="field span2"><label>Nombre del proyecto *</label><input type="text" name="nombre" required placeholder="Ej: EDEN LUXURY"></div>
+<div class="field"><label>Tipo</label><select name="tipo"><option value="CONSTRUCCION">Construcción</option><option value="URBANISMO">Urbanismo</option><option value="VIVIENDA">Vivienda</option><option value="HOTELERO">Hotelero</option><option value="INFRAESTRUCTURA">Infraestructura</option><option value="OTRO">Otro</option></select></div>
+<div class="field"><label>Estado</label><select name="estado"><option value="ACTIVO">Activo</option><option value="EN EJECUCION">En ejecución</option><option value="PAUSADO">Pausado</option><option value="FINALIZADO">Finalizado</option></select></div>
+<div class="field"><label>Cliente</label><select name="cliente_id"><option value="">Sin cliente específico</option>{% for c in clientes %}<option value="{{ c.id }}">{{ c.razon_social }} · {{ c.identificacion }}</option>{% endfor %}</select></div>
+<div class="field span2"><label>Ubicación</label><input type="text" name="ubicacion" placeholder="Municipio, departamento o dirección"></div>
+<div class="field"><label>Responsable</label><input type="text" name="responsable" placeholder="Director / residente / responsable"></div>
+<div class="field"><label>Fecha inicio</label><input type="date" name="fecha_inicio"></div>
+<div class="field"><label>Fecha fin estimada</label><input type="date" name="fecha_fin_estimada"></div>
+<div class="field"><label>Centro de costo</label><input type="text" name="centro_costo" placeholder="Centro de costo principal"></div>
+<div class="field"><label>Presupuesto</label><input type="number" name="presupuesto" min="0" step="0.01" value="0"></div>
+<div class="field"><label>Valor contrato</label><input type="number" name="valor_contrato" min="0" step="0.01" value="0"></div>
+<div class="field span3"><label>Descripción</label><textarea name="descripcion" placeholder="Alcance general del proyecto..."></textarea></div>
+<div class="field span3"><label>Observaciones</label><textarea name="observaciones" placeholder="Información adicional..."></textarea></div>
+</div>
+<div class="modal-actions"><button type="button" class="btn light" onclick="cerrarProyecto()">Cancelar</button><button type="submit" class="btn gold">Guardar proyecto</button></div>
+</form>
+</div>
+</div>
+</div>
+
+<script>
+function abrirProyecto(){document.getElementById("overlayProyecto").classList.add("active");document.getElementById("modalProyecto").classList.add("active");document.body.classList.add("modal-open")}
+function cerrarProyecto(){document.getElementById("overlayProyecto").classList.remove("active");document.getElementById("modalProyecto").classList.remove("active");document.body.classList.remove("modal-open")}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")cerrarProyecto()});
+document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll(".modal-box").forEach(x=>x.addEventListener("click",e=>e.stopPropagation()))});
+</script>
+</body>
+</html>

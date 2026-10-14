@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ empresa_nombre }} - Ventas de acciones</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        :root{
+            --hotel-primary: {{ config.color_primario if config and config.color_primario else '#0f3d26' }};
+            --hotel-secondary: {{ config.color_secundario if config and config.color_secundario else '#d4af37' }};
+            --hotel-dark: #163355;
+            --hotel-danger: #ef4444;
+            --hotel-success: #16a34a;
+            --hotel-warning-bg: #f5e7b0;
+            --hotel-warning-text: #9a6700;
+            --hotel-border: #dbe3ea;
+            --hotel-soft: #f8fafc;
+        }
+
+        .hotel-page{
+            max-width: 1420px;
+            margin: 0 auto;
+            padding: 18px 16px 40px;
+        }
+
+        .hotel-header{
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .hotel-header h1{
+            margin: 0;
+            font-size: 38px;
+            font-weight: 900;
+            color: var(--hotel-primary);
+            line-height: 1.05;
+        }
+
+        .hotel-header p{
+            margin: 8px 0 0;
+            color: #64748b;
+            font-size: 15px;
+        }
+
+        .hotel-toolbar,
+        .hotel-card{
+            background: #fff;
+            border: 1px solid #e7edf3;
+            border-radius: 24px;
+            box-shadow: 0 14px 32px rgba(15, 23, 42, .06);
+        }
+
+        .hotel-toolbar{
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+
+        .hotel-toolbar-row{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .hotel-toolbar-left,
+        .hotel-toolbar-right{
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .hotel-toolbar input[type="month"]{
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid #cfd8e3;
+            min-width: 180px;
+            font-size: 14px;
+        }
+
+        .hotel-card-head{
+            padding: 20px 20px 12px;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .hotel-card-head h2{
+            margin: 0;
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--hotel-primary);
+        }
+
+        .hotel-card-head p{
+            margin: 6px 0 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .hotel-card-body{
+            padding: 16px;
+        }
+
+        .hotel-table-wrap{
+            overflow-x: auto;
+        }
+
+        .hotel-table{
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 1200px;
+        }
+
+        .hotel-table thead th{
+            background: #183153;
+            color: #fff;
+            padding: 14px 12px;
+            text-align: left;
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+        .hotel-table thead th:first-child{
+            border-top-left-radius: 14px;
+        }
+
+        .hotel-table thead th:last-child{
+            border-top-right-radius: 14px;
+        }
+
+        .hotel-table tbody td{
+            padding: 16px 12px;
+            border-bottom: 1px solid #ebf0f5;
+            vertical-align: top;
+            font-size: 14px;
+        }
+
+        .hotel-cliente{
+            font-weight: 900;
+            color: #0f172a;
+            line-height: 1.15;
+        }
+
+        .hotel-cliente-doc{
+            margin-top: 6px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .hotel-money-green{
+            color: #16a34a;
+            font-weight: 900;
+        }
+
+        .hotel-money-red{
+            color: #ef4444;
+            font-weight: 900;
+        }
+
+        .hotel-cuotas-box small{
+            display: block;
+            margin-top: 4px;
+            color: #111827;
+            font-size: 12px;
+        }
+
+        .hotel-estado{
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .estado-financiada,
+        .estado-abonada{
+            background: var(--hotel-warning-bg);
+            color: var(--hotel-warning-text);
+        }
+
+        .estado-pagada{
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .estado-pendiente{
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .hotel-action-stack{
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 190px;
+        }
+
+        .hotel-main-action{
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .hotel-main-action .btn-primary{
+            flex: 1;
+            justify-content: center;
+        }
+
+        .hotel-options{
+            position: relative;
+        }
+
+        .hotel-options-toggle{
+            width: 100%;
+        }
+
+        .hotel-options-menu{
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            width: 240px;
+            background: #ffffff;
+            border: 1px solid #dbe3ea;
+            border-radius: 16px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, .16);
+            padding: 10px;
+            z-index: 50;
+        }
+
+        .hotel-options-menu.show{
+            display: block;
+        }
+
+        .hotel-options-grid{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .hotel-options-grid a,
+        .hotel-options-grid button{
+            width: 100%;
+            text-align: center;
+        }
+
+        .hotel-empty{
+            padding: 26px;
+            text-align: center;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        @media (max-width: 900px){
+            .hotel-header h1{
+                font-size: 30px;
+            }
+
+            .hotel-toolbar-row{
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .hotel-toolbar-left,
+            .hotel-toolbar-right{
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="hotel-page">
+
+    <div class="hotel-header">
+        <h1>{{ empresa_nombre }} - Ventas de acciones</h1>
+        <p>Control comercial, edición, recaudo y seguimiento de cada venta</p>
+    </div>
+
+    <div class="hotel-toolbar">
+        <div class="hotel-toolbar-row">
+            <div class="hotel-toolbar-left">
+                <a href="/hotel-sky-view/dashboard" class="btn-secondary">← Volver</a>
+
+                <form method="GET" action="/hotel-sky-view/ventas" style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <input type="month" name="mes" value="{{ mes_actual }}">
+                    <button type="submit" class="btn-primary">Filtrar</button>
+                    <a href="/hotel-sky-view/ventas" class="btn-secondary">Limpiar</a>
+                </form>
+            </div>
+
+            <div class="hotel-toolbar-right">
+                <a href="/hotel-sky-view/ventas-pdf" class="btn btn-gold">
+    📄 PDF
+</a>
+                <a href="/hotel-sky-view/nueva-venta" class="btn-primary">+ Nueva venta</a>
+                <a href="/hotel-sky-view/cartera" class="btn-secondary">Cartera</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="hotel-card">
+        <div class="hotel-card-head">
+            <h2>Listado de ventas</h2>
+            <p>Edita, elimina o registra pagos directamente desde aquí</p>
+        </div>
+
+        <div class="hotel-card-body">
+            {% if ventas %}
+            <div class="hotel-table-wrap">
+                <table class="hotel-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Venta</th>
+                            <th>Cliente</th>
+                            <th>Acciones</th>
+                            <th>Valor lista</th>
+                            <th>Descuento</th>
+                            <th>Valor final</th>
+                            <th>Inicial</th>
+                            <th>Saldo</th>
+                            <th>Cuotas</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for venta in ventas %}
+                        <tr>
+                            <td>{{ venta.fecha.strftime('%Y-%m-%d') if venta.fecha else '' }}</td>
+                            <td>#{{ venta.consecutivo_venta }}</td>
+
+                            <td>
+                                <div class="hotel-cliente">{{ venta.cliente }}</div>
+                                <div class="hotel-cliente-doc">{{ venta.cliente_identificacion if venta.cliente_identificacion else '' }}</div>
+                            </td>
+
+                            <td>{{ venta.cantidad_acciones }}</td>
+                            <td>${{ "{:,.0f}".format(venta.valor_total_lista or 0) }}</td>
+                            <td>${{ "{:,.0f}".format(venta.descuento or 0) }}</td>
+                            <td>${{ "{:,.0f}".format(venta.valor_total_final or 0) }}</td>
+                            <td class="hotel-money-green">${{ "{:,.0f}".format(venta.valor_inicial or 0) }}</td>
+                            <td class="hotel-money-red">${{ "{:,.0f}".format(venta.saldo_pendiente or 0) }}</td>
+
+                            <td>
+                                <div class="hotel-cuotas-box">
+                                    {{ venta.numero_cuotas if venta.financiado else "No" }}
+                                    {% if venta.financiado and venta.valor_cuota %}
+                                        <small>${{ "{:,.0f}".format(venta.valor_cuota or 0) }}</small>
+                                    {% endif %}
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="hotel-estado
+                                    {% if venta.estado == 'PAGADA' %}estado-pagada
+                                    {% elif venta.estado == 'FINANCIADA' %}estado-financiada
+                                    {% elif venta.estado == 'ABONADA' %}estado-abonada
+                                    {% else %}estado-pendiente{% endif %}">
+                                    {{ venta.estado }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="hotel-action-stack">
+                                    <div class="hotel-main-action">
+                                        <a href="/hotel-sky-view/abonar/{{ venta.id }}" class="btn-primary">Abonar</a>
+                                    </div>
+
+                                    <div class="hotel-options">
+                                        <button type="button" class="btn-secondary hotel-options-toggle" onclick="toggleOptions(event, 'menu-{{ venta.id }}')">
+                                            + Opciones
+                                        </button>
+
+                                        <div id="menu-{{ venta.id }}" class="hotel-options-menu">
+                                            <div class="hotel-options-grid">
+                                                <a href="/hotel-sky-view/editar-venta/{{ venta.id }}" class="btn-secondary">Editar</a>
+                                                <a href="/hotel-sky-view/pagos/{{ venta.id }}" class="btn-secondary">Recibos</a>
+
+                                                <form method="POST" action="/hotel-sky-view/eliminar-venta/{{ venta.id }}"
+                                                      onsubmit="return confirm('¿Seguro que deseas eliminar esta venta?');">
+                                                    <button type="submit" class="btn-danger">Eliminar venta</button>
+                                                </form>
+
+                                                <a href="/hotel-sky-view/pagos/{{ venta.id }}" class="btn-primary">Gestionar pagos</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <div class="hotel-empty">No hay ventas registradas todavía.</div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function toggleOptions(event, menuId) {
+        event.stopPropagation();
+
+        document.querySelectorAll(".hotel-options-menu").forEach(menu => {
+            if (menu.id !== menuId) {
+                menu.classList.remove("show");
+            }
+        });
+
+        const menu = document.getElementById(menuId);
+        if (menu) {
+            menu.classList.toggle("show");
+        }
+    }
+
+    document.addEventListener("click", function () {
+        document.querySelectorAll(".hotel-options-menu").forEach(menu => {
+            menu.classList.remove("show");
+        });
+    });
+</script>
+
+</body>
+</html>

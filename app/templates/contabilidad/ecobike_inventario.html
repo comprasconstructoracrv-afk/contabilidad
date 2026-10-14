@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ empresa_nombre }} - Inventario ECOBIKE</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .eco-page {
+            max-width: 1450px;
+            margin: 0 auto 40px;
+            padding: 0 20px;
+        }
+
+        .eco-grid {
+            display: grid;
+            grid-template-columns: 280px minmax(0, 1fr);
+            gap: 22px;
+            align-items: start;
+        }
+
+        .eco-sidebar,
+        .eco-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            padding: 18px;
+        }
+
+        .eco-sidebar {
+            position: sticky;
+            top: 18px;
+        }
+
+        .eco-sidebar h3,
+        .eco-card h2 {
+            margin: 0 0 12px;
+            color: #0f2744;
+            font-size: 20px;
+        }
+
+        .eco-sidebar p,
+        .eco-card p {
+            color: #64748b;
+            font-size: 13px;
+            margin: 0 0 14px;
+        }
+
+        .side-actions {
+            display: grid;
+            gap: 10px;
+        }
+
+        .side-actions a {
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .summary-box {
+            background: #fff;
+            border: 1px solid #d9e2ec;
+            border-radius: 18px;
+            padding: 16px;
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+            border-top: 4px solid #d8b541;
+        }
+
+        .summary-box.green {
+            border-top-color: #16a34a;
+        }
+
+        .summary-box.red {
+            border-top-color: #ef4444;
+        }
+
+        .summary-box h4 {
+            margin: 0 0 8px;
+            font-size: 14px;
+            color: #0f2744;
+        }
+
+        .summary-box strong {
+            font-size: 24px;
+            color: #000;
+        }
+
+        .forms-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .form-mini {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            padding: 16px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+        }
+
+        .form-mini h3 {
+            margin: 0 0 12px;
+            font-size: 17px;
+            color: #0f2744;
+        }
+
+        .form-row {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .form-row.two {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .form-row.three {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .form-mini label {
+            font-weight: 700;
+            font-size: 12px;
+            color: #334155;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .form-mini input,
+        .form-mini select,
+        .form-mini textarea,
+        .filters select {
+            width: 100%;
+            padding: 10px 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 13px;
+            background: #fff;
+        }
+
+        .form-mini textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .filters select {
+            width: auto;
+            min-width: 170px;
+        }
+
+        .inventory-table-wrap {
+            overflow-x: auto;
+        }
+
+        .stock-low {
+            color: #dc2626;
+            font-weight: 800;
+        }
+
+        .stock-ok {
+            color: #15803d;
+            font-weight: 800;
+        }
+
+        @media (max-width: 1100px) {
+            .eco-grid,
+            .forms-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .eco-sidebar {
+                position: static;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <h1>{{ empresa_nombre }} - Inventario</h1>
+    <p>Control separado de bicicletas y repuestos por bodega principal y sedes</p>
+</div>
+
+<div class="eco-page">
+    <div class="eco-grid">
+
+        <aside class="eco-sidebar">
+            <h3>Acciones ECOBIKE</h3>
+            <p>Inventario separado para bicicletas, repuestos, bodega principal y locales.</p>
+
+            <div class="side-actions">
+                <a href="/dashboard" class="btn-secondary">← Dashboard</a>
+                <a href="/ventas-ecobike" class="btn-secondary">Ver ventas</a>
+                <a href="/ventas-ecobike/nueva" class="btn-primary">+ Nueva venta</a>
+                <a href="/ecobike/inventario/movimientos" class="btn-secondary">Movimientos inventario</a>
+                <a href="/sedes" class="btn-secondary">Gestionar sedes</a>
+            </div>
+        </aside>
+
+        <main>
+
+            <div class="summary-grid">
+                <div class="summary-box green">
+                    <h4>Total bicicletas</h4>
+                    <strong>{{ total_bicicletas }}</strong>
+                </div>
+
+                <div class="summary-box">
+                    <h4>Total repuestos</h4>
+                    <strong>{{ total_repuestos }}</strong>
+                </div>
+
+                <div class="summary-box red">
+                    <h4>Stock bajo</h4>
+                    <strong>{{ stock_bajo|length }}</strong>
+                </div>
+            </div>
+
+            <div class="forms-grid">
+
+                <section class="form-mini">
+                    <h3>Crear producto</h3>
+
+                    <form method="POST" action="/ecobike/inventario/producto/nuevo">
+                        <div class="form-row two">
+                            <div>
+                                <label>Tipo</label>
+                                <select name="tipo_producto" required>
+                                    <option value="BICICLETA">Bicicleta</option>
+                                    <option value="REPUESTO">Repuesto</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label>Referencia</label>
+                                <input type="text" name="referencia" placeholder="Ej: GW RIN 29 / Shimano..." required>
+                            </div>
+                        </div>
+
+                        <div class="form-row three">
+                            <div>
+                                <label>Marca</label>
+                                <input type="text" name="marca">
+                            </div>
+
+                            <div>
+                                <label>Modelo</label>
+                                <input type="text" name="modelo">
+                            </div>
+
+                            <div>
+                                <label>Color</label>
+                                <input type="text" name="color">
+                            </div>
+                        </div>
+
+                        <div class="form-row three">
+                            <div>
+                                <label>Talla</label>
+                                <input type="text" name="talla">
+                            </div>
+
+                            <div>
+                                <label>Serial</label>
+                                <input type="text" name="serial">
+                            </div>
+
+                            <div>
+                                <label>Stock mínimo</label>
+                                <input type="number" name="stock_minimo" min="0" value="0">
+                            </div>
+                        </div>
+
+                        <div class="form-row two">
+                            <div>
+                                <label>Costo compra</label>
+                                <input type="number" name="costo_compra" step="0.01" value="0">
+                            </div>
+
+                            <div>
+                                <label>Precio venta</label>
+                                <input type="number" name="precio_venta" step="0.01" value="0">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary">Guardar producto</button>
+                    </form>
+                </section>
+
+                <section class="form-mini">
+                    <h3>Entrada inventario</h3>
+
+                    <form method="POST" action="/ecobike/inventario/entrada">
+                        <div class="form-row">
+                            <div>
+                                <label>Producto</label>
+                                <select name="producto_id" required>
+                                    <option value="">Seleccione producto</option>
+                                    {% for producto in productos %}
+                                    <option value="{{ producto.id }}">
+                                        {{ producto.tipo_producto }} - {{ producto.referencia }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row two">
+                            <div>
+                                <label>Ubicación destino</label>
+                                <select name="ubicacion" id="entrada_ubicacion" onchange="toggleSedeEntrada()" required>
+                                    <option value="BODEGA">Bodega principal</option>
+                                    <option value="SEDE">Sede / Local</option>
+                                </select>
+                            </div>
+
+                            <div id="entrada_sede_wrap" style="display:none;">
+                                <label>Sede</label>
+                                <select name="sede_id">
+                                    <option value="">Seleccione sede</option>
+                                    {% for sede in sedes %}
+                                    <option value="{{ sede.id }}">{{ sede.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row two">
+                            <div>
+                                <label>Cantidad</label>
+                                <input type="number" name="cantidad" min="1" required>
+                            </div>
+
+                            <div>
+                                <label>Observación</label>
+                                <input type="text" name="observacion" placeholder="Compra, ingreso inicial...">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary">Registrar entrada</button>
+                    </form>
+                </section>
+
+                <section class="form-mini">
+                    <h3>Traslado entre bodega y sedes</h3>
+
+                    <form method="POST" action="/ecobike/inventario/traslado">
+                        <div class="form-row">
+                            <div>
+                                <label>Producto</label>
+                                <select name="producto_id" required>
+                                    <option value="">Seleccione producto</option>
+                                    {% for producto in productos %}
+                                    <option value="{{ producto.id }}">
+                                        {{ producto.tipo_producto }} - {{ producto.referencia }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row two">
+                            <div>
+                                <label>Origen</label>
+                                <select name="origen_tipo" id="origen_tipo" onchange="toggleTraslado()" required>
+                                    <option value="BODEGA">Bodega principal</option>
+                                    <option value="SEDE">Sede / Local</option>
+                                </select>
+                            </div>
+
+                            <div id="origen_sede_wrap" style="display:none;">
+                                <label>Sede origen</label>
+                                <select name="origen_sede_id">
+                                    <option value="">Seleccione sede</option>
+                                    {% for sede in sedes %}
+                                    <option value="{{ sede.id }}">{{ sede.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row two">
+                            <div>
+                                <label>Destino</label>
+                                <select name="destino_tipo" id="destino_tipo" onchange="toggleTraslado()" required>
+                                    <option value="SEDE">Sede / Local</option>
+                                    <option value="BODEGA">Bodega principal</option>
+                                </select>
+                            </div>
+
+                            <div id="destino_sede_wrap">
+                                <label>Sede destino</label>
+                                <select name="destino_sede_id">
+                                    <option value="">Seleccione sede</option>
+                                    {% for sede in sedes %}
+                                    <option value="{{ sede.id }}">{{ sede.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row two">
+                            <div>
+                                <label>Cantidad</label>
+                                <input type="number" name="cantidad" min="1" required>
+                            </div>
+
+                            <div>
+                                <label>Observación</label>
+                                <input type="text" name="observacion" placeholder="Traslado a local...">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary">Registrar traslado</button>
+                    </form>
+                </section>
+
+                <section class="form-mini">
+                    <h3>Ajuste manual</h3>
+
+                    <form method="POST" action="/ecobike/inventario/ajuste">
+                        <div class="form-row">
+                            <div>
+                                <label>Producto</label>
+                                <select name="producto_id" required>
+                                    <option value="">Seleccione producto</option>
+                                    {% for producto in productos %}
+                                    <option value="{{ producto.id }}">
+                                        {{ producto.tipo_producto }} - {{ producto.referencia }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row two">
+                            <div>
+                                <label>Ubicación</label>
+                                <select name="ubicacion" id="ajuste_ubicacion" onchange="toggleSedeAjuste()" required>
+                                    <option value="BODEGA">Bodega principal</option>
+                                    <option value="SEDE">Sede / Local</option>
+                                </select>
+                            </div>
+
+                            <div id="ajuste_sede_wrap" style="display:none;">
+                                <label>Sede</label>
+                                <select name="sede_id">
+                                    <option value="">Seleccione sede</option>
+                                    {% for sede in sedes %}
+                                    <option value="{{ sede.id }}">{{ sede.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row two">
+                            <div>
+                                <label>Nueva cantidad</label>
+                                <input type="number" name="nueva_cantidad" min="0" required>
+                            </div>
+
+                            <div>
+                                <label>Observación</label>
+                                <input type="text" name="observacion" placeholder="Conteo físico, pérdida, ajuste...">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-secondary">Aplicar ajuste</button>
+                    </form>
+                </section>
+
+            </div>
+
+            <section class="eco-card">
+                <h2>Inventario actual</h2>
+                <p>Bicicletas y repuestos disponibles en bodega principal o sedes.</p>
+
+                <form method="GET" action="/ecobike/inventario" class="filters">
+                    <select name="tipo_producto">
+                        <option value="">Todos los productos</option>
+                        <option value="BICICLETA" {% if tipo_producto_actual == "BICICLETA" %}selected{% endif %}>Bicicletas</option>
+                        <option value="REPUESTO" {% if tipo_producto_actual == "REPUESTO" %}selected{% endif %}>Repuestos</option>
+                    </select>
+
+                    <select name="ubicacion">
+                        <option value="">Todas las ubicaciones</option>
+                        <option value="BODEGA" {% if ubicacion_actual == "BODEGA" %}selected{% endif %}>Bodega principal</option>
+                        <option value="SEDE" {% if ubicacion_actual == "SEDE" %}selected{% endif %}>Sedes / Locales</option>
+                    </select>
+
+                    <select name="sede_id">
+                        <option value="">Todas las sedes</option>
+                        {% for sede in sedes %}
+                        <option value="{{ sede.id }}" {% if sede_actual == sede.id|string %}selected{% endif %}>
+                            {{ sede.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+
+                    <button type="submit" class="btn-primary">Filtrar</button>
+                    <a href="/ecobike/inventario" class="btn-secondary">Limpiar</a>
+                </form>
+
+                <div class="inventory-table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Referencia</th>
+                                <th>Marca</th>
+                                <th>Modelo</th>
+                                <th>Color</th>
+                                <th>Talla</th>
+                                <th>Serial</th>
+                                <th>Ubicación</th>
+                                <th>Cantidad</th>
+                                <th>Stock mín.</th>
+                                <th>Costo</th>
+                                <th>Precio venta</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in inventarios %}
+                            <tr>
+                                <td>{{ i.producto.tipo_producto }}</td>
+                                <td><strong>{{ i.producto.referencia }}</strong></td>
+                                <td>{{ i.producto.marca or "" }}</td>
+                                <td>{{ i.producto.modelo or "" }}</td>
+                                <td>{{ i.producto.color or "" }}</td>
+                                <td>{{ i.producto.talla or "" }}</td>
+                                <td>{{ i.producto.serial or "" }}</td>
+                                <td>{{ i.nombre_ubicacion }}</td>
+                                <td class="{{ 'stock-low' if i.stock_bajo else 'stock-ok' }}">
+                                    {{ i.cantidad }}
+                                </td>
+                                <td>{{ i.producto.stock_minimo }}</td>
+                                <td>${{ "{:,.0f}".format(i.producto.costo_compra or 0) }}</td>
+                                <td>${{ "{:,.0f}".format(i.producto.precio_venta or 0) }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="12" style="text-align:center; padding:24px;">
+                                    No hay inventario registrado todavía.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<script>
+function toggleSedeEntrada() {
+    const ubicacion = document.getElementById("entrada_ubicacion").value;
+    document.getElementById("entrada_sede_wrap").style.display = ubicacion === "SEDE" ? "block" : "none";
+}
+
+function toggleSedeAjuste() {
+    const ubicacion = document.getElementById("ajuste_ubicacion").value;
+    document.getElementById("ajuste_sede_wrap").style.display = ubicacion === "SEDE" ? "block" : "none";
+}
+
+function toggleTraslado() {
+    const origen = document.getElementById("origen_tipo").value;
+    const destino = document.getElementById("destino_tipo").value;
+
+    document.getElementById("origen_sede_wrap").style.display = origen === "SEDE" ? "block" : "none";
+    document.getElementById("destino_sede_wrap").style.display = destino === "SEDE" ? "block" : "none";
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    toggleSedeEntrada();
+    toggleSedeAjuste();
+    toggleTraslado();
+});
+</script>
+
+</body>
+</html>

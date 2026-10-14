@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRV CONSTRUCTORA - Movimiento</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;color:#17283f}.page{min-height:100vh;padding:28px}.layout{max-width:1760px;margin:0 auto;display:grid;grid-template-columns:245px minmax(0,1fr);gap:20px;align-items:start}.sidebar{position:sticky;top:18px;background:#fff;border-radius:18px;padding:18px;box-shadow:0 12px 30px rgba(18,40,64,.08)}.badge{display:inline-flex;padding:7px 10px;border-radius:999px;background:#e8f7ee;color:#168446;font-size:11px;font-weight:900}.company{margin-top:10px;color:#17304f;font-size:18px;line-height:1.2;font-weight:900}.subtitle{margin:3px 0 15px;color:#cda52b;font-size:12px;font-weight:800}.menu{display:grid;gap:7px}.menu a{display:flex;align-items:center;gap:9px;min-height:40px;padding:8px 10px;border-radius:9px;background:#eef3f8;color:#17304f;text-decoration:none;font-size:11px;font-weight:800}.icon{width:25px;height:25px;display:inline-flex;align-items:center;justify-content:center;border-radius:7px;background:rgba(23,48,79,.08)}.menu a.active{background:#17304f;color:#fff}.menu a.gold{background:#d8b541;color:#fff}.menu a.danger{justify-content:center;margin-top:5px;background:#ef2b2d;color:#fff}.menu a.active .icon,.menu a.gold .icon,.menu a.danger .icon{background:rgba(255,255,255,.16)}.main{min-width:0}.shell{max-width:1200px;margin:0 auto}.header{text-align:center;margin-bottom:20px}.header img{width:90px;max-height:76px;object-fit:contain}.header h1{margin:5px 0 0;color:#17304f;font-size:28px;font-weight:900}.header p{margin:7px 0 0;color:#6d7f93;font-size:12px}.topbar,.section{background:#fff;border-radius:16px;box-shadow:0 10px 27px rgba(18,40,64,.07)}.topbar{padding:14px 16px;margin-bottom:17px;display:flex;justify-content:space-between;align-items:center;gap:10px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:9px 13px;border:0;border-radius:9px;text-decoration:none;cursor:pointer;font-size:11px;font-weight:900}.black{background:#111;color:#fff}.navy{background:#17304f;color:#fff}.gold{background:#d8b541;color:#fff}.light{background:#edf2f7;color:#17304f}.section{padding:20px;margin-bottom:18px}.section h2{margin:0 0 14px;color:#17304f;font-size:17px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.span2{grid-column:span 2}.span3{grid-column:span 3}.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:10px;font-weight:900;color:#566b80}.field small{color:#8190a0;font-size:8.5px}.field input,.field select,.field textarea{width:100%;padding:10px 11px;border:1px solid #d3dde7;border-radius:8px;background:#fff;font-family:inherit;font-size:11px;color:#17283f}.field textarea{min-height:75px;resize:vertical}.tax-box{padding:14px;border:1px solid #dbe4ec;border-radius:11px;background:#f8fafc}.totals{margin-top:14px;padding:14px;border-radius:11px;background:#f7f9fb}.row{display:flex;justify-content:space-between;gap:20px;padding:7px 0;border-bottom:1px solid #e4e9ef;font-size:11px}.row:last-child{border-bottom:0;font-size:14px;font-weight:900;color:#17304f}.tax-note{margin-top:10px;padding:10px 12px;border-radius:9px;background:#eaf3ff;color:#285c96;font-size:9px;line-height:1.4}.actions{display:flex;justify-content:flex-end;gap:8px;padding:5px 0 25px}@media(max-width:1050px){.layout{grid-template-columns:1fr}.sidebar{position:static}.menu{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:760px){.page{padding:12px}.grid,.grid.two,.menu{grid-template-columns:1fr}.span2,.span3{grid-column:auto}.topbar{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="page"><div class="layout">
+<aside class="sidebar">
+<span class="badge">● Empresa activa</span><div class="company">CRV<br>CONSTRUCTORA</div><div class="subtitle">Módulo Contable</div>
+<nav class="menu">
+<a href="/empresas"><span class="icon">🏢</span>Cambiar empresa</a>
+<a href="/crv/movimientos/nuevo" class="gold"><span class="icon">＋</span>Registrar movimiento</a>
+<a href="/crv/carga-inteligente"><span class="icon">✨</span>Carga inteligente</a>
+<a href="/crv/movimientos" class="active"><span class="icon">📋</span>Movimientos</a>
+<a href="/crv/terceros"><span class="icon">👤</span>Terceros</a>
+<a href="/crv/terceros?buscar="><span class="icon">👥</span>Proveedores / Clientes</a>
+<a href="/crv/cuentas-por-pagar"><span class="icon">🧾</span>Cuentas por pagar</a>
+<a href="/crv/cuentas-por-cobrar"><span class="icon">💰</span>Cuentas por cobrar</a>
+<a href="/crv/bancos-caja"><span class="icon">🏦</span>Bancos y caja</a>
+<a href="/crv/conciliacion-bancaria"><span class="icon">⚖️</span>Conciliación bancaria</a>
+<a href="/crv/proyectos"><span class="icon">🏗️</span>Proyectos / obras</a>
+<a href="/crv/reportes-contador"><span class="icon">📊</span>Reportes contador</a>
+<a href="/crv/cierre-mensual"><span class="icon">📅</span>Cierre mensual</a>
+<a href="/crv/exportaciones"><span class="icon">⬇️</span>Importar / Exportar</a>
+<a href="/logout" class="danger"><span class="icon">⏻</span>Cerrar sesión</a>
+</nav></aside>
+<main class="main"><div class="shell">
+<header class="header"><img src="{{ url_for('static', filename='logo_crv.png') }}" alt="CRV"><h1>CRV CONSTRUCTORA - {{ 'Editar movimiento' if modo == 'editar' else 'Registrar movimiento' }}</h1><p>Registro contable con control de tercero, proyecto, IVA, pagos y trazabilidad bancaria</p></header>
+<div class="topbar"><div><a href="/crv/movimientos" class="btn black">← Volver</a> <span class="badge">● {{ empresa_nombre }}</span></div><div><a href="/crv/carga-inteligente" class="btn gold">✨ Carga inteligente</a> <a href="/crv/reportes-contador" class="btn light">📊 Reportes</a></div></div>
+<form method="POST">
+<section class="section"><h2>Información del movimiento</h2><div class="grid">
+<div class="field"><label>Fecha contable *</label><input type="date" name="fecha" required value="{{ movimiento.fecha.isoformat() if movimiento and movimiento.fecha else '' }}"></div>
+<div class="field"><label>Tipo *</label><select name="tipo" id="tipo" required onchange="ajustarIVAporTipo()"><option value="">Seleccione...</option>{% for x in ['INGRESO','COMPRA','GASTO','NOMINA AFILIADOS','NOMINA OBRA','ANTICIPO','PRESTAMO EMPLEADO','TRANSFERENCIA','OTRO'] %}<option value="{{ x }}" {% if movimiento and movimiento.tipo == x %}selected{% endif %}>{{ x }}</option>{% endfor %}</select></div>
+<div class="field"><label>Sede</label><select name="sede_id"><option value="">General</option>{% for s in sedes %}<option value="{{ s.id }}" {% if movimiento and movimiento.sede_id == s.id %}selected{% endif %}>{{ s.nombre }}</option>{% endfor %}</select></div>
+<div class="field"><label>Categoría *</label><input name="categoria" required value="{{ movimiento.categoria if movimiento else '' }}"></div>
+<div class="field"><label>Subcategoría</label><input name="subcategoria" value="{{ movimiento.subcategoria if movimiento else '' }}"></div>
+<div class="field"><label>Proyecto</label><input name="proyecto" value="{{ movimiento.proyecto if movimiento else '' }}"></div>
+<div class="field"><label>Centro de costo</label><input name="centro_costo" value="{{ movimiento.centro_costo if movimiento else '' }}"></div>
+<div class="field"><label>Obra</label><input name="obra" value="{{ movimiento.obra if movimiento else '' }}"></div>
+<div class="field span3"><label>Concepto *</label><input name="concepto" required value="{{ movimiento.concepto if movimiento else '' }}"></div>
+<div class="field span3"><label>Descripción</label><textarea name="descripcion">{{ movimiento.descripcion if movimiento else '' }}</textarea></div>
+</div></section>
+
+<section class="section"><h2>Tercero</h2><div class="grid">
+<div class="field span3"><label>Buscar tercero registrado</label><select id="tercero_selector" onchange="cargarTercero(this)"><option value="">Escribir datos manualmente / seleccionar...</option>{% for t in terceros %}<option value="{{ t.id }}" data-nombre="{{ t.razon_social|e }}" data-id="{{ t.identificacion|e }}" data-dir="{{ (t.direccion or '')|e }}" data-email="{{ (t.email or '')|e }}" data-cel="{{ (t.celular or t.telefono or '')|e }}" data-contacto="{{ (t.contacto or '')|e }}" data-tipo="{{ (t.tipo_tercero or 'TERCERO')|e }}" data-doc="{{ (t.tipo_documento or '')|e }}">{{ t.razon_social }} - {{ t.identificacion }}</option>{% endfor %}</select></div>
+<div class="field"><label>Tipo tercero</label><select name="tipo_tercero" id="tipo_tercero">{% for x in ['PROVEEDOR','CLIENTE','EMPLEADO','CONTRATISTA','TERCERO'] %}<option value="{{ x }}">{{ x }}</option>{% endfor %}</select></div>
+<div class="field"><label>Tipo documento</label><input name="tipo_documento_tercero" id="tipo_documento_tercero"></div>
+<div class="field"><label>NIT / Identificación</label><input name="tercero_identificacion" id="tercero_identificacion" value="{{ movimiento.tercero_identificacion if movimiento else '' }}"></div>
+<div class="field span2"><label>Nombre / Razón social</label><input name="tercero_nombre" id="tercero_nombre" value="{{ movimiento.tercero_nombre if movimiento else '' }}"></div>
+<div class="field"><label>Contacto</label><input name="tercero_contacto" id="tercero_contacto" value="{{ movimiento.tercero_contacto if movimiento else '' }}"></div>
+<div class="field"><label>Dirección</label><input name="tercero_direccion" id="tercero_direccion" value="{{ movimiento.tercero_direccion if movimiento else '' }}"></div>
+<div class="field"><label>Correo</label><input name="tercero_email" id="tercero_email" value="{{ movimiento.tercero_email if movimiento else '' }}"></div>
+<div class="field"><label>Celular</label><input name="tercero_celular" id="tercero_celular" value="{{ movimiento.tercero_telefono if movimiento else '' }}"></div>
+</div></section>
+
+<section class="section"><h2>Documento y vencimiento</h2><div class="grid">
+<div class="field"><label>Tipo de documento</label><select name="tipo_documento"><option value="">Seleccione</option>{% for x in ['FACTURA ELECTRONICA','FACTURA','CUENTA DE COBRO','DOCUMENTO SOPORTE','CONTRATO','RECIBO','OTRO'] %}<option value="{{ x }}" {% if movimiento and movimiento.tipo_documento == x %}selected{% endif %}>{{ x }}</option>{% endfor %}</select></div>
+<div class="field"><label>Número documento / factura</label><input name="numero_documento" value="{{ movimiento.numero_documento if movimiento else '' }}"></div>
+<div class="field"><label>Número soporte</label><input name="numero_soporte" value="{{ movimiento.numero_soporte if movimiento else '' }}"></div>
+<div class="field"><label>Fecha documento</label><input type="date" name="fecha_documento" value="{{ movimiento.fecha_documento.isoformat() if movimiento and movimiento.fecha_documento else '' }}"></div>
+<div class="field"><label>Fecha vencimiento</label><input type="date" name="fecha_vencimiento" value="{{ movimiento.fecha_vencimiento.isoformat() if movimiento and movimiento.fecha_vencimiento else '' }}"></div>
+</div></section>
+
+<section class="section"><h2>Valores e IVA</h2><div class="grid">
+<div class="field"><label>Base gravable / Valor antes de IVA *</label><input type="number" min="0" step="0.01" name="base_gravable" id="base_gravable" required value="{{ movimiento.base_gravable if movimiento else 0 }}" oninput="calcularTotales()"><small>Valor del bien o servicio antes del IVA.</small></div>
+<div class="field">
+<label>Tratamiento del IVA *</label>
+<select name="tipo_iva" id="tipo_iva" onchange="ajustarTratamientoIVA()">
+<option value="NO_APLICA" {% if not movimiento or movimiento.tipo_iva == 'NO_APLICA' %}selected{% endif %}>No aplica</option>
+<option value="EXCLUIDO" {% if movimiento and movimiento.tipo_iva == 'EXCLUIDO' %}selected{% endif %}>Excluido de IVA</option>
+<option value="EXENTO" {% if movimiento and movimiento.tipo_iva == 'EXENTO' %}selected{% endif %}>Exento de IVA (0%)</option>
+<option value="GENERADO" {% if movimiento and movimiento.tipo_iva == 'GENERADO' %}selected{% endif %}>IVA generado (ventas/ingresos)</option>
+<option value="DESCONTABLE" {% if movimiento and movimiento.tipo_iva == 'DESCONTABLE' %}selected{% endif %}>IVA descontable (compras/gastos)</option>
+<option value="MAYOR_VALOR_COSTO" {% if movimiento and movimiento.tipo_iva == 'MAYOR_VALOR_COSTO' %}selected{% endif %}>IVA mayor valor del costo/gasto</option>
+</select>
+<small>Exento y excluido no son lo mismo. El contador debe definir el tratamiento fiscal correcto.</small>
+</div>
+
+<div class="field">
+<label>Tarifa IVA %</label>
+
+<input type="hidden" name="tarifa_iva" id="tarifa_iva" value="{{ movimiento.tarifa_iva if movimiento else 0 }}">
+
+<select id="tarifa_iva_selector" onchange="cambiarTarifaIVA()">
+<option value="0">0% — Exento / sin impuesto</option>
+<option value="2">2% — Tarifa especial</option>
+<option value="5">5% — Tarifa reducida</option>
+<option value="19">19% — Tarifa general</option>
+<option value="20">20% — Tarifa especial</option>
+<option value="35">35% — Tarifa especial</option>
+<option value="OTRA">Otra tarifa / personalizada</option>
+</select>
+
+<input
+    type="number"
+    id="tarifa_iva_personalizada"
+    min="0"
+    max="100"
+    step="0.01"
+    placeholder="Digite la tarifa, ej. 7.50"
+    style="display:none;margin-top:8px;"
+    oninput="aplicarTarifaPersonalizada()"
+>
+
+<small>
+Las tarifas especiales deben usarse únicamente cuando la operación esté expresamente autorizada por la norma aplicable.
+</small>
+</div>
+<div class="field"><label>Valor IVA</label><input type="number" id="valor_iva" value="{{ movimiento.valor_iva if movimiento else 0 }}" readonly></div>
+<div class="field"><label>Total documento</label><input type="number" name="valor" id="valor" value="{{ movimiento.valor if movimiento else 0 }}" readonly></div>
+<div class="field"><label>Descuento</label><input type="number" name="descuento" id="descuento" step="0.01" value="{{ movimiento.descuento if movimiento else 0 }}" oninput="calcularTotales()"></div>
+<div class="field"><label>Retención</label><input type="number" name="retencion" id="retencion" step="0.01" value="{{ movimiento.retencion if movimiento else 0 }}" oninput="calcularTotales()"></div>
+<div class="field"><label>Otros descuentos</label><input type="number" name="otros_descuentos" id="otros_descuentos" step="0.01" value="{{ movimiento.otros_descuentos if movimiento else 0 }}" oninput="calcularTotales()"></div>
+<div class="field"><label>Valor neto a pagar / recibir</label><input type="number" id="valor_neto_preview" value="{{ movimiento.valor_neto if movimiento else 0 }}" readonly></div>
+</div>
+<div class="totals"><div class="row"><span>Base gravable</span><strong id="preview_base">$0</strong></div><div class="row"><span>IVA</span><strong id="preview_iva">$0</strong></div><div class="row"><span>Total documento</span><strong id="preview_total">$0</strong></div><div class="row"><span>Descuentos / retenciones</span><strong id="preview_desc">$0</strong></div><div class="row"><span>Valor neto</span><strong id="preview_neto">$0</strong></div></div>
+<div class="tax-note">ℹ️ Para Bancos y caja se utiliza el valor efectivamente pagado o recibido. La base gravable y el IVA quedan separados para los reportes tributarios del contador.</div>
+</section>
+
+<section class="section"><h2>Pago, cuenta y beneficiario</h2><div class="grid two">
+<div class="field"><label>Forma de pago</label><select name="forma_pago"><option value="">Seleccione</option>{% for x in ['EFECTIVO','TRANSFERENCIA','PSE','CHEQUE','TARJETA','CREDITO','OTRO'] %}<option value="{{ x }}" {% if movimiento and movimiento.forma_pago == x %}selected{% endif %}>{{ x }}</option>{% endfor %}</select></div>
+<div class="field"><label>Cuenta / Caja origen</label><input name="cuenta" value="{{ movimiento.cuenta if movimiento else '' }}" placeholder="Ej: 71800002023"></div>
+<div class="field"><label>Cuenta destino</label><input name="cuenta_destino" value="{{ movimiento.cuenta_destino if movimiento else '' }}"></div>
+<div class="field"><label>Beneficiario</label><input name="beneficiario" value="{{ movimiento.beneficiario if movimiento else '' }}"></div>
+<div class="field"><label>Referencia pago</label><input name="referencia_pago" value="{{ movimiento.referencia_pago if movimiento else '' }}"></div>
+<div class="field span2"><label>Observaciones</label><textarea name="observaciones">{{ movimiento.observaciones if movimiento else '' }}</textarea></div>
+</div></section>
+<div class="actions"><a href="/crv/movimientos" class="btn light">Cancelar</a><button type="submit" class="btn gold">{{ 'Guardar cambios' if modo == 'editar' else 'Guardar movimiento' }}</button></div>
+</form>
+</div></main></div></div>
+<script>
+const dinero = n => new Intl.NumberFormat(
+    'es-CO',
+    {
+        style:'currency',
+        currency:'COP',
+        maximumFractionDigits:0
+    }
+).format(n || 0);
+
+function num(id){
+    return parseFloat(
+        document.getElementById(id)?.value || 0
+    ) || 0;
+}
+
+function tarifaActual(){
+    return parseFloat(
+        document.getElementById('tarifa_iva').value || 0
+    ) || 0;
+}
+
+function sincronizarSelectorTarifa(){
+    const hidden = document.getElementById('tarifa_iva');
+    const selector = document.getElementById('tarifa_iva_selector');
+    const personalizada = document.getElementById('tarifa_iva_personalizada');
+
+    const tarifa = parseFloat(hidden.value || 0) || 0;
+    const tarifasPredefinidas = [0, 2, 5, 19, 20, 35];
+
+    if (tarifasPredefinidas.includes(tarifa)) {
+        selector.value = String(tarifa);
+        personalizada.style.display = 'none';
+        personalizada.required = false;
+        personalizada.value = '';
+    } else {
+        selector.value = 'OTRA';
+        personalizada.style.display = 'block';
+        personalizada.required = true;
+        personalizada.value = tarifa;
+    }
+}
+
+function cambiarTarifaIVA(){
+    const selector = document.getElementById('tarifa_iva_selector');
+    const personalizada = document.getElementById('tarifa_iva_personalizada');
+    const hidden = document.getElementById('tarifa_iva');
+
+    if (selector.value === 'OTRA') {
+        personalizada.style.display = 'block';
+        personalizada.required = true;
+
+        if (!personalizada.value) {
+            personalizada.value = hidden.value || '';
+        }
+
+        personalizada.focus();
+        aplicarTarifaPersonalizada();
+        return;
+    }
+
+    personalizada.style.display = 'none';
+    personalizada.required = false;
+    personalizada.value = '';
+
+    hidden.value = selector.value;
+    calcularTotales();
+}
+
+function aplicarTarifaPersonalizada(){
+    const personalizada = document.getElementById('tarifa_iva_personalizada');
+    const hidden = document.getElementById('tarifa_iva');
+
+    let tarifa = parseFloat(personalizada.value || 0);
+
+    if (Number.isNaN(tarifa)) {
+        tarifa = 0;
+    }
+
+    if (tarifa < 0) tarifa = 0;
+    if (tarifa > 100) tarifa = 100;
+
+    hidden.value = tarifa;
+    calcularTotales();
+}
+
+function ajustarTratamientoIVA(){
+    const tipo = document.getElementById('tipo_iva').value;
+    const hidden = document.getElementById('tarifa_iva');
+    const selector = document.getElementById('tarifa_iva_selector');
+    const personalizada = document.getElementById('tarifa_iva_personalizada');
+
+    if (
+        tipo === 'NO_APLICA' ||
+        tipo === 'EXCLUIDO' ||
+        tipo === 'EXENTO'
+    ) {
+        hidden.value = '0';
+        selector.value = '0';
+        personalizada.value = '';
+        personalizada.style.display = 'none';
+        personalizada.required = false;
+    }
+
+    calcularTotales();
+}
+
+function calcularTotales(){
+    const base = num('base_gravable');
+    const tipo = document.getElementById('tipo_iva').value;
+
+    let tarifa = tarifaActual();
+
+    if (
+        tipo === 'NO_APLICA' ||
+        tipo === 'EXCLUIDO' ||
+        tipo === 'EXENTO'
+    ) {
+        tarifa = 0;
+        document.getElementById('tarifa_iva').value = '0';
+    }
+
+    const iva = Math.round(
+        (base * tarifa / 100) * 100
+    ) / 100;
+
+    const total = base + iva;
+
+    const desc =
+        num('descuento') +
+        num('retencion') +
+        num('otros_descuentos');
+
+    const neto = Math.max(
+        0,
+        total - desc
+    );
+
+    document.getElementById('valor_iva').value = iva;
+    document.getElementById('valor').value = total;
+    document.getElementById('valor_neto_preview').value = neto;
+
+    document.getElementById('preview_base').textContent = dinero(base);
+    document.getElementById('preview_iva').textContent = dinero(iva);
+    document.getElementById('preview_total').textContent = dinero(total);
+    document.getElementById('preview_desc').textContent = dinero(desc);
+    document.getElementById('preview_neto').textContent = dinero(neto);
+}
+
+function ajustarIVAporTipo(){
+    const tipo = document.getElementById('tipo').value;
+
+    const sinIva = [
+        'NOMINA AFILIADOS',
+        'NOMINA OBRA',
+        'ANTICIPO',
+        'PRESTAMO EMPLEADO',
+        'TRANSFERENCIA'
+    ];
+
+    if (sinIva.includes(tipo)) {
+        document.getElementById('tipo_iva').value = 'NO_APLICA';
+        document.getElementById('tarifa_iva').value = '0';
+        document.getElementById('tarifa_iva_selector').value = '0';
+        document.getElementById('tarifa_iva_personalizada').style.display = 'none';
+        document.getElementById('tarifa_iva_personalizada').required = false;
+        document.getElementById('tarifa_iva_personalizada').value = '';
+    }
+
+    calcularTotales();
+}
+
+function cargarTercero(sel){
+    const o = sel.options[sel.selectedIndex];
+
+    if (!o || !o.value) return;
+
+    document.getElementById('tercero_nombre').value = o.dataset.nombre || '';
+    document.getElementById('tercero_identificacion').value = o.dataset.id || '';
+    document.getElementById('tercero_direccion').value = o.dataset.dir || '';
+    document.getElementById('tercero_email').value = o.dataset.email || '';
+    document.getElementById('tercero_celular').value = o.dataset.cel || '';
+    document.getElementById('tercero_contacto').value = o.dataset.contacto || '';
+    document.getElementById('tipo_tercero').value = o.dataset.tipo || 'TERCERO';
+    document.getElementById('tipo_documento_tercero').value = o.dataset.doc || '';
+}
+
+document.addEventListener(
+    'DOMContentLoaded',
+    function(){
+        sincronizarSelectorTarifa();
+        ajustarTratamientoIVA();
+        calcularTotales();
+    }
+);
+</script>
+</body></html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRV CONSTRUCTORA - Detalle proyecto</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;color:#17283f}
+body.modal-open{overflow:hidden}
+.page{min-height:100vh;padding:28px}.shell{max-width:1500px;margin:0 auto}
+.header{text-align:center;margin-bottom:20px}.header img{width:90px;max-height:76px;object-fit:contain}.header h1{margin:5px 0 0;color:#17304f;font-size:28px;font-weight:900}.header p{margin:7px 0 0;color:#6d7f93;font-size:12px}
+.topbar,.card{background:#fff;border-radius:16px;box-shadow:0 10px 27px rgba(18,40,64,.07)}.topbar{padding:14px 16px;margin-bottom:17px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.left,.right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.badge{padding:7px 10px;border-radius:999px;background:#e8f7ee;color:#168446;font-size:11px;font-weight:900}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:9px 13px;border:0;border-radius:9px;text-decoration:none;cursor:pointer;font-size:11px;font-weight:900}.black{background:#111;color:#fff}.navy{background:#17304f;color:#fff}.gold{background:#d8b541;color:#fff}.light{background:#edf2f7;color:#17304f}.green{background:#149653;color:#fff}.red{background:#ef2b2d;color:#fff}
+.summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px;margin-bottom:17px}.sum{background:#fff;border-radius:15px;padding:16px;border-top:4px solid #17304f;box-shadow:0 8px 24px rgba(18,40,64,.06)}.sum.goldline{border-top-color:#d8b541}.sum.greenline{border-top-color:#16a05b}.sum.redline{border-top-color:#ef2b2d}.sum span{display:block;color:#63758a;font-size:9px;font-weight:900}.sum strong{display:block;margin-top:6px;color:#17304f;font-size:20px}.sum small{display:block;margin-top:5px;color:#8493a3;font-size:8.5px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:17px;align-items:start}.card{margin-bottom:17px;overflow:hidden}.card-head{padding:17px 18px;border-bottom:1px solid #e6ebf0}.card-head h2{margin:0;color:#17304f;font-size:18px}.card-head p{margin:4px 0 0;color:#738397;font-size:10px}.body{padding:17px 18px}.data-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.item{padding:11px;border:1px solid #e2e8ee;border-radius:10px;background:#f9fbfc}.item.span2{grid-column:span 2}.item.span3{grid-column:span 3}.item label{display:block;color:#74869a;font-size:8.5px;font-weight:900}.item strong{display:block;margin-top:4px;color:#17304f;font-size:11px;overflow-wrap:break-word}
+.action{padding:14px;border:1px solid #e2e8ee;border-radius:11px;background:#f8fafc;margin-bottom:10px}.action h3{margin:0;color:#17304f;font-size:12px}.action p{margin:6px 0 10px;color:#78899c;font-size:9.5px;line-height:1.4}
+.table-wrap{overflow-x:auto;padding:0 14px 16px}table{width:100%;border-collapse:collapse;min-width:1000px}th{background:#17304f;color:#fff;text-align:left;padding:10px 8px;font-size:9px}td{padding:10px 8px;border-bottom:1px solid #e7ecf1;font-size:9.5px;vertical-align:top}.money{font-weight:900;white-space:nowrap}
+.overlay{position:fixed;inset:0;z-index:9998;background:rgba(13,29,48,.52);backdrop-filter:blur(3px);opacity:0;visibility:hidden;transition:.18s}.overlay.active{opacity:1;visibility:visible}.modal{position:fixed;inset:0;z-index:9999;padding:20px;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;pointer-events:none;transform:scale(.98);transition:.18s}.modal.active{opacity:1;visibility:visible;pointer-events:auto;transform:scale(1)}.modal-box{width:100%;max-width:980px;max-height:92vh;display:flex;flex-direction:column;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(10,28,48,.30)}.modal-head{padding:17px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e6ebf0}.modal-head h2{margin:0;color:#17304f;font-size:18px}.close{width:36px;height:36px;border:0;border-radius:9px;background:#edf2f7;color:#17304f;font-size:19px;cursor:pointer}.modal-body{padding:19px 21px 22px;overflow-y:auto;background:#fbfcfd}.form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:9px;font-weight:900;color:#586d82}.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid #d4dde7;border-radius:8px;font-family:inherit}.field textarea{min-height:78px;resize:vertical}.span2{grid-column:span 2}.span3{grid-column:span 3}.modal-actions{display:flex;justify-content:flex-end;gap:8px;padding-top:16px;margin-top:18px;border-top:1px solid #e5eaf0}
+@media(max-width:1100px){.summary{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}@media(max-width:760px){.page{padding:12px}.summary,.data-grid,.form-grid{grid-template-columns:1fr}.span2,.span3{grid-column:auto}}
+
+        /* =====================================================
+           MENÚ LATERAL PERMANENTE CRV
+        ===================================================== */
+        .pr-layout {
+            max-width: 1760px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 245px minmax(0, 1fr);
+            gap: 20px;
+            align-items: start;
+        }
+
+        .pr-sidebar {
+            position: sticky;
+            top: 18px;
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 12px 30px rgba(18,40,64,.08);
+        }
+
+        .pr-side-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 10px;
+            margin-bottom: 10px;
+            border-radius: 999px;
+            background: #e8f7ee;
+            color: #168446;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .pr-side-badge::before {
+            content: "●";
+            font-size: 8px;
+        }
+
+        .pr-side-company {
+            color: #17304f;
+            font-size: 18px;
+            line-height: 1.2;
+            font-weight: 900;
+        }
+
+        .pr-side-subtitle {
+            margin: 3px 0 15px;
+            color: #cda52b;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .pr-side-menu {
+            display: grid;
+            gap: 7px;
+        }
+
+        .pr-side-menu a {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            min-height: 40px;
+            padding: 8px 10px;
+            border-radius: 9px;
+            background: #eef3f8;
+            color: #17304f;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 800;
+            transition: .15s ease;
+        }
+
+        .pr-side-menu a:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 14px rgba(18,40,64,.08);
+        }
+
+        .pr-side-icon {
+            width: 25px;
+            height: 25px;
+            min-width: 25px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 7px;
+            background: rgba(23,48,79,.08);
+            font-size: 13px;
+        }
+
+        .pr-side-menu a.active {
+            background: #17304f;
+            color: #ffffff;
+        }
+
+        .pr-side-menu a.gold {
+            background: #d8b541;
+            color: #ffffff;
+        }
+
+        .pr-side-menu a.danger {
+            justify-content: center;
+            margin-top: 5px;
+            background: #ef2b2d;
+            color: #ffffff;
+        }
+
+        .pr-side-menu a.active .pr-side-icon,
+        .pr-side-menu a.gold .pr-side-icon,
+        .pr-side-menu a.danger .pr-side-icon {
+            background: rgba(255,255,255,.16);
+        }
+
+        .pr-main {
+            min-width: 0;
+        }
+
+        @media (max-width: 1050px) {
+            .pr-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .pr-sidebar {
+                position: static;
+            }
+
+            .pr-side-menu {
+                grid-template-columns: repeat(3,minmax(0,1fr));
+            }
+        }
+
+        @media (max-width: 720px) {
+            .pr-side-menu {
+                grid-template-columns: 1fr;
+            }
+        }
+
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="pr-layout">
+
+    <aside class="pr-sidebar">
+
+        <div class="pr-side-badge">
+            Empresa activa
+        </div>
+
+        <div class="pr-side-company">
+            CRV<br>CONSTRUCTORA
+        </div>
+
+        <div class="pr-side-subtitle">
+            Módulo Contable
+        </div>
+
+        <nav class="pr-side-menu">
+
+            <a href="/empresas">
+                <span class="pr-side-icon">🏢</span>
+                <span>Cambiar empresa</span>
+            </a>
+
+            <a href="/crv/movimientos/nuevo" class="gold">
+                <span class="pr-side-icon">＋</span>
+                <span>Registrar movimiento</span>
+            </a>
+
+            <a href="/crv/movimientos">
+                <span class="pr-side-icon">📋</span>
+                <span>Movimientos</span>
+            </a>
+
+            <a href="/crv/terceros">
+                <span class="pr-side-icon">👤</span>
+                <span>Terceros</span>
+            </a>
+
+            <a href="/crv/terceros?buscar=">
+                <span class="pr-side-icon">👥</span>
+                <span>Proveedores / Clientes</span>
+            </a>
+
+            <a href="/crv/cuentas-por-pagar">
+                <span class="pr-side-icon">🧾</span>
+                <span>Cuentas por pagar</span>
+            </a>
+
+            <a href="/crv/cuentas-por-cobrar">
+                <span class="pr-side-icon">💰</span>
+                <span>Cuentas por cobrar</span>
+            </a>
+
+            <a href="/crv/bancos-caja">
+                <span class="pr-side-icon">🏦</span>
+                <span>Bancos y caja</span>
+            </a>
+
+            <a href="/crv/proyectos" class="active">
+                <span class="pr-side-icon">🏗️</span>
+                <span>Proyectos / obras</span>
+            </a>
+
+            <a href="/crv/reportes-contador">
+                <span class="pr-side-icon">📊</span>
+                <span>Reportes contador</span>
+            </a>
+
+            <a href="#">
+                <span class="pr-side-icon">📅</span>
+                <span>Cierre mensual</span>
+            </a>
+
+            <a href="/crv/exportaciones">
+                <span class="pr-side-icon">⬇️</span>
+                <span>Importar / Exportar</span>
+            </a>
+
+            <a href="/logout" class="danger">
+                <span class="pr-side-icon">⏻</span>
+                <span>Cerrar sesión</span>
+            </a>
+
+        </nav>
+
+    </aside>
+
+    <main class="pr-main">
+
+<div class="shell">
+<header class="header"><img src="{{ url_for('static', filename='logo_crv.png') }}" alt="CRV"><h1>{{ proyecto.nombre }}</h1><p>Detalle financiero del proyecto / obra · {{ proyecto.codigo }}</p></header>
+
+<section class="topbar">
+<div class="left"><a href="/crv/proyectos" class="btn black">← Volver</a><span class="badge">● Empresa activa</span><strong>{{ empresa_nombre }}</strong></div>
+<div class="right"><a href="/crv/proyectos/pdf" class="btn light">📄 PDF general</a><a href="/crv/proyectos/excel" class="btn green">📊 Excel general</a><button type="button" class="btn gold" onclick="abrirEditar()">Editar proyecto</button></div>
+</section>
+
+<section class="summary">
+<div class="sum greenline"><span>INGRESOS</span><strong>${{ "{:,.0f}".format(resumen.ingresos or 0) }}</strong><small>Ingresos reconocidos</small></div>
+<div class="sum redline"><span>COSTOS TOTALES</span><strong>${{ "{:,.0f}".format(resumen.costos or 0) }}</strong><small>Compras + gastos</small></div>
+<div class="sum"><span>RESULTADO</span><strong>${{ "{:,.0f}".format(resumen.resultado or 0) }}</strong><small>Ingresos menos costos</small></div>
+<div class="sum goldline"><span>CxP PENDIENTE</span><strong>${{ "{:,.0f}".format(resumen.cxp_pendiente or 0) }}</strong><small>Saldo a proveedores</small></div>
+<div class="sum greenline"><span>CxC PENDIENTE</span><strong>${{ "{:,.0f}".format(resumen.cxc_pendiente or 0) }}</strong><small>Saldo por cobrar</small></div>
+</section>
+
+<div class="grid">
+<main>
+<section class="card">
+<div class="card-head"><h2>Información del proyecto</h2><p>Datos administrativos y presupuestales</p></div>
+<div class="body"><div class="data-grid">
+<div class="item"><label>CÓDIGO</label><strong>{{ proyecto.codigo }}</strong></div>
+<div class="item"><label>ESTADO</label><strong>{{ proyecto.estado }}</strong></div>
+<div class="item"><label>TIPO</label><strong>{{ proyecto.tipo or '-' }}</strong></div>
+<div class="item span2"><label>CLIENTE</label><strong>{{ proyecto.cliente.razon_social if proyecto.cliente else '-' }}</strong></div>
+<div class="item"><label>CENTRO DE COSTO</label><strong>{{ proyecto.centro_costo or '-' }}</strong></div>
+<div class="item span2"><label>UBICACIÓN</label><strong>{{ proyecto.ubicacion or '-' }}</strong></div>
+<div class="item"><label>RESPONSABLE</label><strong>{{ proyecto.responsable or '-' }}</strong></div>
+<div class="item"><label>FECHA INICIO</label><strong>{{ proyecto.fecha_inicio.strftime('%d/%m/%Y') if proyecto.fecha_inicio else '-' }}</strong></div>
+<div class="item"><label>FIN ESTIMADO</label><strong>{{ proyecto.fecha_fin_estimada.strftime('%d/%m/%Y') if proyecto.fecha_fin_estimada else '-' }}</strong></div>
+<div class="item"><label>PRESUPUESTO</label><strong>${{ "{:,.0f}".format(proyecto.presupuesto or 0) }}</strong></div>
+<div class="item"><label>VALOR CONTRATO</label><strong>${{ "{:,.0f}".format(proyecto.valor_contrato or 0) }}</strong></div>
+<div class="item"><label>PRESUPUESTO UTILIZADO</label><strong>{{ "{:.1f}".format(resumen.porcentaje_presupuesto or 0) }}%</strong></div>
+<div class="item"><label>DISPONIBLE PRESUPUESTO</label><strong>${{ "{:,.0f}".format(resumen.disponible_presupuesto or 0) }}</strong></div>
+<div class="item span3"><label>DESCRIPCIÓN</label><strong>{{ proyecto.descripcion or '-' }}</strong></div>
+<div class="item span3"><label>OBSERVACIONES</label><strong>{{ proyecto.observaciones or '-' }}</strong></div>
+</div></div>
+</section>
+
+<section class="card">
+<div class="card-head"><h2>Movimientos contables del proyecto</h2><p>{{ resumen.cantidad_movimientos }} registros asociados</p></div>
+{% if resumen.movimientos %}
+<div class="table-wrap"><table>
+<thead><tr><th>Fecha</th><th>Tipo</th><th>Tercero</th><th>Documento</th><th>Concepto</th><th>Cuenta</th><th>Centro costo</th><th>Valor</th></tr></thead>
+<tbody>{% for m in resumen.movimientos %}<tr><td>{{ m.fecha.strftime('%d/%m/%Y') if m.fecha else '' }}</td><td>{{ m.tipo }}</td><td>{{ m.nombre_tercero or '' }}</td><td>{{ m.numero_documento or m.numero_soporte or '' }}</td><td>{{ m.concepto or '' }}</td><td>{{ m.cuenta or '' }}</td><td>{{ m.centro_costo or '' }}</td><td class="money">${{ "{:,.0f}".format(m.valor_neto or m.valor or 0) }}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% else %}<div class="body">No hay movimientos asociados todavía.</div>{% endif %}
+</section>
+
+<section class="card">
+<div class="card-head"><h2>Cuentas por pagar del proyecto</h2><p>Obligaciones a proveedores vinculadas</p></div>
+{% if resumen.cuentas_pagar %}
+<div class="table-wrap"><table>
+<thead><tr><th>Proveedor</th><th>Documento</th><th>Fecha</th><th>Vence</th><th>Neto</th><th>Pagado</th><th>Saldo</th><th>Estado</th></tr></thead>
+<tbody>{% for c in resumen.cuentas_pagar %}<tr><td>{{ c.proveedor.razon_social if c.proveedor else '' }}</td><td>{{ c.numero_documento }}</td><td>{{ c.fecha_documento.strftime('%d/%m/%Y') if c.fecha_documento else '' }}</td><td>{{ c.fecha_vencimiento.strftime('%d/%m/%Y') if c.fecha_vencimiento else '-' }}</td><td class="money">${{ "{:,.0f}".format(c.valor_neto or 0) }}</td><td class="money">${{ "{:,.0f}".format(c.total_pagado or 0) }}</td><td class="money">${{ "{:,.0f}".format(c.saldo_pendiente or 0) }}</td><td>{{ c.estado }}</td></tr>{% endfor %}</tbody></table></div>
+{% else %}<div class="body">No hay cuentas por pagar asociadas.</div>{% endif %}
+</section>
+
+<section class="card">
+<div class="card-head"><h2>Cuentas por cobrar del proyecto</h2><p>Cartera de clientes vinculada</p></div>
+{% if resumen.cuentas_cobrar %}
+<div class="table-wrap"><table>
+<thead><tr><th>Cliente</th><th>Documento</th><th>Fecha</th><th>Vence</th><th>Neto</th><th>Cobrado</th><th>Saldo</th><th>Estado</th></tr></thead>
+<tbody>{% for c in resumen.cuentas_cobrar %}<tr><td>{{ c.cliente.razon_social if c.cliente else '' }}</td><td>{{ c.numero_documento }}</td><td>{{ c.fecha_documento.strftime('%d/%m/%Y') if c.fecha_documento else '' }}</td><td>{{ c.fecha_vencimiento.strftime('%d/%m/%Y') if c.fecha_vencimiento else '-' }}</td><td class="money">${{ "{:,.0f}".format(c.valor_neto or 0) }}</td><td class="money">${{ "{:,.0f}".format(c.total_cobrado or 0) }}</td><td class="money">${{ "{:,.0f}".format(c.saldo_pendiente or 0) }}</td><td>{{ c.estado }}</td></tr>{% endfor %}</tbody></table></div>
+{% else %}<div class="body">No hay cuentas por cobrar asociadas.</div>{% endif %}
+</section>
+</main>
+
+<aside>
+<section class="card"><div class="card-head"><h2>Acciones</h2><p>Administración del proyecto</p></div><div class="body">
+<div class="action"><h3>Editar proyecto</h3><p>Corrige fechas, presupuesto, cliente, responsable o datos administrativos.</p><button type="button" class="btn gold" onclick="abrirEditar()">Editar</button></div>
+<div class="action"><h3>{{ 'Reactivar' if not proyecto.activo else 'Archivar' }}</h3><p>Archivar conserva todos los registros contables y evita eliminar historia.</p><form method="POST" action="/crv/proyectos/{{ proyecto.id }}/estado"><button type="submit" class="btn light">{{ 'Reactivar proyecto' if not proyecto.activo else 'Archivar proyecto' }}</button></form></div>
+<div class="action"><h3>Eliminar proyecto</h3><p>Solo se permite cuando no tiene movimientos, cuentas por pagar ni cuentas por cobrar asociadas.</p><form method="POST" action="/crv/proyectos/{{ proyecto.id }}/eliminar" onsubmit="return confirm('¿Seguro que deseas eliminar este proyecto?');"><button type="submit" class="btn red">Eliminar</button></form></div>
+</div></section>
+</aside>
+</div>
+
+</div>
+</main>
+</div>
+</div>
+
+<div id="overlayEditar" class="overlay" onclick="cerrarEditar()"></div>
+<div id="modalEditar" class="modal"><div class="modal-box">
+<div class="modal-head"><h2>Editar proyecto</h2><button type="button" class="close" onclick="cerrarEditar()">×</button></div>
+<div class="modal-body">
+<form method="POST" action="/crv/proyectos/{{ proyecto.id }}/editar">
+<div class="form-grid">
+<div class="field"><label>Código *</label><input type="text" name="codigo" required value="{{ proyecto.codigo }}"></div>
+<div class="field span2"><label>Nombre *</label><input type="text" name="nombre" required value="{{ proyecto.nombre }}"></div>
+<div class="field"><label>Tipo</label><input type="text" name="tipo" value="{{ proyecto.tipo or '' }}"></div>
+<div class="field"><label>Estado</label><select name="estado">{% for e in ['ACTIVO','EN EJECUCION','PAUSADO','FINALIZADO','ARCHIVADO'] %}<option value="{{ e }}" {% if proyecto.estado == e %}selected{% endif %}>{{ e }}</option>{% endfor %}</select></div>
+<div class="field"><label>Cliente ID</label><input type="number" name="cliente_id" value="{{ proyecto.cliente_id or '' }}"></div>
+<div class="field span2"><label>Ubicación</label><input type="text" name="ubicacion" value="{{ proyecto.ubicacion or '' }}"></div>
+<div class="field"><label>Responsable</label><input type="text" name="responsable" value="{{ proyecto.responsable or '' }}"></div>
+<div class="field"><label>Fecha inicio</label><input type="date" name="fecha_inicio" value="{{ proyecto.fecha_inicio.isoformat() if proyecto.fecha_inicio else '' }}"></div>
+<div class="field"><label>Fin estimado</label><input type="date" name="fecha_fin_estimada" value="{{ proyecto.fecha_fin_estimada.isoformat() if proyecto.fecha_fin_estimada else '' }}"></div>
+<div class="field"><label>Centro costo</label><input type="text" name="centro_costo" value="{{ proyecto.centro_costo or '' }}"></div>
+<div class="field"><label>Presupuesto</label><input type="number" step="0.01" name="presupuesto" value="{{ proyecto.presupuesto or 0 }}"></div>
+<div class="field"><label>Valor contrato</label><input type="number" step="0.01" name="valor_contrato" value="{{ proyecto.valor_contrato or 0 }}"></div>
+<div class="field span3"><label>Descripción</label><textarea name="descripcion">{{ proyecto.descripcion or '' }}</textarea></div>
+<div class="field span3"><label>Observaciones</label><textarea name="observaciones">{{ proyecto.observaciones or '' }}</textarea></div>
+</div>
+<div class="modal-actions"><button type="button" class="btn light" onclick="cerrarEditar()">Cancelar</button><button type="submit" class="btn gold">Guardar cambios</button></div>
+</form>
+</div></div></div>
+
+<script>
+function abrirEditar(){document.getElementById("overlayEditar").classList.add("active");document.getElementById("modalEditar").classList.add("active");document.body.classList.add("modal-open")}
+function cerrarEditar(){document.getElementById("overlayEditar").classList.remove("active");document.getElementById("modalEditar").classList.remove("active");document.body.classList.remove("modal-open")}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")cerrarEditar()});
+</script>
+</body>
+</html>

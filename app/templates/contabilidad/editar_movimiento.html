@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Movimiento</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <div class="page-header">
+        <h1>{{ empresa_nombre }} - Editar Movimiento</h1>
+        <p>Corrige la información del movimiento seleccionado</p>
+    </div>
+
+    <div class="empresa-actual-bar">
+        <div class="empresa-actual-info">
+            <span class="empresa-badge">Empresa activa</span>
+            <strong>{{ empresa_nombre }}</strong>
+        </div>
+
+        <div class="empresa-actual-actions">
+            <a href="/movimientos" class="btn-secondary">Volver a movimientos</a>
+            <a href="/dashboard" class="btn-secondary">Dashboard</a>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <div class="form-card">
+            <form method="POST" class="movimiento-form">
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="fecha">Fecha</label>
+                        <input type="date" name="fecha" id="fecha" value="{{ movimiento.fecha.strftime('%Y-%m-%d') }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tipo">Tipo</label>
+                        <select name="tipo" id="tipo" required onchange="actualizarCategorias(true); actualizarCuentas(true);">
+                            <option value="">Seleccione</option>
+                            <option value="INGRESO" {% if movimiento.tipo == 'INGRESO' %}selected{% endif %}>Ingreso</option>
+                            <option value="GASTO" {% if movimiento.tipo == 'GASTO' %}selected{% endif %}>Gasto</option>
+                        </select>
+                    </div>
+
+                    {% if sedes %}
+                    <div class="form-group form-group-full">
+                        <label for="sede_id">Sede</label>
+                        <select name="sede_id" id="sede_id">
+                            <option value="">General / Sin sede</option>
+                            {% for sede in sedes %}
+                            <option value="{{ sede.id }}" {% if movimiento.sede_id == sede.id %}selected{% endif %}>{{ sede.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group form-group-full">
+                        <label for="categoria">Categoría</label>
+                        <select name="categoria" id="categoria" required></select>
+                    </div>
+
+                    <div class="form-group form-group-full" id="otro_categoria_div" style="display:none;">
+                        <label for="otra_categoria">Otra categoría</label>
+                        <input type="text" name="otra_categoria" id="otra_categoria" placeholder="Escriba la categoría">
+                    </div>
+
+                    <div class="form-group form-group-full">
+                        <label for="cuenta">Cuenta / Medio por donde entra o sale</label>
+                        <select name="cuenta" id="cuenta" required onchange="mostrarOtraCuenta()"></select>
+                    </div>
+
+                    <div class="form-group form-group-full" id="otra_cuenta_div" style="display:none;">
+                        <label for="otra_cuenta">Otra cuenta / medio</label>
+                        <input type="text" name="otra_cuenta" id="otra_cuenta" placeholder="Escriba la cuenta">
+                    </div>
+
+                    <div class="form-group form-group-full">
+                        <label for="tercero">Tercero / Proveedor / Cliente</label>
+                        <input type="text" name="tercero" id="tercero" value="{{ movimiento.tercero if movimiento.tercero else '' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="valor">Valor</label>
+                        <input type="number" step="0.01" name="valor" id="valor" value="{{ movimiento.valor }}" required>
+                    </div>
+
+                    <div class="form-group form-group-full">
+                        <label for="descripcion">Descripción</label>
+                        <textarea name="descripcion" id="descripcion" rows="4">{{ movimiento.descripcion }}</textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Guardar cambios</button>
+                    <a href="/movimientos" class="btn-secondary">Cancelar</a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const categoriaActual = "{{ movimiento.categoria|e }}";
+        const tipoActual = "{{ movimiento.tipo|e }}";
+        const cuentaActual = "{{ movimiento.cuenta|e if movimiento.cuenta else '' }}";
+
+        const categoriasIngreso = ["Venta", "Abono crédito", "Ingreso extra", "Otro"];
+        const categoriasGasto = ["Compra material obra", "Transporte", "Servicios", "Arriendos", "Nómina planta", "Nómina obra", "Papelería", "Otro"];
+
+        const cuentasIngreso = ["EFECTIVO", "BANCOLOMBIA SAS", "BANCOLOMBIA ING", "NEQUI ING", "BANCOLOMBIA SRA ALISA", "BOLD SRA ALISA", "OTRO"];
+        const cuentasGasto = ["EFECTIVO", "BANCOLOMBIA SAS", "BANCOLOMBIA ING", "NEQUI ING", "BANCOLOMBIA SRA ALISA", "BOLD SRA ALISA", "OTRO"];
+
+        function actualizarCategorias(desdeCambioTipo = false) {
+            const tipo = document.getElementById("tipo").value;
+            const categoria = document.getElementById("categoria");
+
+            categoria.innerHTML = "";
+
+            let opciones = [];
+
+            if (tipo === "INGRESO") {
+                opciones = [...categoriasIngreso];
+            } else if (tipo === "GASTO") {
+                opciones = [...categoriasGasto];
+            }
+
+            let categoriaASeleccionar = categoriaActual;
+
+            if (desdeCambioTipo && tipo !== tipoActual && !opciones.includes(categoriaActual)) {
+                categoriaASeleccionar = "";
+            }
+
+            if (categoriaASeleccionar && !opciones.includes(categoriaASeleccionar)) {
+                opciones.unshift(categoriaASeleccionar);
+            }
+
+            const optionInicial = document.createElement("option");
+            optionInicial.value = "";
+            optionInicial.textContent = "Seleccione una categoría";
+            categoria.appendChild(optionInicial);
+
+            opciones.forEach(function(opcion) {
+                const option = document.createElement("option");
+                option.value = opcion;
+                option.textContent = opcion;
+                if (opcion === categoriaASeleccionar) {
+                    option.selected = true;
+                }
+                categoria.appendChild(option);
+            });
+
+            mostrarOtroCategoria();
+        }
+
+        function mostrarOtroCategoria() {
+            const categoria = document.getElementById("categoria").value;
+            const divOtro = document.getElementById("otro_categoria_div");
+            divOtro.style.display = (categoria === "Otro") ? "block" : "none";
+        }
+
+        function actualizarCuentas(desdeCambioTipo = false) {
+            const tipo = document.getElementById("tipo").value;
+            const cuenta = document.getElementById("cuenta");
+
+            cuenta.innerHTML = "";
+
+            let opciones = [];
+
+            if (tipo === "INGRESO") {
+                opciones = [...cuentasIngreso];
+            } else if (tipo === "GASTO") {
+                opciones = [...cuentasGasto];
+            }
+
+            let cuentaASeleccionar = cuentaActual;
+
+            if (desdeCambioTipo && tipo !== tipoActual && !opciones.includes(cuentaActual)) {
+                cuentaASeleccionar = "";
+            }
+
+            if (cuentaASeleccionar && !opciones.includes(cuentaASeleccionar)) {
+                opciones.unshift(cuentaASeleccionar);
+            }
+
+            const optionInicial = document.createElement("option");
+            optionInicial.value = "";
+            optionInicial.textContent = "Seleccione una cuenta / medio";
+            cuenta.appendChild(optionInicial);
+
+            opciones.forEach(function(opcion) {
+                const option = document.createElement("option");
+                option.value = opcion;
+                option.textContent = opcion;
+                if (opcion === cuentaASeleccionar) {
+                    option.selected = true;
+                }
+                cuenta.appendChild(option);
+            });
+
+            mostrarOtraCuenta();
+        }
+
+        function mostrarOtraCuenta() {
+            const cuenta = document.getElementById("cuenta").value;
+            const divOtra = document.getElementById("otra_cuenta_div");
+            divOtra.style.display = (cuenta === "OTRO") ? "block" : "none";
+        }
+
+        document.getElementById("categoria").addEventListener("change", mostrarOtroCategoria);
+        document.getElementById("cuenta").addEventListener("change", mostrarOtraCuenta);
+
+        actualizarCategorias(false);
+        actualizarCuentas(false);
+    </script>
+
+</body>
+</html>

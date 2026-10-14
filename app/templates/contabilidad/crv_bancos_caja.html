@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CRV CONSTRUCTORA - Bancos y caja</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            color: #17283f;
+        }
+
+        body.bc-modal-open { overflow: hidden; }
+
+        .bc-page {
+            width: 100%;
+            min-height: 100vh;
+            padding: 26px 28px 40px;
+        }
+
+        .bc-shell {
+            width: 100%;
+            max-width: 1480px;
+            margin: 0 auto;
+        }
+
+        .bc-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .bc-logo {
+            width: 86px;
+            height: 68px;
+            object-fit: contain;
+            margin-bottom: 4px;
+        }
+
+        .bc-header h1 {
+            margin: 0;
+            color: #17304f;
+            font-size: 29px;
+            font-weight: 900;
+        }
+
+        .bc-header p {
+            margin: 7px 0 0;
+            color: #718398;
+            font-size: 12px;
+        }
+
+        .bc-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-height: 38px;
+            padding: 9px 14px;
+            border: none;
+            border-radius: 9px;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 900;
+            text-decoration: none;
+            cursor: pointer;
+            transition: .15s ease;
+        }
+
+        .bc-btn:hover { transform: translateY(-1px); }
+
+        .bc-btn-black { background: #111; color: white; }
+        .bc-btn-navy { background: #17304f; color: white; }
+        .bc-btn-gold { background: #d8b541; color: white; }
+        .bc-btn-light { background: #edf2f7; color: #17304f; }
+        .bc-btn-green { background: #129653; color: white; }
+        .bc-btn-red { background: #ef2b2d; color: white; }
+        .bc-btn-small { min-height: 30px; padding: 6px 9px; font-size: 9px; }
+
+        .bc-topbar {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 28px rgba(18,40,64,.07);
+        }
+
+        .bc-top-left,
+        .bc-top-right {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            flex-wrap: wrap;
+        }
+
+        .bc-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 11px;
+            border-radius: 999px;
+            background: #e4f8eb;
+            color: #138246;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .bc-badge::before { content: "●"; font-size: 8px; }
+
+        .bc-company {
+            color: #17304f;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .bc-summary {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0,1fr));
+            gap: 13px;
+            margin-bottom: 17px;
+        }
+
+        .bc-summary-card {
+            min-width: 0;
+            min-height: 112px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+            border-radius: 16px;
+            border-top: 4px solid #17304f;
+            box-shadow: 0 8px 24px rgba(18,40,64,.06);
+        }
+
+        .bc-summary-card.green { border-top-color: #13a05a; }
+        .bc-summary-card.red { border-top-color: #ef2b2d; }
+        .bc-summary-card.gold { border-top-color: #d8b541; }
+        .bc-summary-card.orange { border-top-color: #dc8617; }
+
+        .bc-summary-icon {
+            width: 44px;
+            height: 44px;
+            flex: 0 0 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: #e8eff8;
+            font-size: 19px;
+        }
+
+        .bc-summary-card.green .bc-summary-icon { background: #dcf7e7; }
+        .bc-summary-card.red .bc-summary-icon { background: #ffe2e2; }
+        .bc-summary-card.gold .bc-summary-icon { background: #fff2c5; }
+        .bc-summary-card.orange .bc-summary-icon { background: #fff0d9; }
+
+        .bc-summary-label {
+            color: #63768b;
+            font-size: 9px;
+            font-weight: 900;
+        }
+
+        .bc-summary-value {
+            margin-top: 5px;
+            color: #17304f;
+            font-size: 21px;
+            line-height: 1.1;
+            font-weight: 900;
+        }
+
+        .bc-summary-note {
+            margin-top: 4px;
+            color: #8998a8;
+            font-size: 8.5px;
+        }
+
+        .bc-card {
+            width: 100%;
+            margin-bottom: 17px;
+            background: white;
+            border-radius: 17px;
+            overflow: hidden;
+            box-shadow: 0 12px 30px rgba(18,40,64,.07);
+        }
+
+        .bc-card-header {
+            padding: 17px 19px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #e5ebf0;
+        }
+
+        .bc-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .bc-title-icon {
+            width: 41px;
+            height: 41px;
+            flex: 0 0 41px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 11px;
+            background: #fff3cc;
+            font-size: 18px;
+        }
+
+        .bc-card-header h2 {
+            margin: 0;
+            color: #17304f;
+            font-size: 19px;
+        }
+
+        .bc-card-header p {
+            margin: 4px 0 0;
+            color: #78899c;
+            font-size: 10px;
+        }
+
+        .bc-accounts {
+            padding: 16px 18px 19px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0,1fr));
+            gap: 12px;
+        }
+
+        .bc-account {
+            min-width: 0;
+            padding: 15px;
+            border: 1px solid #e1e8ef;
+            border-radius: 13px;
+            background: #fbfcfd;
+        }
+
+        .bc-account-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .bc-account-name {
+            color: #17304f;
+            font-size: 13px;
+            font-weight: 900;
+            overflow-wrap: break-word;
+        }
+
+        .bc-account-status {
+            padding: 5px 7px;
+            border-radius: 999px;
+            background: #e4f8eb;
+            color: #138246;
+            font-size: 8px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .bc-account-balance {
+            margin: 13px 0 10px;
+            color: #17304f;
+            font-size: 23px;
+            font-weight: 900;
+        }
+
+        .bc-account-balance.negative { color: #dc2626; }
+
+        .bc-account-meta {
+            display: grid;
+            grid-template-columns: repeat(2,1fr);
+            gap: 7px;
+        }
+
+        .bc-account-mini {
+            padding: 8px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e7ecf1;
+        }
+
+        .bc-account-mini span {
+            display: block;
+            color: #8190a0;
+            font-size: 8px;
+            font-weight: 900;
+        }
+
+        .bc-account-mini strong {
+            display: block;
+            margin-top: 3px;
+            color: #17304f;
+            font-size: 10px;
+        }
+
+        .bc-filters {
+            padding: 14px 18px;
+            display: grid;
+            grid-template-columns: 190px minmax(230px,1fr) auto auto;
+            gap: 9px;
+            align-items: end;
+            background: #fbfcfd;
+            border-bottom: 1px solid #e5ebf0;
+        }
+
+        .bc-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .bc-field label {
+            color: #52677d;
+            font-size: 9px;
+            font-weight: 900;
+        }
+
+        .bc-field input,
+        .bc-field select,
+        .bc-field textarea {
+            width: 100%;
+            padding: 10px 11px;
+            border: 1px solid #d3dde7;
+            border-radius: 8px;
+            outline: none;
+            background: white;
+            color: #17283f;
+            font-family: inherit;
+            font-size: 11px;
+        }
+
+        .bc-field input:focus,
+        .bc-field select:focus,
+        .bc-field textarea:focus {
+            border-color: #d8b541;
+            box-shadow: 0 0 0 3px rgba(216,181,65,.12);
+        }
+
+        .bc-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            padding: 0 14px 17px;
+        }
+
+        .bc-table {
+            width: 100%;
+            min-width: 1180px;
+            border-collapse: collapse;
+        }
+
+        .bc-table th {
+            padding: 11px 9px;
+            background: #17304f;
+            color: white;
+            text-align: left;
+            font-size: 9.5px;
+            white-space: nowrap;
+        }
+
+        .bc-table td {
+            padding: 11px 9px;
+            border-bottom: 1px solid #e7ecf1;
+            color: #17283f;
+            font-size: 10px;
+            vertical-align: middle;
+        }
+
+        .bc-money {
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .bc-green { color: #0f8a47; }
+        .bc-red { color: #dc2626; }
+
+        .bc-tag {
+            display: inline-flex;
+            padding: 5px 7px;
+            border-radius: 999px;
+            background: #edf2f7;
+            color: #17304f;
+            font-size: 8px;
+            font-weight: 900;
+        }
+
+        .bc-tag.ok {
+            background: #dcf7e7;
+            color: #087b3a;
+        }
+
+        .bc-tag.pending {
+            background: #fff4d3;
+            color: #8d6800;
+        }
+
+        .bc-actions-inline {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+        .bc-empty {
+            padding: 45px 20px;
+            text-align: center;
+            color: #78899c;
+        }
+
+        .bc-empty strong {
+            display: block;
+            margin-bottom: 6px;
+            color: #17304f;
+            font-size: 15px;
+        }
+
+        .bc-note {
+            margin-top: -3px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            background: #eaf3ff;
+            color: #285c96;
+            font-size: 9.5px;
+        }
+
+        /* MODALES */
+
+        .bc-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            background: rgba(13,29,48,.52);
+            backdrop-filter: blur(3px);
+            opacity: 0;
+            visibility: hidden;
+            transition: .18s ease;
+        }
+
+        .bc-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .bc-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            padding: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: scale(.98);
+            transition: .18s ease;
+        }
+
+        .bc-modal.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: scale(1);
+        }
+
+        .bc-modal-box {
+            width: 100%;
+            max-width: 820px;
+            max-height: 92vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 30px 80px rgba(10,28,48,.30);
+        }
+
+        .bc-modal-header {
+            padding: 17px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #e5eaf0;
+        }
+
+        .bc-modal-header h2 {
+            margin: 0;
+            color: #17304f;
+            font-size: 18px;
+        }
+
+        .bc-modal-header p {
+            margin: 4px 0 0;
+            color: #7b8b9d;
+            font-size: 10px;
+        }
+
+        .bc-close {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 9px;
+            background: #edf2f7;
+            color: #17304f;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .bc-modal-body {
+            padding: 19px 21px 22px;
+            overflow-y: auto;
+            background: #fbfcfd;
+        }
+
+        .bc-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2,minmax(0,1fr));
+            gap: 13px 14px;
+        }
+
+        .bc-full { grid-column: span 2; }
+
+        .bc-field textarea {
+            min-height: 78px;
+            resize: vertical;
+        }
+
+        .bc-modal-actions {
+            margin-top: 18px;
+            padding-top: 15px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            border-top: 1px solid #e3e9ef;
+        }
+
+        @media (max-width: 1150px) {
+            .bc-summary { grid-template-columns: repeat(2,1fr); }
+            .bc-accounts { grid-template-columns: repeat(2,1fr); }
+        }
+
+        @media (max-width: 760px) {
+            .bc-page { padding: 12px; }
+            .bc-summary,
+            .bc-accounts,
+            .bc-filters,
+            .bc-form-grid { grid-template-columns: 1fr; }
+
+            .bc-full { grid-column: auto; }
+            .bc-modal { padding: 8px; }
+            .bc-modal-actions { flex-direction: column; }
+            .bc-modal-actions .bc-btn { width: 100%; }
+        }
+    
+        /* =====================================================
+           LAYOUT CON MENÚ LATERAL PERMANENTE
+        ===================================================== */
+
+        .bc-layout {
+            width: 100%;
+            max-width: 1640px;
+            margin: 0 auto;
+
+            display: grid;
+            grid-template-columns: 250px minmax(0, 1fr);
+            gap: 20px;
+            align-items: start;
+        }
+
+        .bc-sidebar {
+            position: sticky;
+            top: 18px;
+
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 18px;
+
+            box-shadow: 0 12px 30px rgba(18,40,64,.08);
+        }
+
+        .bc-sidebar-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+
+            padding: 7px 10px;
+            margin-bottom: 10px;
+
+            border-radius: 999px;
+
+            background: #e8f7ee;
+            color: #168446;
+
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .bc-sidebar-badge::before {
+            content: "●";
+            font-size: 8px;
+        }
+
+        .bc-sidebar-company {
+            margin-bottom: 2px;
+
+            color: #17304f;
+
+            font-size: 18px;
+            line-height: 1.2;
+            font-weight: 900;
+        }
+
+        .bc-sidebar-subtitle {
+            margin-bottom: 15px;
+
+            color: #cda52b;
+
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .bc-sidebar-menu {
+            display: grid;
+            gap: 7px;
+        }
+
+        .bc-sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+
+            min-height: 40px;
+            padding: 8px 10px;
+
+            border-radius: 9px;
+
+            background: #eef3f8;
+            color: #17304f;
+
+            text-decoration: none;
+
+            font-size: 11px;
+            font-weight: 800;
+
+            transition: .15s ease;
+        }
+
+        .bc-sidebar-menu a:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 14px rgba(18,40,64,.08);
+        }
+
+        .bc-sidebar-menu .bc-menu-icon {
+            width: 25px;
+            height: 25px;
+            min-width: 25px;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 7px;
+
+            background: rgba(23,48,79,.08);
+
+            font-size: 13px;
+        }
+
+        .bc-sidebar-menu a.active {
+            background: #17304f;
+            color: #ffffff;
+        }
+
+        .bc-sidebar-menu a.active .bc-menu-icon {
+            background: rgba(255,255,255,.16);
+        }
+
+        .bc-sidebar-menu a.gold {
+            background: #d8b541;
+            color: #ffffff;
+        }
+
+        .bc-sidebar-menu a.gold .bc-menu-icon {
+            background: rgba(255,255,255,.17);
+        }
+
+        .bc-sidebar-menu a.danger {
+            justify-content: center;
+
+            margin-top: 5px;
+
+            background: #ef2b2d;
+            color: #ffffff;
+        }
+
+        .bc-sidebar-menu a.danger .bc-menu-icon {
+            background: rgba(255,255,255,.16);
+        }
+
+        .bc-main {
+            min-width: 0;
+        }
+
+        @media (max-width: 1050px) {
+            .bc-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .bc-sidebar {
+                position: static;
+            }
+
+            .bc-sidebar-menu {
+                grid-template-columns: repeat(3, minmax(0,1fr));
+            }
+        }
+
+        @media (max-width: 720px) {
+            .bc-sidebar-menu {
+                grid-template-columns: 1fr;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="bc-page">
+
+<div class="bc-layout">
+
+    <aside class="bc-sidebar">
+
+        <div class="bc-sidebar-badge">
+            Empresa activa
+        </div>
+
+        <div class="bc-sidebar-company">
+            CRV<br>CONSTRUCTORA
+        </div>
+
+        <div class="bc-sidebar-subtitle">
+            Módulo Contable
+        </div>
+
+        <nav class="bc-sidebar-menu">
+
+            <a href="/empresas">
+                <span class="bc-menu-icon">🏢</span>
+                <span>Cambiar empresa</span>
+            </a>
+
+            <a href="/crv/movimientos/nuevo" class="gold">
+                <span class="bc-menu-icon">＋</span>
+                <span>Registrar movimiento</span>
+            </a>
+
+            <a href="/crv/movimientos">
+                <span class="bc-menu-icon">📋</span>
+                <span>Movimientos</span>
+            </a>
+
+            <a href="/crv/terceros">
+                <span class="bc-menu-icon">👤</span>
+                <span>Terceros</span>
+            </a>
+
+            <a href="/crv/terceros?buscar=">
+                <span class="bc-menu-icon">👥</span>
+                <span>Proveedores / Clientes</span>
+            </a>
+
+            <a href="/crv/cuentas-por-pagar">
+                <span class="bc-menu-icon">🧾</span>
+                <span>Cuentas por pagar</span>
+            </a>
+
+            <a href="#">
+                <span class="bc-menu-icon">💰</span>
+                <span>Cuentas por cobrar</span>
+            </a>
+
+            <a href="/crv/bancos-caja" class="active">
+                <span class="bc-menu-icon">🏦</span>
+                <span>Bancos y caja</span>
+            </a>
+
+            <a href="#">
+                <span class="bc-menu-icon">🏗️</span>
+                <span>Proyectos / obras</span>
+            </a>
+
+            <a href="/crv/reportes-contador">
+                <span class="bc-menu-icon">📊</span>
+                <span>Reportes contador</span>
+            </a>
+
+            <a href="#">
+                <span class="bc-menu-icon">📅</span>
+                <span>Cierre mensual</span>
+            </a>
+
+            <a href="/crv/exportaciones">
+                <span class="bc-menu-icon">⬇️</span>
+                <span>Importar / Exportar</span>
+            </a>
+
+            <a href="/logout" class="danger">
+                <span class="bc-menu-icon">⏻</span>
+                <span>Cerrar sesión</span>
+            </a>
+
+        </nav>
+
+    </aside>
+
+    <main class="bc-main">
+
+        <div class="bc-shell">
+
+    <header class="bc-header">
+        <img
+            class="bc-logo"
+            src="{{ url_for('static', filename='logo_crv.png') }}"
+            alt="CRV"
+        >
+        <h1>CRV CONSTRUCTORA - Bancos y caja</h1>
+        <p>
+            Control de saldos, ingresos, egresos, transferencias y conciliación
+            de las cuentas financieras de CRV
+        </p>
+    </header>
+
+    <section class="bc-topbar">
+
+        <div class="bc-top-left">
+            <a href="/crv/dashboard" class="bc-btn bc-btn-black">
+                ← Volver
+            </a>
+
+            <span class="bc-badge">
+                Empresa activa
+            </span>
+
+            <span class="bc-company">
+                {{ empresa_nombre }}
+            </span>
+        </div>
+
+        <div class="bc-top-right">
+
+            <a
+                href="/crv/bancos-caja/pdf"
+                class="bc-btn bc-btn-light"
+            >
+                📄 Exportar PDF
+            </a>
+
+            <a
+                href="/crv/bancos-caja/excel"
+                class="bc-btn bc-btn-green"
+            >
+                📊 Exportar Excel
+            </a>
+
+            <a href="/crv/movimientos" class="bc-btn bc-btn-light">
+                📋 Movimientos
+            </a>
+
+            <button
+                type="button"
+                class="bc-btn bc-btn-light"
+                onclick="abrirCuenta()"
+            >
+                + Nueva cuenta
+            </button>
+
+            <button
+                type="button"
+                class="bc-btn bc-btn-gold"
+                onclick="abrirTransferencia()"
+                {% if cuentas|length < 2 %}disabled{% endif %}
+            >
+                ⇄ Transferencia
+            </button>
+        </div>
+
+    </section>
+
+    <section class="bc-summary">
+
+        <article class="bc-summary-card">
+            <div class="bc-summary-icon">🏦</div>
+            <div>
+                <div class="bc-summary-label">Saldo financiero total</div>
+                <div class="bc-summary-value">
+                    ${{ "{:,.0f}".format(saldo_total or 0) }}
+                </div>
+                <div class="bc-summary-note">Saldo calculado de todas las cuentas</div>
+            </div>
+        </article>
+
+        <article class="bc-summary-card green">
+            <div class="bc-summary-icon">↓</div>
+            <div>
+                <div class="bc-summary-label">Entradas consultadas</div>
+                <div class="bc-summary-value">
+                    ${{ "{:,.0f}".format(entradas_periodo or 0) }}
+                </div>
+                <div class="bc-summary-note">Ingresos y saldos iniciales del filtro</div>
+            </div>
+        </article>
+
+        <article class="bc-summary-card red">
+            <div class="bc-summary-icon">↑</div>
+            <div>
+                <div class="bc-summary-label">Salidas consultadas</div>
+                <div class="bc-summary-value">
+                    ${{ "{:,.0f}".format(salidas_periodo or 0) }}
+                </div>
+                <div class="bc-summary-note">Pagos y egresos del periodo</div>
+            </div>
+        </article>
+
+        <article class="bc-summary-card gold">
+            <div class="bc-summary-icon">⇄</div>
+            <div>
+                <div class="bc-summary-label">Transferencias</div>
+                <div class="bc-summary-value">
+                    ${{ "{:,.0f}".format(transferencias_periodo or 0) }}
+                </div>
+                <div class="bc-summary-note">Movimientos entre cuentas propias</div>
+            </div>
+        </article>
+
+        <article class="bc-summary-card orange">
+            <div class="bc-summary-icon">!</div>
+            <div>
+                <div class="bc-summary-label">Sin conciliar</div>
+                <div class="bc-summary-value">
+                    {{ sin_conciliar_periodo or 0 }}
+                </div>
+                <div class="bc-summary-note">Registros pendientes de revisión</div>
+            </div>
+        </article>
+
+    </section>
+
+    <section class="bc-card">
+
+        <div class="bc-card-header">
+            <div class="bc-title-wrap">
+                <div class="bc-title-icon">🏦</div>
+                <div>
+                    <h2>Cuentas financieras</h2>
+                    <p>Saldos calculados a partir de los movimientos reales registrados en CRV</p>
+                </div>
+            </div>
+
+            <button
+                type="button"
+                class="bc-btn bc-btn-gold"
+                onclick="abrirCuenta()"
+            >
+                + Registrar cuenta
+            </button>
+        </div>
+
+        {% if cuentas %}
+
+        <div class="bc-accounts">
+
+            {% for c in cuentas %}
+
+            <div class="bc-account">
+
+                <div class="bc-account-top">
+                    <div class="bc-account-name">
+                        {{ c.nombre }}
+                    </div>
+
+                    <span class="bc-account-status">
+                        ACTIVA
+                    </span>
+                </div>
+
+                <div class="
+                    bc-account-balance
+                    {% if c.saldo < 0 %}negative{% endif %}
+                ">
+                    ${{ "{:,.0f}".format(c.saldo or 0) }}
+                </div>
+
+                <div class="bc-account-meta">
+
+                    <div class="bc-account-mini">
+                        <span>ENTRADAS</span>
+                        <strong>
+                            ${{ "{:,.0f}".format(c.ingresos or 0) }}
+                        </strong>
+                    </div>
+
+                    <div class="bc-account-mini">
+                        <span>EGRESOS</span>
+                        <strong>
+                            ${{ "{:,.0f}".format(c.egresos or 0) }}
+                        </strong>
+                    </div>
+
+                    <div class="bc-account-mini">
+                        <span>MOVIMIENTOS</span>
+                        <strong>{{ c.movimientos }}</strong>
+                    </div>
+
+                    <div class="bc-account-mini">
+                        <span>SIN CONCILIAR</span>
+                        <strong>{{ c.sin_conciliar }}</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="bc-empty">
+            <strong>No hay cuentas financieras registradas</strong>
+            Crea la primera cuenta bancaria, caja o billetera para iniciar el control.
+            <br><br>
+            <button
+                type="button"
+                class="bc-btn bc-btn-gold"
+                onclick="abrirCuenta()"
+            >
+                + Crear primera cuenta
+            </button>
+        </div>
+
+        {% endif %}
+
+    </section>
+
+    <section class="bc-card">
+
+        <div class="bc-card-header">
+            <div class="bc-title-wrap">
+                <div class="bc-title-icon">📋</div>
+                <div>
+                    <h2>Movimientos bancarios y de caja</h2>
+                    <p>Revisa el origen del movimiento y marca como conciliado después de verificarlo</p>
+                </div>
+            </div>
+        </div>
+
+        <form method="GET" action="/crv/bancos-caja" class="bc-filters">
+
+            <div class="bc-field">
+                <label>Mes</label>
+                <input
+                    type="month"
+                    name="mes"
+                    value="{{ mes_actual or '' }}"
+                >
+            </div>
+
+            <div class="bc-field">
+                <label>Cuenta</label>
+                <select name="cuenta">
+                    <option value="">Todas las cuentas</option>
+                    {% for c in cuentas %}
+                    <option
+                        value="{{ c.nombre }}"
+                        {% if cuenta_actual == c.nombre %}selected{% endif %}
+                    >
+                        {{ c.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="bc-btn bc-btn-navy">
+                Filtrar
+            </button>
+
+            <a href="/crv/bancos-caja" class="bc-btn bc-btn-light">
+                Limpiar
+            </a>
+
+        </form>
+
+        {% if movimientos %}
+
+        <div class="bc-table-wrap">
+
+            <table class="bc-table">
+
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Cuenta origen</th>
+                        <th>Cuenta destino</th>
+                        <th>Concepto</th>
+                        <th>Tercero / beneficiario</th>
+                        <th>Valor</th>
+                        <th>Conciliación</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                {% for m in movimientos %}
+
+                    <tr>
+
+                        <td>
+                            {{
+                                m.fecha.strftime('%d/%m/%Y')
+                                if m.fecha
+                                else ''
+                            }}
+                        </td>
+
+                        <td>
+                            <span class="bc-tag">
+                                {{ m.tipo }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {{ m.cuenta or '-' }}
+                        </td>
+
+                        <td>
+                            {{ m.cuenta_destino or '-' }}
+                        </td>
+
+                        <td>
+                            <strong>{{ m.concepto or '-' }}</strong>
+                            {% if m.numero_soporte %}
+                            <div style="font-size:8px;color:#8190a0;margin-top:3px;">
+                                {{ m.numero_soporte }}
+                            </div>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{
+                                m.tercero_nombre
+                                or m.beneficiario
+                                or '-'
+                            }}
+                        </td>
+
+                        <td class="bc-money">
+                            ${{ "{:,.0f}".format(
+                                m.valor_neto
+                                or m.valor
+                                or 0
+                            ) }}
+                        </td>
+
+                        <td>
+                            {% if m.revisado %}
+                            <span class="bc-tag ok">
+                                CONCILIADO
+                            </span>
+                            {% else %}
+                            <span class="bc-tag pending">
+                                PENDIENTE
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <div class="bc-actions-inline">
+
+                                <form
+                                    method="POST"
+                                    action="/crv/bancos-caja/conciliar/{{ m.id }}"
+                                >
+                                    <button
+                                        type="submit"
+                                        class="bc-btn bc-btn-light bc-btn-small"
+                                    >
+                                        {% if m.revisado %}
+                                            Desmarcar
+                                        {% else %}
+                                            Conciliar
+                                        {% endif %}
+                                    </button>
+                                </form>
+
+                                {% if m.origen_registro in (
+                                    'BANCOS_CAJA_SALDO_INICIAL',
+                                    'BANCOS_CAJA_TRANSFERENCIA'
+                                ) %}
+
+                                <form
+                                    method="POST"
+                                    action="/crv/bancos-caja/eliminar/{{ m.id }}"
+                                    onsubmit="return confirm('¿Seguro que deseas eliminar este registro bancario?');"
+                                >
+                                    <button
+                                        type="submit"
+                                        class="bc-btn bc-btn-red bc-btn-small"
+                                    >
+                                        Eliminar
+                                    </button>
+                                </form>
+
+                                {% else %}
+
+                                <a
+                                    href="/crv/movimientos"
+                                    class="bc-btn bc-btn-light bc-btn-small"
+                                >
+                                    Ver origen
+                                </a>
+
+                                {% endif %}
+
+                            </div>
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="bc-empty">
+            <strong>No hay movimientos para este filtro</strong>
+            Los movimientos con cuenta bancaria o caja aparecerán aquí.
+        </div>
+
+        {% endif %}
+
+    </section>
+
+    <div class="bc-note">
+        ℹ️ El saldo bancario se calcula con los movimientos históricos de CRV.
+        Las compras a crédito no disminuyen el banco al registrar la factura;
+        el banco se afecta cuando se registra el pago real. Las transferencias
+        entre cuentas propias no modifican el resultado financiero.
+    </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+</div>
+
+
+<!-- MODAL NUEVA CUENTA -->
+
+<div id="bcOverlayCuenta" class="bc-overlay" onclick="cerrarCuenta()"></div>
+
+<div id="bcModalCuenta" class="bc-modal">
+<div class="bc-modal-box">
+
+    <div class="bc-modal-header">
+        <div>
+            <h2>Registrar cuenta financiera</h2>
+            <p>Banco, caja o billetera de uso exclusivo de CRV Constructora</p>
+        </div>
+        <button type="button" class="bc-close" onclick="cerrarCuenta()">×</button>
+    </div>
+
+    <div class="bc-modal-body">
+
+        <form method="POST" action="/crv/bancos-caja">
+
+            <input type="hidden" name="accion" value="crear_cuenta">
+
+            <div class="bc-form-grid">
+
+                <div class="bc-field">
+                    <label>Nombre de la cuenta *</label>
+                    <input
+                        type="text"
+                        name="nombre_cuenta"
+                        required
+                        placeholder="Ej: Bancolombia CRV SAS"
+                    >
+                </div>
+
+                <div class="bc-field">
+                    <label>Tipo *</label>
+                    <select name="tipo_cuenta" required>
+                        <option value="BANCO">Cuenta bancaria</option>
+                        <option value="CAJA">Caja</option>
+                        <option value="BILLETERA">Billetera digital</option>
+                        <option value="OTRA">Otra</option>
+                    </select>
+                </div>
+
+                <div class="bc-field">
+                    <label>Fecha del saldo inicial *</label>
+                    <input type="date" name="fecha_apertura" required>
+                </div>
+
+                <div class="bc-field">
+                    <label>Saldo inicial</label>
+                    <input
+                        type="number"
+                        name="saldo_inicial"
+                        step="0.01"
+                        value="0"
+                    >
+                </div>
+
+                <div class="bc-field bc-full">
+                    <label>Observaciones</label>
+                    <textarea
+                        name="observaciones"
+                        placeholder="Ej: saldo confirmado en extracto al 01/01/2026"
+                    ></textarea>
+                </div>
+
+            </div>
+
+            <div class="bc-modal-actions">
+                <button
+                    type="button"
+                    class="bc-btn bc-btn-light"
+                    onclick="cerrarCuenta()"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="bc-btn bc-btn-gold"
+                >
+                    Guardar cuenta
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+</div>
+
+
+<!-- MODAL TRANSFERENCIA -->
+
+<div
+    id="bcOverlayTransferencia"
+    class="bc-overlay"
+    onclick="cerrarTransferencia()"
+></div>
+
+<div id="bcModalTransferencia" class="bc-modal">
+<div class="bc-modal-box">
+
+    <div class="bc-modal-header">
+        <div>
+            <h2>Transferencia entre cuentas</h2>
+            <p>No afecta ingresos, gastos ni resultado; solamente mueve el saldo entre cuentas propias</p>
+        </div>
+        <button
+            type="button"
+            class="bc-close"
+            onclick="cerrarTransferencia()"
+        >×</button>
+    </div>
+
+    <div class="bc-modal-body">
+
+        <form method="POST" action="/crv/bancos-caja">
+
+            <input type="hidden" name="accion" value="transferencia">
+
+            <div class="bc-form-grid">
+
+                <div class="bc-field">
+                    <label>Fecha real *</label>
+                    <input type="date" name="fecha" required>
+                </div>
+
+                <div class="bc-field">
+                    <label>Valor *</label>
+                    <input
+                        type="number"
+                        name="valor"
+                        min="0.01"
+                        step="0.01"
+                        required
+                        placeholder="0"
+                    >
+                </div>
+
+                <div class="bc-field">
+                    <label>Cuenta origen *</label>
+                    <select name="cuenta_origen" required>
+                        <option value="">Seleccione...</option>
+                        {% for c in cuentas %}
+                        <option value="{{ c.nombre }}">
+                            {{ c.nombre }} · ${{ "{:,.0f}".format(c.saldo or 0) }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="bc-field">
+                    <label>Cuenta destino *</label>
+                    <select name="cuenta_destino" required>
+                        <option value="">Seleccione...</option>
+                        {% for c in cuentas %}
+                        <option value="{{ c.nombre }}">
+                            {{ c.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="bc-field">
+                    <label>Referencia</label>
+                    <input
+                        type="text"
+                        name="referencia_pago"
+                        placeholder="Referencia bancaria"
+                    >
+                </div>
+
+                <div class="bc-field bc-full">
+                    <label>Observaciones</label>
+                    <textarea
+                        name="observaciones"
+                        placeholder="Información adicional de la transferencia..."
+                    ></textarea>
+                </div>
+
+            </div>
+
+            <div class="bc-modal-actions">
+
+                <button
+                    type="button"
+                    class="bc-btn bc-btn-light"
+                    onclick="cerrarTransferencia()"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="bc-btn bc-btn-gold"
+                >
+                    Registrar transferencia
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+</div>
+
+
+<script>
+    function abrirCuenta() {
+        document.getElementById("bcOverlayCuenta").classList.add("active");
+        document.getElementById("bcModalCuenta").classList.add("active");
+        document.body.classList.add("bc-modal-open");
+    }
+
+    function cerrarCuenta() {
+        document.getElementById("bcOverlayCuenta").classList.remove("active");
+        document.getElementById("bcModalCuenta").classList.remove("active");
+        document.body.classList.remove("bc-modal-open");
+    }
+
+    function abrirTransferencia() {
+        document.getElementById("bcOverlayTransferencia").classList.add("active");
+        document.getElementById("bcModalTransferencia").classList.add("active");
+        document.body.classList.add("bc-modal-open");
+    }
+
+    function cerrarTransferencia() {
+        document.getElementById("bcOverlayTransferencia").classList.remove("active");
+        document.getElementById("bcModalTransferencia").classList.remove("active");
+        document.body.classList.remove("bc-modal-open");
+    }
+
+    document.addEventListener("keydown", function(evento) {
+        if (evento.key === "Escape") {
+            cerrarCuenta();
+            cerrarTransferencia();
+        }
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll(".bc-modal-box").forEach(function(box) {
+            box.addEventListener("click", function(evento) {
+                evento.stopPropagation();
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

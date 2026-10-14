@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ empresa_nombre }} - Cartera</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .hotel-cartera-shell {
+            max-width: 1400px;
+            margin: 0 auto 40px;
+            padding: 20px;
+        }
+
+        .hotel-cartera-header {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .hotel-cartera-header h1 {
+            margin: 0;
+            color: {{ config.color_primario }};
+            font-size: 42px;
+            font-weight: 800;
+        }
+
+        .hotel-cartera-header p {
+            margin-top: 10px;
+            color: #64748b;
+        }
+
+        .hotel-toolbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .hotel-resumen-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .hotel-card {
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.10);
+            padding: 24px 20px;
+            text-align: center;
+        }
+
+        .hotel-card.gold { border-top: 4px solid {{ config.color_secundario }}; }
+        .hotel-card.green { border-top: 4px solid #16a34a; }
+        .hotel-card.red { border-top: 4px solid #dc2626; }
+        .hotel-card.dark { border-top: 4px solid {{ config.color_primario }}; }
+
+        .hotel-card h2 {
+            margin: 0 0 12px;
+            font-size: 18px;
+            color: {{ config.color_primario }};
+        }
+
+        .hotel-card p {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .hotel-section {
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.10);
+            padding: 20px;
+            margin-bottom: 22px;
+        }
+
+        .hotel-section h2 {
+            margin-top: 0;
+            color: {{ config.color_primario }};
+        }
+
+        .alert-box {
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .alert-red {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .alert-yellow {
+            background: #fffbeb;
+            border-color: #fde68a;
+        }
+
+        .alert-green {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        @media (max-width: 1100px) {
+            .hotel-resumen-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 680px) {
+            .hotel-resumen-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hotel-cartera-header h1 {
+                font-size: 32px;
+            }
+
+            .hotel-cartera-shell {
+                padding: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="hotel-cartera-shell">
+
+    <div class="hotel-cartera-header">
+        <h1>{{ empresa_nombre }} - Cartera</h1>
+        <p>Control de cuotas, saldos, vencimientos y alertas comerciales</p>
+    </div>
+
+    <div class="hotel-toolbar">
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="/hotel-sky-view/dashboard" class="btn-secondary">← Volver</a>
+        <a href="/hotel-sky-view/ventas" class="btn-primary">Ver ventas</a>
+        <a href="/hotel-sky-view/cartera-pdf" class="btn-primary">📄 Descargar PDF</a>
+    </div>
+</div>
+
+    <div class="hotel-resumen-grid">
+        <div class="hotel-card dark">
+            <h2>Saldo total cartera</h2>
+            <p>${{ "{:,.0f}".format(saldo_total) }}</p>
+        </div>
+
+        <div class="hotel-card red">
+            <h2>Cartera vencida</h2>
+            <p>${{ "{:,.0f}".format(cartera_vencida) }}</p>
+        </div>
+
+        <div class="hotel-card gold">
+            <h2>Por vencer</h2>
+            <p>${{ "{:,.0f}".format(cartera_por_vencer) }}</p>
+        </div>
+
+        <div class="hotel-card green">
+            <h2>Clientes al día</h2>
+            <p>{{ clientes_al_dia }}</p>
+        </div>
+    </div>
+
+    <div class="hotel-section">
+        <h2>Alertas</h2>
+
+        <div class="alert-box alert-red">
+            <strong>Cuotas vencidas:</strong> {{ alertas_vencidas|length }}
+        </div>
+
+        <div class="alert-box alert-yellow">
+            <strong>Cuotas por vencer en 7 días:</strong> {{ alertas_por_vencer|length }}
+        </div>
+
+        <div class="alert-box alert-green">
+            <strong>Clientes al día:</strong> {{ clientes_al_dia }}
+        </div>
+    </div>
+
+    <div class="hotel-section">
+        <h2>Clientes con saldo pendiente</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Venta</th>
+                    <th>Cliente</th>
+                    <th>Identificación</th>
+                    <th>Valor final</th>
+                    <th>Recibido</th>
+                    <th>Saldo</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in clientes_con_saldo %}
+                <tr>
+                    <td>#{{ v.consecutivo_venta }}</td>
+                    <td>{{ v.cliente }}</td>
+                    <td>{{ v.cliente_identificacion if v.cliente_identificacion else "" }}</td>
+                    <td>${{ "{:,.0f}".format(v.valor_total_final) }}</td>
+                    <td>${{ "{:,.0f}".format(v.valor_recibido) }}</td>
+                    <td class="gasto-text">${{ "{:,.0f}".format(v.saldo_pendiente) }}</td>
+                    <td>{{ v.estado }}</td>
+                    <td>
+                        <a href="/hotel-sky-view/abonar/{{ v.id }}" class="btn-primary btn-small">Abonar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="hotel-section">
+        <h2>Cuotas pendientes y vencimientos</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Venta</th>
+                    <th>Cliente</th>
+                    <th>Cuota</th>
+                    <th>Vencimiento</th>
+                    <th>Valor cuota</th>
+                    <th>Pagado</th>
+                    <th>Saldo</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cuota in cuotas_pendientes %}
+                <tr>
+                    <td>#{{ cuota.venta_accion.consecutivo_venta }}</td>
+                    <td>{{ cuota.venta_accion.cliente }}</td>
+                    <td>{{ cuota.numero_cuota }}</td>
+                    <td>{{ cuota.fecha_vencimiento }}</td>
+                    <td>${{ "{:,.0f}".format(cuota.valor_cuota) }}</td>
+                    <td>${{ "{:,.0f}".format(cuota.valor_pagado) }}</td>
+                    <td class="gasto-text">${{ "{:,.0f}".format(cuota.saldo_cuota) }}</td>
+                    <td>{{ cuota.estado }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+</body>
+</html>

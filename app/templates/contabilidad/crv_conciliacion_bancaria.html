@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRV CONSTRUCTORA - Conciliación bancaria</title>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;color:#17283f}
+.page{min-height:100vh;padding:28px}
+.layout{max-width:1760px;margin:0 auto;display:grid;grid-template-columns:245px minmax(0,1fr);gap:20px;align-items:start}
+.sidebar{position:sticky;top:18px;background:#fff;border-radius:18px;padding:18px;box-shadow:0 12px 30px rgba(18,40,64,.08)}
+.side-badge{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;margin-bottom:10px;border-radius:999px;background:#e8f7ee;color:#168446;font-size:11px;font-weight:900}
+.side-badge::before{content:"●";font-size:8px}
+.side-company{color:#17304f;font-size:18px;line-height:1.2;font-weight:900}
+.side-subtitle{margin:3px 0 15px;color:#cda52b;font-size:12px;font-weight:800}
+.side-menu{display:grid;gap:7px}
+.side-menu a{display:flex;align-items:center;gap:9px;min-height:40px;padding:8px 10px;border-radius:9px;background:#eef3f8;color:#17304f;text-decoration:none;font-size:11px;font-weight:800}
+.side-icon{width:25px;height:25px;min-width:25px;display:inline-flex;align-items:center;justify-content:center;border-radius:7px;background:rgba(23,48,79,.08);font-size:13px}
+.side-menu a.active{background:#17304f;color:#fff}
+.side-menu a.gold{background:#d8b541;color:#fff}
+.side-menu a.danger{justify-content:center;margin-top:5px;background:#ef2b2d;color:#fff}
+.side-menu a.active .side-icon,.side-menu a.gold .side-icon,.side-menu a.danger .side-icon{background:rgba(255,255,255,.16)}
+.main{min-width:0}
+.shell{max-width:1500px;margin:0 auto}
+.header{text-align:center;margin-bottom:20px}
+.header img{width:90px;max-height:76px;object-fit:contain}
+.header h1{margin:5px 0 0;color:#17304f;font-size:29px;font-weight:900}
+.header p{margin:7px 0 0;color:#6d7f93;font-size:12px}
+.topbar,.card{background:#fff;border-radius:16px;box-shadow:0 10px 27px rgba(18,40,64,.07)}
+.topbar{padding:14px 16px;margin-bottom:17px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.left,.right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{padding:7px 10px;border-radius:999px;background:#e8f7ee;color:#168446;font-size:11px;font-weight:900}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:9px 13px;border:0;border-radius:9px;text-decoration:none;cursor:pointer;font-size:11px;font-weight:900}
+.black{background:#111;color:#fff}.navy{background:#17304f;color:#fff}.gold{background:#d8b541;color:#fff}.light{background:#edf2f7;color:#17304f}.green{background:#149653;color:#fff}.red{background:#ef2b2d;color:#fff}
+.filters{display:grid;grid-template-columns:180px minmax(250px,1fr) auto;gap:9px;align-items:end}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:9px;font-weight:900;color:#5d7084}
+input,select,textarea{width:100%;padding:10px 11px;border:1px solid #d4dde7;border-radius:8px;background:#fff;color:#17283f;font-family:inherit;font-size:11px}
+.summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px;margin-bottom:17px}
+.sum{background:#fff;border-radius:15px;padding:16px;border-top:4px solid #17304f;box-shadow:0 8px 24px rgba(18,40,64,.06)}
+.sum.greenline{border-top-color:#16a05b}.sum.goldline{border-top-color:#d8b541}.sum.redline{border-top-color:#ef2b2d}
+.sum span{display:block;color:#63758a;font-size:9px;font-weight:900}
+.sum strong{display:block;margin-top:6px;color:#17304f;font-size:20px}
+.sum small{display:block;margin-top:5px;color:#8493a3;font-size:8.5px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:17px;align-items:start}
+.card{margin-bottom:17px;overflow:hidden}
+.head{padding:17px 18px;border-bottom:1px solid #e6ebf0;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.head h2{margin:0;color:#17304f;font-size:18px}
+.head p{margin:4px 0 0;color:#738397;font-size:10px}
+.body{padding:17px 18px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:1000px}
+th{background:#17304f;color:#fff;text-align:left;padding:10px 8px;font-size:9px}
+td{padding:10px 8px;border-bottom:1px solid #e7ecf1;font-size:9.5px;vertical-align:middle}
+.money{font-weight:900;white-space:nowrap}
+.status{display:inline-flex;padding:6px 9px;border-radius:999px;font-size:8px;font-weight:900}
+.ok{background:#e5f8ec;color:#137844}.pending{background:#fff2d2;color:#825f00}
+.action{padding:14px;border:1px solid #e1e8ef;border-radius:11px;background:#f8fafc;margin-bottom:10px}
+.action h3{margin:0;color:#17304f;font-size:12px}
+.action p{margin:6px 0 10px;color:#78899c;font-size:9.5px;line-height:1.4}
+.action textarea{min-height:75px;resize:vertical;margin-bottom:8px}
+.diff-ok{color:#149653}.diff-bad{color:#ef2b2d}
+.note{padding:11px 13px;border-radius:9px;background:#eaf3ff;color:#285c96;font-size:9.5px}
+.empty{padding:35px;text-align:center;color:#78899c}
+@media(max-width:1100px){.layout{grid-template-columns:1fr}.sidebar{position:static}.side-menu{grid-template-columns:repeat(3,minmax(0,1fr))}.summary{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
+@media(max-width:720px){.page{padding:12px}.side-menu,.summary,.filters{grid-template-columns:1fr}}
+</style>
+</head>
+
+<body>
+<div class="page">
+<div class="layout">
+
+<aside class="sidebar">
+<div class="side-badge">Empresa activa</div>
+<div class="side-company">CRV<br>CONSTRUCTORA</div>
+<div class="side-subtitle">Módulo Contable</div>
+
+<nav class="side-menu">
+<a href="/empresas"><span class="side-icon">🏢</span><span>Cambiar empresa</span></a>
+<a href="/crv/movimientos/nuevo" class="gold"><span class="side-icon">＋</span><span>Registrar movimiento</span></a>
+<a href="/crv/movimientos"><span class="side-icon">📋</span><span>Movimientos</span></a>
+<a href="/crv/terceros"><span class="side-icon">👤</span><span>Terceros</span></a>
+<a href="/crv/terceros?buscar="><span class="side-icon">👥</span><span>Proveedores / Clientes</span></a>
+<a href="/crv/cuentas-por-pagar"><span class="side-icon">🧾</span><span>Cuentas por pagar</span></a>
+<a href="/crv/cuentas-por-cobrar"><span class="side-icon">💰</span><span>Cuentas por cobrar</span></a>
+<a href="/crv/bancos-caja"><span class="side-icon">🏦</span><span>Bancos y caja</span></a>
+<a href="/crv/conciliacion-bancaria" class="active"><span class="side-icon">⚖️</span><span>Conciliación bancaria</span></a>
+<a href="/crv/proyectos"><span class="side-icon">🏗️</span><span>Proyectos / obras</span></a>
+<a href="/crv/reportes-contador"><span class="side-icon">📊</span><span>Reportes contador</span></a>
+<a href="/crv/cierre-mensual"><span class="side-icon">📅</span><span>Cierre mensual</span></a>
+<a href="/crv/exportaciones"><span class="side-icon">⬇️</span><span>Importar / Exportar</span></a>
+<a href="/logout" class="danger"><span class="side-icon">⏻</span><span>Cerrar sesión</span></a>
+</nav>
+</aside>
+
+<main class="main">
+<div class="shell">
+
+<header class="header">
+<img src="{{ url_for('static', filename='logo_crv.png') }}" alt="CRV">
+<h1>CRV CONSTRUCTORA - Conciliación bancaria</h1>
+<p>Comparación del sistema contra extracto bancario y control de movimientos conciliados</p>
+</header>
+
+<section class="topbar">
+<div class="left">
+<a href="/crv/dashboard" class="btn black">← Volver</a>
+<span class="badge">● Empresa activa</span>
+<strong>{{ empresa_nombre }}</strong>
+</div>
+
+<form method="GET" action="/crv/conciliacion-bancaria" class="filters">
+<div class="field">
+<label>Periodo</label>
+<input type="month" name="periodo" value="{{ periodo }}">
+</div>
+
+<div class="field">
+<label>Cuenta propia CRV</label>
+<select name="cuenta">
+{% for cuenta in cuentas %}
+<option value="{{ cuenta }}" {% if cuenta_actual == cuenta %}selected{% endif %}>{{ cuenta }}</option>
+{% endfor %}
+</select>
+</div>
+
+<button class="btn navy">Consultar</button>
+</form>
+
+<div class="right">
+<a href="/crv/conciliacion-bancaria/pdf?periodo={{ periodo }}&cuenta={{ cuenta_actual }}" class="btn light">📄 PDF</a>
+<a href="/crv/conciliacion-bancaria/excel?periodo={{ periodo }}&cuenta={{ cuenta_actual }}" class="btn green">📊 Excel</a>
+</div>
+</section>
+
+{% if cuenta_actual %}
+
+<section class="summary">
+<div class="sum greenline"><span>ENTRADAS DEL MES</span><strong>${{ "{:,.0f}".format(entradas or 0) }}</strong><small>{{ cuenta_actual }}</small></div>
+<div class="sum redline"><span>SALIDAS DEL MES</span><strong>${{ "{:,.0f}".format(salidas or 0) }}</strong><small>{{ periodo }}</small></div>
+<div class="sum"><span>SALDO SISTEMA</span><strong>${{ "{:,.0f}".format(saldo_sistema or 0) }}</strong><small>Calculado al {{ fecha_fin.strftime('%d/%m/%Y') }}</small></div>
+<div class="sum goldline">
+<span>SALDO EXTRACTO</span>
+{% if extracto_registrado %}
+<strong>${{ "{:,.0f}".format(saldo_extracto or 0) }}</strong>
+<small>Saldo digitado del extracto</small>
+{% else %}
+<strong style="font-size:16px;">Sin registrar</strong>
+<small>Ingresa el saldo final del extracto</small>
+{% endif %}
+</div>
+
+<div class="sum {% if extracto_registrado and diferencia|abs < 0.01 %}greenline{% elif extracto_registrado %}redline{% else %}goldline{% endif %}">
+<span>DIFERENCIA</span>
+{% if extracto_registrado %}
+<strong class="{{ 'diff-ok' if diferencia|abs < 0.01 else 'diff-bad' }}">${{ "{:,.0f}".format(diferencia or 0) }}</strong>
+<small>Extracto - sistema</small>
+{% else %}
+<strong style="font-size:16px;">Pendiente</strong>
+<small>Se calcula al guardar el extracto</small>
+{% endif %}
+</div>
+</section>
+
+<div class="grid">
+
+<main>
+
+<section class="card">
+<div class="head">
+<div>
+<h2>Movimientos de la cuenta</h2>
+<p>{{ movimientos|length }} movimientos del periodo · {{ pendientes|length }} pendientes · {{ conciliados|length }} conciliados</p>
+</div>
+
+{% if conciliacion and conciliacion.estado == 'CONCILIADA' %}
+<span class="status ok">CONCILIADA</span>
+{% else %}
+<span class="status pending">PENDIENTE</span>
+{% endif %}
+</div>
+
+{% if movimientos %}
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Fecha</th>
+<th>Tipo</th>
+<th>Tercero</th>
+<th>Concepto</th>
+<th>Documento</th>
+<th>Entrada</th>
+<th>Salida</th>
+<th>Estado</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody>
+
+{% for m in movimientos %}
+{% set impacto = _impacto_bancario_movimiento(m, cuenta_actual) if false else 0 %}
+<tr>
+<td>{{ m.fecha.strftime('%d/%m/%Y') if m.fecha else '' }}</td>
+<td>{{ m.tipo }}</td>
+<td>{{ m.nombre_tercero or m.beneficiario or '-' }}</td>
+<td>{{ m.concepto or '-' }}</td>
+<td>{{ m.numero_documento or m.numero_soporte or '-' }}</td>
+
+{% if m.tipo == 'INGRESO' or m.tipo == 'COBRO CUENTA POR COBRAR' or (m.tipo == 'TRANSFERENCIA' and m.cuenta_destino == cuenta_actual) or m.tipo == 'SALDO INICIAL CUENTA' %}
+<td class="money">${{ "{:,.0f}".format(m.valor_neto or m.valor or 0) }}</td>
+<td class="money">$0</td>
+{% else %}
+<td class="money">$0</td>
+<td class="money">${{ "{:,.0f}".format(m.valor_neto or m.valor or 0) }}</td>
+{% endif %}
+
+<td>
+{% if m.revisado %}
+<span class="status ok">CONCILIADO</span>
+{% else %}
+<span class="status pending">PENDIENTE</span>
+{% endif %}
+</td>
+
+<td>
+<form method="POST" action="/crv/conciliacion-bancaria/movimiento/{{ m.id }}">
+<input type="hidden" name="periodo" value="{{ periodo }}">
+<input type="hidden" name="cuenta" value="{{ cuenta_actual }}">
+<button type="submit" class="btn {{ 'light' if m.revisado else 'navy' }}">
+{{ 'Desmarcar' if m.revisado else 'Conciliar' }}
+</button>
+</form>
+</td>
+</tr>
+{% endfor %}
+
+</tbody>
+</table>
+</div>
+{% else %}
+<div class="empty">No hay movimientos asociados a esta cuenta durante el periodo seleccionado.</div>
+{% endif %}
+</section>
+
+<div class="note">
+ℹ️ Conciliar no modifica ingresos, gastos, compras ni saldos. Solamente marca que el movimiento fue verificado contra el extracto.
+</div>
+
+</main>
+
+<aside>
+
+<section class="card">
+<div class="head">
+<div>
+<h2>Saldo del extracto</h2>
+<p>Digite exactamente el saldo final que muestra el banco</p>
+</div>
+</div>
+
+<div class="body">
+<form method="POST" action="/crv/conciliacion-bancaria">
+
+<input type="hidden" name="accion" value="guardar_extracto">
+<input type="hidden" name="periodo" value="{{ periodo }}">
+<input type="hidden" name="cuenta" value="{{ cuenta_actual }}">
+
+<div class="field">
+<label>Saldo final del extracto *</label>
+<input
+    type="number"
+    step="0.01"
+    name="saldo_extracto"
+    value="{{ saldo_extracto if extracto_registrado else '' }}"
+    placeholder="Digite el saldo exacto del extracto"
+    required
+>
+</div>
+
+<div class="field" style="margin-top:10px;">
+<label>Observaciones</label>
+<textarea name="observaciones" rows="4" placeholder="Ej: saldo validado contra extracto bancario del mes...">{{ conciliacion.observaciones if conciliacion else '' }}</textarea>
+</div>
+
+<button type="submit" class="btn gold" style="width:100%;margin-top:10px;">
+Guardar comparación
+</button>
+</form>
+</div>
+</section>
+
+<section class="card">
+<div class="head">
+<div>
+<h2>Acciones</h2>
+<p>Control de conciliación</p>
+</div>
+</div>
+
+<div class="body">
+
+<div class="action">
+<h3>Conciliar movimientos</h3>
+<p>Marca todos los movimientos de esta cuenta y periodo como verificados contra el extracto.</p>
+<form method="POST" action="/crv/conciliacion-bancaria/conciliar-todo" onsubmit="return confirm('¿Confirmas que revisaste todos estos movimientos contra el extracto?');">
+<input type="hidden" name="periodo" value="{{ periodo }}">
+<input type="hidden" name="cuenta" value="{{ cuenta_actual }}">
+<button type="submit" class="btn navy" style="width:100%;">Conciliar todo</button>
+</form>
+</div>
+
+<div class="action">
+<h3>Estado para cierre</h3>
+{% if extracto_registrado and pendientes|length == 0 and diferencia|abs < 0.01 and conciliacion and conciliacion.estado == 'CONCILIADA' %}
+<p>La cuenta no presenta movimientos pendientes y el saldo coincide con el extracto.</p>
+<span class="status ok">LISTA PARA CIERRE</span>
+{% elif not extracto_registrado %}
+<p>Primero debes registrar el saldo final del extracto bancario. Sin extracto no se puede completar la conciliación.</p>
+<span class="status pending">EXTRACTO PENDIENTE</span>
+{% else %}
+<p>Para considerar la cuenta conciliada deben quedar 0 movimientos pendientes y diferencia $0.</p>
+<span class="status pending">REVISIÓN PENDIENTE</span>
+{% endif %}
+</div>
+
+</div>
+</section>
+
+</aside>
+</div>
+
+{% else %}
+
+<section class="card">
+<div class="empty">
+No hay cuentas propias de CRV disponibles. Primero registra una cuenta en Bancos y caja.
+<br><br>
+<a href="/crv/bancos-caja" class="btn gold">Ir a Bancos y caja</a>
+</div>
+</section>
+
+{% endif %}
+
+</div>
+</main>
+</div>
+</div>
+</body>
+</html>

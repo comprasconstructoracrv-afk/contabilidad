@@ -1,0 +1,2467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CRV CONSTRUCTORA - Terceros</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            color: #17283f;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        .page {
+            min-height: 100vh;
+            padding: 28px;
+        }
+
+        .shell {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+
+        /* =====================================================
+           ENCABEZADO
+        ===================================================== */
+
+        .header {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .header img {
+            width: 90px;
+            height: 75px;
+            object-fit: contain;
+            margin-bottom: 4px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 30px;
+            font-weight: 900;
+            color: #17304f;
+        }
+
+        .header p {
+            margin: 7px 0 0;
+            color: #6d7f93;
+            font-size: 14px;
+        }
+
+
+        /* =====================================================
+           BARRA SUPERIOR
+        ===================================================== */
+
+        .topbar {
+            background: white;
+            border-radius: 17px;
+            padding: 14px 17px;
+            margin-bottom: 18px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+
+            box-shadow: 0 10px 28px rgba(18, 40, 64, .07);
+        }
+
+        .topbar-left,
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .empresa-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+
+            padding: 7px 11px;
+
+            border-radius: 999px;
+
+            background: #e5f8ec;
+            color: #138246;
+
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .empresa-badge::before {
+            content: "●";
+            font-size: 8px;
+        }
+
+
+        /* =====================================================
+           BOTONES
+        ===================================================== */
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+
+            border: none;
+            outline: none;
+
+            border-radius: 10px;
+
+            padding: 11px 15px;
+
+            font-size: 12px;
+            font-weight: 900;
+
+            cursor: pointer;
+            text-decoration: none;
+
+            transition: .15s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-dark {
+            background: #111;
+            color: white;
+        }
+
+        .btn-navy {
+            background: #17304f;
+            color: white;
+        }
+
+        .btn-gold {
+            background: #d8b541;
+            color: white;
+        }
+
+        .btn-light {
+            background: #edf2f7;
+            color: #17304f;
+        }
+
+        .btn-danger {
+            background: #fee7e7;
+            color: #d5242a;
+        }
+
+        .btn-success {
+            background: #dcf7e7;
+            color: #087b3a;
+        }
+
+        .btn-small {
+            padding: 7px 10px;
+            font-size: 11px;
+        }
+
+
+        /* =====================================================
+           TARJETAS RESUMEN
+        ===================================================== */
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 17px;
+            padding: 18px;
+
+            box-shadow: 0 8px 24px rgba(18, 40, 64, .06);
+
+            display: flex;
+            align-items: center;
+            gap: 15px;
+
+            min-height: 100px;
+        }
+
+        .summary-icon {
+            width: 52px;
+            height: 52px;
+
+            border-radius: 14px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 23px;
+            flex: 0 0 auto;
+        }
+
+        .summary-icon.proveedor {
+            background: #fff4d3;
+        }
+
+        .summary-icon.cliente {
+            background: #dcf7e7;
+        }
+
+        .summary-icon.empleado {
+            background: #e4eeff;
+        }
+
+        .summary-icon.todos {
+            background: #efe7ff;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            font-weight: 900;
+            color: #52687f;
+        }
+
+        .summary-value {
+            margin-top: 4px;
+            font-size: 25px;
+            font-weight: 900;
+            color: #17304f;
+        }
+
+        .summary-note {
+            font-size: 11px;
+            color: #8291a3;
+            margin-top: 3px;
+        }
+
+
+        /* =====================================================
+           DIRECTORIO PRINCIPAL
+        ===================================================== */
+
+        .directory-card {
+            background: white;
+            border-radius: 18px;
+
+            box-shadow: 0 12px 32px rgba(18, 40, 64, .07);
+
+            overflow: hidden;
+        }
+
+        .directory-header {
+            padding: 20px 22px 16px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+
+            border-bottom: 1px solid #e7ecf1;
+        }
+
+        .directory-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .directory-icon {
+            width: 42px;
+            height: 42px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 12px;
+
+            background: #edf3fa;
+
+            font-size: 20px;
+        }
+
+        .directory-header h2 {
+            margin: 0;
+            color: #17304f;
+            font-size: 21px;
+        }
+
+        .directory-header p {
+            margin: 4px 0 0;
+            color: #728399;
+            font-size: 12px;
+        }
+
+
+        /* =====================================================
+           FILTROS
+        ===================================================== */
+
+        .filters {
+            padding: 15px 22px;
+
+            display: grid;
+            grid-template-columns: minmax(280px, 1fr) 190px auto auto;
+            gap: 9px;
+
+            border-bottom: 1px solid #e7ecf1;
+
+            background: #fbfcfd;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+
+            border: 1px solid #d5dee7;
+            border-radius: 9px;
+
+            padding: 11px 12px;
+
+            background: white;
+
+            color: #17283f;
+
+            font-family: inherit;
+            font-size: 12px;
+
+            outline: none;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #d8b541;
+            box-shadow: 0 0 0 3px rgba(216, 181, 65, .12);
+        }
+
+
+        /* =====================================================
+           TABLA
+        ===================================================== */
+
+        .table-wrap {
+            overflow-x: auto;
+            padding: 0 18px 18px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1120px;
+        }
+
+        thead th {
+            background: #17304f;
+            color: white;
+
+            padding: 12px 11px;
+
+            text-align: left;
+
+            font-size: 11px;
+            font-weight: 800;
+
+            white-space: nowrap;
+        }
+
+        thead th:first-child {
+            border-radius: 10px 0 0 0;
+        }
+
+        thead th:last-child {
+            border-radius: 0 10px 0 0;
+        }
+
+        tbody td {
+            padding: 14px 11px;
+
+            border-bottom: 1px solid #e8edf2;
+
+            font-size: 11px;
+
+            vertical-align: middle;
+        }
+
+        tbody tr {
+            transition: .12s ease;
+        }
+
+        tbody tr:hover {
+            background: #fafcfe;
+        }
+
+
+        /* =====================================================
+           TERCERO
+        ===================================================== */
+
+        .third-person {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .avatar {
+            width: 39px;
+            height: 39px;
+
+            border-radius: 50%;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-weight: 900;
+            font-size: 15px;
+
+            flex: 0 0 auto;
+        }
+
+        .avatar-proveedor {
+            background: #fff1c3;
+            color: #a07200;
+        }
+
+        .avatar-cliente {
+            background: #dff8e8;
+            color: #087b3a;
+        }
+
+        .avatar-empleado {
+            background: #e3edff;
+            color: #3452a4;
+        }
+
+        .avatar-contratista {
+            background: #f1e6ff;
+            color: #7540a9;
+        }
+
+        .avatar-otro {
+            background: #edf1f5;
+            color: #4c6178;
+        }
+
+        .third-name {
+            font-weight: 900;
+            font-size: 12px;
+            color: #17283f;
+        }
+
+        .third-commercial {
+            margin-top: 3px;
+            color: #8190a2;
+            font-size: 10px;
+        }
+
+
+        /* =====================================================
+           ETIQUETAS
+        ===================================================== */
+
+        .tag {
+            display: inline-flex;
+
+            padding: 5px 9px;
+
+            border-radius: 999px;
+
+            font-weight: 900;
+            font-size: 9px;
+        }
+
+        .tag-proveedor {
+            background: #fff3c8;
+            color: #916a00;
+        }
+
+        .tag-cliente {
+            background: #dcf7e7;
+            color: #087b3a;
+        }
+
+        .tag-empleado {
+            background: #e6edff;
+            color: #3452a4;
+        }
+
+        .tag-contratista {
+            background: #f1e6ff;
+            color: #7140a4;
+        }
+
+        .tag-entidad {
+            background: #e7ecff;
+            color: #5544a3;
+        }
+
+        .tag-otro {
+            background: #edf1f5;
+            color: #526476;
+        }
+
+        .status {
+            display: inline-flex;
+            padding: 6px 9px;
+
+            border-radius: 999px;
+
+            font-weight: 900;
+            font-size: 9px;
+        }
+
+        .status-active {
+            background: #dcf7e7;
+            color: #087b3a;
+        }
+
+        .status-inactive {
+            background: #ffe4e4;
+            color: #c51d22;
+        }
+
+
+        /* =====================================================
+           CONTACTO
+        ===================================================== */
+
+        .contact-line {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+
+        .contact-muted {
+            color: #8695a6;
+        }
+
+
+        /* =====================================================
+           ACCIONES
+        ===================================================== */
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .actions form {
+            margin: 0;
+        }
+
+
+        /* =====================================================
+           VACÍO
+        ===================================================== */
+
+        .empty {
+            text-align: center;
+            padding: 55px 20px;
+            color: #7b8b9d;
+        }
+
+        .empty-icon {
+            font-size: 38px;
+            margin-bottom: 12px;
+        }
+
+        .empty strong {
+            display: block;
+            color: #17304f;
+            font-size: 18px;
+            margin-bottom: 6px;
+        }
+
+
+        /* =====================================================
+           PIE INFORMATIVO
+        ===================================================== */
+
+        .info-footer {
+            margin-top: 16px;
+
+            border-radius: 12px;
+
+            padding: 13px 15px;
+
+            background: #eaf3ff;
+            color: #275a95;
+
+            font-size: 11px;
+        }
+
+
+        /* =====================================================
+   MODAL CENTRAL
+===================================================== */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+
+    background: rgba(13, 29, 48, .52);
+
+    backdrop-filter: blur(3px);
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition: .18s ease;
+
+    z-index: 9998;
+}
+
+.overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+
+.modal-tercero {
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 25px;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transform: scale(.98);
+
+    transition: .18s ease;
+
+    z-index: 9999;
+
+    pointer-events: none;
+}
+
+
+.modal-tercero.active {
+    opacity: 1;
+    visibility: visible;
+
+    transform: scale(1);
+
+    pointer-events: auto;
+}
+
+
+.modal-box {
+    width: 100%;
+    max-width: 1180px;
+
+    max-height: 92vh;
+
+    background: white;
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 30px 80px rgba(10, 28, 48, .28);
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+}
+
+
+.modal-header {
+    padding: 18px 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    border-bottom: 1px solid #e6ebf0;
+
+    background: #ffffff;
+}
+
+
+.modal-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+
+.modal-icon {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 11px;
+
+    background: #17304f;
+    color: white;
+
+    font-size: 25px;
+}
+
+
+.modal-header h2 {
+    margin: 0;
+
+    font-size: 20px;
+
+    color: #17304f;
+}
+
+
+.modal-header p {
+    margin: 4px 0 0;
+
+    font-size: 11px;
+
+    color: #78899c;
+}
+
+
+.modal-close {
+    width: 38px;
+    height: 38px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: #edf2f7;
+
+    color: #17304f;
+
+    font-size: 20px;
+
+    cursor: pointer;
+}
+
+
+.modal-body {
+    overflow-y: auto;
+
+    padding: 22px 25px 25px;
+
+    background: #fbfcfd;
+}
+
+
+.modal-section-title {
+    margin: 4px 0 12px;
+
+    padding-bottom: 8px;
+
+    border-bottom: 1px solid #e3e9ef;
+
+    font-size: 14px;
+    font-weight: 900;
+
+    color: #17304f;
+}
+
+
+.modal-section-title:not(:first-child) {
+    margin-top: 24px;
+}
+
+
+.modal-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 14px 16px;
+}
+
+
+.modal-grid.three {
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+}
+
+
+.span-2 {
+    grid-column: span 2;
+}
+
+
+.span-3 {
+    grid-column: span 3;
+}
+
+
+.modal-body .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+
+.modal-body label {
+    color: #435970;
+
+    font-size: 11px;
+    font-weight: 900;
+}
+
+
+.modal-body input,
+.modal-body select,
+.modal-body textarea {
+    background: white;
+}
+
+
+.modal-body textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+
+.modal-actions {
+    margin-top: 25px;
+
+    padding-top: 18px;
+
+    border-top: 1px solid #e3e9ef;
+
+    display: flex;
+    justify-content: flex-end;
+
+    gap: 10px;
+}
+
+
+@media (max-width: 850px) {
+
+    .modal-grid,
+    .modal-grid.three {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .span-2,
+    .span-3 {
+        grid-column: span 2;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .modal-tercero {
+        padding: 10px;
+    }
+
+    .modal-box {
+        max-height: 96vh;
+        border-radius: 14px;
+    }
+
+    .modal-grid,
+    .modal-grid.three {
+        grid-template-columns: 1fr;
+    }
+
+    .span-2,
+    .span-3 {
+        grid-column: auto;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+    }
+
+}
+
+
+/* =====================================================
+   RESPONSIVE GENERAL
+===================================================== */
+
+@media (max-width: 1000px) {
+
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .filters {
+        grid-template-columns: 1fr 1fr;
+    }
+
+}
+
+
+@media (max-width: 650px) {
+
+    .page {
+        padding: 14px;
+    }
+
+    .header h1 {
+        font-size: 23px;
+    }
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filters {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+    
+        /* =====================================================
+           MENÚ LATERAL PERMANENTE CRV
+        ===================================================== */
+        .crv-fixed-layout {
+            max-width: 1760px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 245px minmax(0,1fr);
+            gap: 20px;
+            align-items: start;
+        }
+        .crv-fixed-sidebar {
+            position: sticky;
+            top: 18px;
+            background: #fff;
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 12px 30px rgba(18,40,64,.08);
+        }
+        .crv-fixed-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 10px;
+            margin-bottom: 10px;
+            border-radius: 999px;
+            background: #e8f7ee;
+            color: #168446;
+            font-size: 11px;
+            font-weight: 900;
+        }
+        .crv-fixed-badge::before { content:"●"; font-size:8px; }
+        .crv-fixed-company {
+            color:#17304f;
+            font-size:18px;
+            line-height:1.2;
+            font-weight:900;
+        }
+        .crv-fixed-subtitle {
+            margin:3px 0 15px;
+            color:#cda52b;
+            font-size:12px;
+            font-weight:800;
+        }
+        .crv-fixed-menu { display:grid; gap:7px; }
+        .crv-fixed-menu a {
+            display:flex;
+            align-items:center;
+            gap:9px;
+            min-height:40px;
+            padding:8px 10px;
+            border-radius:9px;
+            background:#eef3f8;
+            color:#17304f;
+            text-decoration:none;
+            font-size:11px;
+            font-weight:800;
+            transition:.15s ease;
+        }
+        .crv-fixed-menu a:hover {
+            transform:translateY(-1px);
+            box-shadow:0 5px 14px rgba(18,40,64,.08);
+        }
+        .crv-fixed-icon {
+            width:25px;
+            height:25px;
+            min-width:25px;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            border-radius:7px;
+            background:rgba(23,48,79,.08);
+            font-size:13px;
+        }
+        .crv-fixed-menu a.active {
+            background:#17304f;
+            color:#fff;
+        }
+        .crv-fixed-menu a.gold {
+            background:#d8b541;
+            color:#fff;
+        }
+        .crv-fixed-menu a.danger {
+            justify-content:center;
+            margin-top:5px;
+            background:#ef2b2d;
+            color:#fff;
+        }
+        .crv-fixed-menu a.active .crv-fixed-icon,
+        .crv-fixed-menu a.gold .crv-fixed-icon,
+        .crv-fixed-menu a.danger .crv-fixed-icon {
+            background:rgba(255,255,255,.16);
+        }
+        .crv-fixed-main { min-width:0; }
+        @media(max-width:1050px){
+            .crv-fixed-layout{grid-template-columns:1fr;}
+            .crv-fixed-sidebar{position:static;}
+            .crv-fixed-menu{grid-template-columns:repeat(3,minmax(0,1fr));}
+        }
+        @media(max-width:720px){
+            .crv-fixed-menu{grid-template-columns:1fr;}
+        }
+
+</style>
+</head>
+
+
+<body>
+
+<div class="page">
+
+<div class="crv-fixed-layout">
+    <aside class="crv-fixed-sidebar">
+        <div class="crv-fixed-badge">Empresa activa</div>
+        <div class="crv-fixed-company">CRV<br>CONSTRUCTORA</div>
+        <div class="crv-fixed-subtitle">Módulo Contable</div>
+        <nav class="crv-fixed-menu">
+                <a href="/empresas">
+                    <span class="crv-fixed-icon">🏢</span>
+                    <span>Cambiar empresa</span>
+                </a>
+<a href="/crv/movimientos/nuevo" class="gold">
+                    <span class="crv-fixed-icon">＋</span>
+                    <span>Registrar movimiento</span>
+                </a>
+<a href="/crv/movimientos">
+                    <span class="crv-fixed-icon">📋</span>
+                    <span>Movimientos</span>
+                </a>
+<a href="/crv/terceros" class="active">
+                    <span class="crv-fixed-icon">👤</span>
+                    <span>Terceros</span>
+                </a>
+<a href="/crv/terceros?buscar=">
+                    <span class="crv-fixed-icon">👥</span>
+                    <span>Proveedores / Clientes</span>
+                </a>
+<a href="/crv/cuentas-por-pagar">
+                    <span class="crv-fixed-icon">🧾</span>
+                    <span>Cuentas por pagar</span>
+                </a>
+<a href="#">
+                    <span class="crv-fixed-icon">💰</span>
+                    <span>Cuentas por cobrar</span>
+                </a>
+<a href="/crv/bancos-caja">
+                    <span class="crv-fixed-icon">🏦</span>
+                    <span>Bancos y caja</span>
+                </a>
+<a href="#">
+                    <span class="crv-fixed-icon">🏗️</span>
+                    <span>Proyectos / obras</span>
+                </a>
+<a href="/crv/reportes-contador">
+                    <span class="crv-fixed-icon">📊</span>
+                    <span>Reportes contador</span>
+                </a>
+<a href="#">
+                    <span class="crv-fixed-icon">📅</span>
+                    <span>Cierre mensual</span>
+                </a>
+<a href="/crv/exportaciones">
+                    <span class="crv-fixed-icon">⬇️</span>
+                    <span>Importar / Exportar</span>
+                </a>
+<a href="/logout" class="danger">
+                    <span class="crv-fixed-icon">⏻</span>
+                    <span>Cerrar sesión</span>
+                </a>
+        </nav>
+    </aside>
+    <main class="crv-fixed-main">
+
+
+<div class="shell">
+
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="header">
+
+        <img
+            src="{{ url_for('static', filename='logo_crv.png') }}"
+            alt="CRV"
+        >
+
+        <h1>
+            CRV CONSTRUCTORA - Terceros
+        </h1>
+
+        <p>
+            Proveedores, clientes, empleados, contratistas y demás terceros de la empresa
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         TOPBAR
+    ====================================================== -->
+
+    <div class="topbar">
+
+        <div class="topbar-left">
+
+            <a
+                href="/crv/dashboard"
+                class="btn btn-dark"
+            >
+                ← Volver
+            </a>
+
+            <span class="empresa-badge">
+                Empresa activa
+            </span>
+
+            <strong>
+                {{ empresa_nombre }}
+            </strong>
+
+        </div>
+
+
+        <div class="topbar-right">
+
+            <a
+                href="/crv/terceros/pdf"
+                class="btn btn-light"
+            >
+                📄 Exportar PDF
+            </a>
+
+            <a
+                href="/crv/terceros/excel"
+                class="btn btn-navy"
+            >
+                📊 Exportar Excel
+            </a>
+
+            <a
+                href="/crv/movimientos"
+                class="btn btn-light"
+            >
+                📋 Movimientos
+            </a>
+
+            <button
+                type="button"
+                class="btn btn-gold"
+                onclick="abrirFormulario()"
+            >
+                + Nuevo tercero
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         CALCULOS RESUMEN
+    ====================================================== -->
+
+    {% set ns = namespace(
+        proveedores=0,
+        clientes=0,
+        empleados=0,
+        activos=0
+    ) %}
+
+
+    {% for t in terceros %}
+
+        {% if t.tipo_tercero == "PROVEEDOR" %}
+            {% set ns.proveedores = ns.proveedores + 1 %}
+        {% endif %}
+
+        {% if t.tipo_tercero == "CLIENTE" %}
+            {% set ns.clientes = ns.clientes + 1 %}
+        {% endif %}
+
+        {% if t.tipo_tercero == "EMPLEADO" %}
+            {% set ns.empleados = ns.empleados + 1 %}
+        {% endif %}
+
+        {% if t.activo %}
+            {% set ns.activos = ns.activos + 1 %}
+        {% endif %}
+
+    {% endfor %}
+
+
+    <!-- =====================================================
+         TARJETAS
+    ====================================================== -->
+
+    <div class="summary-grid">
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon proveedor">
+                👥
+            </div>
+
+            <div>
+
+                <div class="summary-label">
+                    Proveedores
+                </div>
+
+                <div class="summary-value">
+                    {{ ns.proveedores }}
+                </div>
+
+                <div class="summary-note">
+                    Proveedores registrados
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon cliente">
+                👥
+            </div>
+
+            <div>
+
+                <div class="summary-label">
+                    Clientes
+                </div>
+
+                <div class="summary-value">
+                    {{ ns.clientes }}
+                </div>
+
+                <div class="summary-note">
+                    Clientes registrados
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon empleado">
+                👷
+            </div>
+
+            <div>
+
+                <div class="summary-label">
+                    Empleados
+                </div>
+
+                <div class="summary-value">
+                    {{ ns.empleados }}
+                </div>
+
+                <div class="summary-note">
+                    Empleados registrados
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon todos">
+                👤
+            </div>
+
+            <div>
+
+                <div class="summary-label">
+                    Terceros activos
+                </div>
+
+                <div class="summary-value">
+                    {{ ns.activos }}
+                </div>
+
+                <div class="summary-note">
+                    Total activos
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =====================================================
+         LISTADO
+    ====================================================== -->
+
+    <div class="directory-card">
+
+
+        <div class="directory-header">
+
+            <div class="directory-title-wrap">
+
+                <div class="directory-icon">
+                    👥
+                </div>
+
+                <div>
+
+                    <h2>
+                        Listado de terceros
+                    </h2>
+
+                    <p>
+                        Consulta y administra los terceros vinculados a CRV Constructora
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="btn btn-gold"
+                onclick="abrirFormulario()"
+            >
+                + Registrar tercero
+            </button>
+
+        </div>
+
+
+        <!-- FILTROS -->
+
+        <form
+            method="GET"
+            action="/crv/terceros"
+            class="filters"
+        >
+
+            <input
+                type="text"
+                name="buscar"
+                value="{{ busqueda }}"
+                placeholder="🔍  Buscar por nombre, razón social, NIT o identificación..."
+            >
+
+
+            <select id="filtroTipo" onchange="filtrarTipoLocal()">
+
+                <option value="">
+                    Todos los tipos
+                </option>
+
+                <option value="PROVEEDOR">
+                    Proveedores
+                </option>
+
+                <option value="CLIENTE">
+                    Clientes
+                </option>
+
+                <option value="EMPLEADO">
+                    Empleados
+                </option>
+
+                <option value="CONTRATISTA">
+                    Contratistas
+                </option>
+
+                <option value="ENTIDAD">
+                    Entidades
+                </option>
+
+            </select>
+
+
+            <button
+                type="submit"
+                class="btn btn-navy"
+            >
+                Buscar
+            </button>
+
+
+            <a
+                href="/crv/terceros"
+                class="btn btn-light"
+            >
+                Limpiar
+            </a>
+
+        </form>
+
+
+        {% if terceros %}
+
+        <div class="table-wrap">
+
+            <table id="tablaTerceros">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Tipo</th>
+                        <th>Nombre / Razón social</th>
+                        <th>Identificación</th>
+                        <th>Contacto</th>
+                        <th>Ciudad</th>
+                        <th>Banco / Cuenta</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                {% for t in terceros %}
+
+                    <tr data-tipo="{{ t.tipo_tercero or '' }}">
+
+
+                        <!-- TIPO -->
+
+                        <td>
+
+                            {% if t.tipo_tercero == "PROVEEDOR" %}
+
+                                <span class="tag tag-proveedor">
+                                    PROVEEDOR
+                                </span>
+
+                            {% elif t.tipo_tercero == "CLIENTE" %}
+
+                                <span class="tag tag-cliente">
+                                    CLIENTE
+                                </span>
+
+                            {% elif t.tipo_tercero == "EMPLEADO" %}
+
+                                <span class="tag tag-empleado">
+                                    EMPLEADO
+                                </span>
+
+                            {% elif t.tipo_tercero == "CONTRATISTA" %}
+
+                                <span class="tag tag-contratista">
+                                    CONTRATISTA
+                                </span>
+
+                            {% elif t.tipo_tercero == "ENTIDAD" %}
+
+                                <span class="tag tag-entidad">
+                                    ENTIDAD
+                                </span>
+
+                            {% else %}
+
+                                <span class="tag tag-otro">
+                                    {{ t.tipo_tercero or "TERCERO" }}
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- NOMBRE -->
+
+                        <td>
+
+                            <div class="third-person">
+
+                                {% set inicial = (t.razon_social or '?')[:1]|upper %}
+
+                                {% if t.tipo_tercero == "PROVEEDOR" %}
+
+                                    <div class="avatar avatar-proveedor">
+                                        {{ inicial }}
+                                    </div>
+
+                                {% elif t.tipo_tercero == "CLIENTE" %}
+
+                                    <div class="avatar avatar-cliente">
+                                        {{ inicial }}
+                                    </div>
+
+                                {% elif t.tipo_tercero == "EMPLEADO" %}
+
+                                    <div class="avatar avatar-empleado">
+                                        {{ inicial }}
+                                    </div>
+
+                                {% elif t.tipo_tercero == "CONTRATISTA" %}
+
+                                    <div class="avatar avatar-contratista">
+                                        {{ inicial }}
+                                    </div>
+
+                                {% else %}
+
+                                    <div class="avatar avatar-otro">
+                                        {{ inicial }}
+                                    </div>
+
+                                {% endif %}
+
+
+                                <div>
+
+                                    <div class="third-name">
+                                        {{ t.razon_social }}
+                                    </div>
+
+                                    {% if t.nombre_comercial %}
+
+                                        <div class="third-commercial">
+                                            {{ t.nombre_comercial }}
+                                        </div>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- IDENTIFICACIÓN -->
+
+                        <td>
+
+                            <strong>
+                                {{ t.identificacion }}
+                            </strong>
+
+                            {% if t.tipo_documento %}
+
+                                <div class="third-commercial">
+                                    {{ t.tipo_documento }}
+                                </div>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- CONTACTO -->
+
+                        <td>
+
+                            {% if t.celular %}
+
+                                <div class="contact-line">
+                                    ☎ {{ t.celular }}
+                                </div>
+
+                            {% elif t.telefono %}
+
+                                <div class="contact-line">
+                                    ☎ {{ t.telefono }}
+                                </div>
+
+                            {% else %}
+
+                                <div class="contact-line contact-muted">
+                                    Sin teléfono
+                                </div>
+
+                            {% endif %}
+
+
+                            {% if t.email %}
+
+                                <div class="contact-line">
+                                    ✉ {{ t.email }}
+                                </div>
+
+                            {% else %}
+
+                                <div class="contact-line contact-muted">
+                                    Sin correo
+                                </div>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- CIUDAD -->
+
+                        <td>
+
+                            {% if t.ciudad %}
+
+                                {{ t.ciudad }}
+
+                                {% if t.departamento %}
+
+                                    <div class="third-commercial">
+                                        {{ t.departamento }}
+                                    </div>
+
+                                {% endif %}
+
+                            {% else %}
+
+                                <span class="contact-muted">
+                                    Sin ciudad
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- BANCO -->
+
+                        <td>
+
+                            {% if t.banco %}
+
+                                <strong>
+                                    {{ t.banco }}
+                                </strong>
+
+                                {% if t.numero_cuenta %}
+
+                                    <div class="third-commercial">
+
+                                        {{ t.tipo_cuenta or '' }}
+
+                                        {% if t.tipo_cuenta %}
+                                            ·
+                                        {% endif %}
+
+                                        {{ t.numero_cuenta }}
+
+                                    </div>
+
+                                {% endif %}
+
+                            {% else %}
+
+                                <span class="contact-muted">
+                                    Sin información bancaria
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ESTADO -->
+
+                        <td>
+
+                            {% if t.activo %}
+
+                                <span class="status status-active">
+                                    ACTIVO
+                                </span>
+
+                            {% else %}
+
+                                <span class="status status-inactive">
+                                    INACTIVO
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ACCIONES -->
+
+                        <td>
+
+                            <div class="actions">
+
+                                <a
+                                    href="/crv/movimientos?tercero={{ t.razon_social }}"
+                                    class="btn btn-light btn-small"
+                                    title="Ver movimientos"
+                                >
+                                    Ver movimientos
+                                </a>
+
+
+                                <form
+                                    method="POST"
+                                    action="/crv/terceros/estado/{{ t.id }}"
+                                >
+
+                                    {% if t.activo %}
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-danger btn-small"
+                                        >
+                                            Inactivar
+                                        </button>
+
+                                    {% else %}
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-success btn-small"
+                                        >
+                                            Activar
+                                        </button>
+
+                                    {% endif %}
+
+                                </form>
+
+                            </div>
+
+                        </td>
+
+
+                    </tr>
+
+                {% endfor %}
+
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        {% else %}
+
+
+        <div class="empty">
+
+            <div class="empty-icon">
+                👥
+            </div>
+
+            <strong>
+                Aún no hay terceros registrados
+            </strong>
+
+            Registra proveedores, clientes, empleados o contratistas
+            para comenzar a construir el directorio de CRV.
+
+            <br><br>
+
+            <button
+                type="button"
+                class="btn btn-gold"
+                onclick="abrirFormulario()"
+            >
+                + Registrar primer tercero
+            </button>
+
+        </div>
+
+
+        {% endif %}
+
+
+    </div>
+
+
+    <div class="info-footer">
+
+        ℹ️ Los terceros registrados aquí se utilizarán en movimientos,
+        cuentas por pagar, cuentas por cobrar, reportes por proveedor,
+        estados de cuenta y demás procesos contables de CRV.
+
+    </div>
+
+
+</div>
+</div>
+    </main>
+</div>
+
+<!-- =========================================================
+     MODAL NUEVO TERCERO
+========================================================= -->
+
+<div
+    id="overlay"
+    class="overlay"
+    onclick="cerrarFormulario()"
+></div>
+
+
+<div
+    id="modalTercero"
+    class="modal-tercero"
+>
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <div class="modal-header-left">
+
+                <div class="modal-icon">
+                    +
+                </div>
+
+                <div>
+
+                    <h2>
+                        Registrar nuevo tercero
+                    </h2>
+
+                    <p>
+                        Complete la información del proveedor, cliente,
+                        empleado o tercero de CRV
+                    </p>
+
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                onclick="cerrarFormulario()"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <form
+                method="POST"
+                action="/crv/terceros"
+                id="formTercero"
+            >
+
+                <div class="modal-section-title">
+                    Información general
+                </div>
+
+                <div class="modal-grid three">
+
+                    <div class="field">
+
+                        <label>
+                            Tipo de tercero *
+                        </label>
+
+                        <select
+                            name="tipo_tercero"
+                            required
+                        >
+                            <option value="">
+                                Seleccione...
+                            </option>
+
+                            <option value="PROVEEDOR">
+                                Proveedor
+                            </option>
+
+                            <option value="CLIENTE">
+                                Cliente
+                            </option>
+
+                            <option value="EMPLEADO">
+                                Empleado
+                            </option>
+
+                            <option value="CONTRATISTA">
+                                Contratista
+                            </option>
+
+                            <option value="ENTIDAD">
+                                Entidad
+                            </option>
+
+                            <option value="TERCERO">
+                                Otro tercero
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Tipo de documento
+                        </label>
+
+                        <select name="tipo_documento">
+
+                            <option value="">
+                                Seleccione...
+                            </option>
+
+                            <option value="NIT">
+                                NIT
+                            </option>
+
+                            <option value="CC">
+                                Cédula
+                            </option>
+
+                            <option value="CE">
+                                Cédula extranjería
+                            </option>
+
+                            <option value="PASAPORTE">
+                                Pasaporte
+                            </option>
+
+                            <option value="OTRO">
+                                Otro
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            NIT / Identificación *
+                        </label>
+
+                        <input
+                            type="text"
+                            name="identificacion"
+                            required
+                            placeholder="Ej: 901234567"
+                        >
+
+                    </div>
+
+
+                    <div class="field span-2">
+
+                        <label>
+                            Nombre / Razón social *
+                        </label>
+
+                        <input
+                            type="text"
+                            name="razon_social"
+                            required
+                            placeholder="Nombre completo o razón social"
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Nombre comercial
+                        </label>
+
+                        <input
+                            type="text"
+                            name="nombre_comercial"
+                            placeholder="Opcional"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-section-title">
+                    Información de contacto
+                </div>
+
+                <div class="modal-grid three">
+
+                    <div class="field span-2">
+
+                        <label>
+                            Dirección
+                        </label>
+
+                        <input
+                            type="text"
+                            name="direccion"
+                            placeholder="Dirección"
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Ciudad
+                        </label>
+
+                        <input
+                            type="text"
+                            name="ciudad"
+                            placeholder="Ciudad"
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Departamento
+                        </label>
+
+                        <input
+                            type="text"
+                            name="departamento"
+                            placeholder="Departamento"
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Teléfono
+                        </label>
+
+                        <input
+                            type="text"
+                            name="telefono"
+                            placeholder="Teléfono"
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Celular
+                        </label>
+
+                        <input
+                            type="text"
+                            name="celular"
+                            placeholder="Celular"
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Correo
+                        </label>
+
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="correo@ejemplo.com"
+                        >
+
+                    </div>
+
+
+                    <div class="field span-2">
+
+                        <label>
+                            Persona de contacto
+                        </label>
+
+                        <input
+                            type="text"
+                            name="contacto"
+                            placeholder="Nombre del contacto"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-section-title">
+                    Información bancaria
+                </div>
+
+                <div class="modal-grid three">
+
+                    <div class="field">
+
+                        <label>
+                            Banco
+                        </label>
+
+                        <input
+                            type="text"
+                            name="banco"
+                            placeholder="Ej: Bancolombia"
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Tipo de cuenta
+                        </label>
+
+                        <select name="tipo_cuenta">
+
+                            <option value="">
+                                Seleccione...
+                            </option>
+
+                            <option value="AHORROS">
+                                Ahorros
+                            </option>
+
+                            <option value="CORRIENTE">
+                                Corriente
+                            </option>
+
+                            <option value="NEQUI">
+                                Nequi
+                            </option>
+
+                            <option value="DAVIPLATA">
+                                Daviplata
+                            </option>
+
+                            <option value="OTRA">
+                                Otra
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Número de cuenta
+                        </label>
+
+                        <input
+                            type="text"
+                            name="numero_cuenta"
+                            placeholder="Número de cuenta"
+                        >
+
+                    </div>
+
+
+                    <div class="field span-3">
+
+                        <label>
+                            Titular de la cuenta
+                        </label>
+
+                        <input
+                            type="text"
+                            name="titular_cuenta"
+                            placeholder="Nombre del titular"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-section-title">
+                    Información adicional
+                </div>
+
+                <div class="modal-grid">
+
+                    <div class="field span-3">
+
+                        <label>
+                            Observaciones
+                        </label>
+
+                        <textarea
+                            name="observaciones"
+                            placeholder="Información adicional..."
+                        ></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-actions">
+
+                    <button
+                        type="button"
+                        class="btn btn-light"
+                        onclick="limpiarFormulario()"
+                    >
+                        Limpiar
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn-light"
+                        onclick="cerrarFormulario()"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-gold"
+                    >
+                        Guardar tercero
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+    /* =====================================================
+       ABRIR MODAL DE TERCEROS
+    ===================================================== */
+
+    function abrirFormulario() {
+
+        const overlay =
+            document.getElementById("overlay");
+
+        const modal =
+            document.getElementById("modalTercero");
+
+        if (overlay) {
+            overlay.classList.add("active");
+        }
+
+        if (modal) {
+            modal.classList.add("active");
+        }
+
+        document.body.classList.add("modal-open");
+
+    }
+
+
+    /* =====================================================
+       CERRAR MODAL DE TERCEROS
+    ===================================================== */
+
+    function cerrarFormulario() {
+
+        const overlay =
+            document.getElementById("overlay");
+
+        const modal =
+            document.getElementById("modalTercero");
+
+        if (overlay) {
+            overlay.classList.remove("active");
+        }
+
+        if (modal) {
+            modal.classList.remove("active");
+        }
+
+        document.body.classList.remove("modal-open");
+
+    }
+
+
+    /* =====================================================
+       LIMPIAR FORMULARIO
+    ===================================================== */
+
+    function limpiarFormulario() {
+
+        const formulario =
+            document.getElementById("formTercero");
+
+        if (formulario) {
+            formulario.reset();
+        }
+
+    }
+
+
+    /* =====================================================
+       FILTRAR TERCEROS POR TIPO
+    ===================================================== */
+
+    function filtrarTipoLocal() {
+
+        const filtro =
+            document.getElementById("filtroTipo");
+
+        const tabla =
+            document.getElementById("tablaTerceros");
+
+        if (!filtro || !tabla) {
+            return;
+        }
+
+        const tipo = filtro.value;
+
+        const filas =
+            tabla.querySelectorAll("tbody tr");
+
+        filas.forEach(function(fila) {
+
+            const tipoFila =
+                fila.dataset.tipo || "";
+
+            if (
+                tipo === ""
+                ||
+                tipoFila === tipo
+            ) {
+
+                fila.style.display = "";
+
+            } else {
+
+                fila.style.display = "none";
+
+            }
+
+        });
+
+    }
+
+
+    /* =====================================================
+       CERRAR CON TECLA ESC
+    ===================================================== */
+
+    document.addEventListener(
+        "keydown",
+        function(evento) {
+
+            if (evento.key === "Escape") {
+                cerrarFormulario();
+            }
+
+        }
+    );
+
+
+    /* =====================================================
+       EVITAR QUE UN CLIC DENTRO DEL MODAL LO CIERRE
+    ===================================================== */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function() {
+
+            const modalBox =
+                document.querySelector(".modal-box");
+
+            if (modalBox) {
+
+                modalBox.addEventListener(
+                    "click",
+                    function(evento) {
+                        evento.stopPropagation();
+                    }
+                );
+
+            }
+
+        }
+    );
+
+</script>
+
+
+</body>
+</html>

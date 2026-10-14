@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingreso al sistema</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+    <style>
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input {
+            padding-right: 48px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 14px;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            line-height: 1;
+            color: #5b6b82;
+            padding: 0;
+        }
+
+        .toggle-password:hover {
+            color: #2f6fed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-page">
+        <div class="login-card">
+
+            <div class="login-logo-box">
+                <img src="{{ url_for('static', filename='logo_crv.png') }}" alt="Logo CRV" class="login-logo">
+            </div>
+
+            <h1>Ingreso al sistema</h1>
+            <p class="login-subtitle">Sistema financiero y contable</p>
+
+            {% if error %}
+            <div class="alert-error">{{ error }}</div>
+            {% endif %}
+
+            <form method="POST" action="/login">
+                <div class="form-group">
+                    <label for="usuario">Usuario</label>
+                    <input type="text" id="usuario" name="usuario" placeholder="Ingrese su usuario" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" placeholder="Ingrese su contraseña" required>
+                        <button type="button" class="toggle-password" onclick="togglePassword()" id="toggleBtn">👁</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login">Ingresar</button>
+            </form>
+
+            <div class="login-links">
+                <a href="/cambiar-password">Cambiar contraseña</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const input = document.getElementById("password");
+            const btn = document.getElementById("toggleBtn");
+
+            if (input.type === "password") {
+                input.type = "text";
+                btn.textContent = "🙈";
+            } else {
+                input.type = "password";
+                btn.textContent = "👁";
+            }
+        }
+    </script>
+
+</body>
+</html>

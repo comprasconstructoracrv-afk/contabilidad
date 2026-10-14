@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar sede</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <div class="page-header">
+        <h1>{{ empresa_nombre }} - Editar sede</h1>
+        <p>Actualiza el nombre de la sede seleccionada</p>
+    </div>
+
+    <div class="empresa-actual-bar">
+        <div class="empresa-actual-info">
+            <span class="empresa-badge">Empresa activa</span>
+            <strong>{{ empresa_nombre }}</strong>
+        </div>
+
+        <div class="empresa-actual-actions">
+            <a href="/sedes" class="btn-secondary">Volver a sedes</a>
+            <a href="/dashboard" class="btn-secondary">Dashboard</a>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <div class="form-card">
+            <h2 style="margin-top:0;">Editar sede</h2>
+
+            <form method="POST" class="movimiento-form">
+                <div class="form-grid">
+                    <div class="form-group form-group-full">
+                        <label for="nombre">Nombre de la sede</label>
+                        <input type="text" name="nombre" id="nombre" value="{{ sede.nombre }}" required>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Guardar cambios</button>
+                    <a href="/sedes" class="btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

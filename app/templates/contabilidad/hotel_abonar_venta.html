@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ empresa_nombre }} - Registrar abono</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .hotel-abono-shell {
+            max-width: 1120px;
+            margin: 0 auto 40px;
+            padding: 20px;
+        }
+
+        .hotel-abono-card {
+            background: #fff;
+            border-radius: 22px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.10);
+            padding: 24px;
+        }
+
+        .hotel-abono-title {
+            color: {{ config.color_primario }};
+            margin-top: 0;
+            font-size: 42px;
+            font-weight: 900;
+            text-align: center;
+        }
+
+        .hotel-box {
+            background: #fafafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 18px;
+        }
+
+        .hotel-box p {
+            margin: 8px 0;
+            font-size: 16px;
+        }
+
+        .hotel-box strong {
+            color: {{ config.color_primario }};
+        }
+
+        .hotel-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .hotel-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hotel-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .hotel-group label {
+            font-weight: 700;
+            color: {{ config.color_primario }};
+            margin-bottom: 6px;
+        }
+
+        .hotel-group input,
+        .hotel-group textarea,
+        .hotel-group select {
+            padding: 12px;
+            border: 1px solid #dbe2ea;
+            border-radius: 12px;
+        }
+
+        .hotel-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .pill-ok {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #dcfce7;
+            color: #166534;
+            font-weight: 800;
+            font-size: 12px;
+        }
+
+        .pill-warn {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #fef3c7;
+            color: #92400e;
+            font-weight: 800;
+            font-size: 12px;
+        }
+
+        .pill-danger {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #fee2e2;
+            color: #991b1b;
+            font-weight: 800;
+            font-size: 12px;
+        }
+
+        @media (max-width: 720px) {
+            .hotel-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="hotel-abono-shell">
+    <div class="hotel-abono-card">
+        <h1 class="hotel-abono-title">{{ empresa_nombre }} - Registrar abono</h1>
+
+        <div class="hotel-box">
+            <p><strong>Venta:</strong> #{{ venta.consecutivo_venta }}</p>
+            <p><strong>Cliente:</strong> {{ venta.cliente }}</p>
+            <p><strong>Descripción:</strong> {{ venta.descripcion }}</p>
+            <p><strong>Acciones:</strong> {{ venta.cantidad_acciones }}</p>
+            <p><strong>Valor total lista:</strong> ${{ "{:,.0f}".format(venta.valor_total_lista) }}</p>
+            <p><strong>Descuento:</strong> ${{ "{:,.0f}".format(venta.descuento) }}</p>
+            <p><strong>Valor total final:</strong> ${{ "{:,.0f}".format(venta.valor_total_final) }}</p>
+            <p><strong>Inicial recibida:</strong> ${{ "{:,.0f}".format(venta.valor_inicial) }}</p>
+            <p><strong>Total recibido real:</strong> ${{ "{:,.0f}".format(venta.valor_recibido) }}</p>
+            <p><strong>Saldo financiado:</strong> ${{ "{:,.0f}".format(venta.saldo_pendiente) }}</p>
+            <p><strong>Número de cuotas:</strong> {{ venta.numero_cuotas if venta.financiado else 0 }}</p>
+            <p><strong>Valor cuota:</strong> ${{ "{:,.0f}".format(venta.valor_cuota) }}</p>
+            <p><strong>Estado:</strong> {{ venta.estado }}</p>
+        </div>
+
+        {% if venta.cuotas %}
+        <div class="hotel-box">
+            <h3 style="margin-top:0; color:{{ config.color_primario }};">Plan de cuotas</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cuota</th>
+                        <th>Vence</th>
+                        <th>Valor</th>
+                        <th>Pagado</th>
+                        <th>Saldo</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cuota in venta.cuotas %}
+                    <tr>
+                        <td>{{ cuota.numero_cuota }}</td>
+                        <td>{{ cuota.fecha_vencimiento }}</td>
+                        <td>${{ "{:,.0f}".format(cuota.valor_cuota) }}</td>
+                        <td>${{ "{:,.0f}".format(cuota.valor_pagado) }}</td>
+                        <td>${{ "{:,.0f}".format(cuota.saldo_cuota) }}</td>
+                        <td>
+                            {% if cuota.estado == 'PAGADA' %}
+                                <span class="pill-ok">PAGADA</span>
+                            {% elif cuota.saldo_cuota > 0 and cuota.fecha_vencimiento < today %}
+                                <span class="pill-danger">VENCIDA</span>
+                            {% else %}
+                                <span class="pill-warn">{{ cuota.estado }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            <div class="hotel-grid">
+                <div class="hotel-group">
+                    <label>Fecha</label>
+                    <input type="date" name="fecha" required>
+                </div>
+
+                <div class="hotel-group">
+                    <label>Valor pagado</label>
+                    <input type="number" step="0.01" name="valor_pagado" required>
+                </div>
+
+                <div class="hotel-group">
+                    <label>Forma de pago</label>
+                    <select name="forma_pago">
+                        <option value="">Seleccione</option>
+                        <option value="Transferencia">Transferencia</option>
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Consignación">Consignación</option>
+                        <option value="Nequi">Nequi</option>
+                    </select>
+                </div>
+
+                <div class="hotel-group">
+                    <label>Entidad de pago</label>
+                    <input type="text" name="entidad_pago" placeholder="Ej: Bancolombia">
+                </div>
+
+                <div class="hotel-group">
+                    <label>Cuenta destino</label>
+                    <input type="text" name="cuenta_destino" placeholder="Ej: 71800002023">
+                </div>
+
+                <div class="hotel-group full">
+                    <label>Observación</label>
+                    <textarea name="observacion" rows="3"></textarea>
+                </div>
+            </div>
+
+            <div class="hotel-actions">
+                <button type="submit" class="btn-primary">Guardar abono</button>
+                <a href="/hotel-sky-view/ventas" class="btn-secondary">Volver</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

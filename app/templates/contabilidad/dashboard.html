@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ empresa_nombre }} - Contabilidad</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .gold { color: #c9a646; }
+        .border-gold { border-top: 4px solid #c9a646; }
+        .border-black { border-top: 4px solid #111; }
+
+        .empresa-activa-verde {
+            color: #16a34a;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .btn-volver {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: #111;
+            color: #fff;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .btn-volver:hover {
+            background: #333;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .ingreso { border-top: 4px solid #c9a646; }
+        .gasto { border-top: 4px solid #111; }
+
+        .utilidad-positiva { border-top: 4px solid #16a34a; }
+        .utilidad-negativa { border-top: 4px solid red; }
+
+        .sidebar-card {
+            background: #fff;
+            padding: 18px;
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
+        .sidebar-btn-primary {
+            background: #c9a646;
+            color: #fff;
+        }
+
+        .sidebar-btn-primary:hover {
+            background: #b8962f;
+        }
+
+    </style>
+
+</head>
+<body>
+
+<div class="page-header">
+    <img src="{{ url_for('static', filename='logo_crv.png') }}" class="logo-principal">
+
+    <h1>{{ empresa_nombre }} - Contabilidad</h1>
+    <p>Resumen financiero de la empresa activa</p>
+</div>
+
+<div class="dashboard-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-card">
+
+            <div style="margin-bottom: 15px;">
+                <span class="empresa-activa-verde">● Empresa activa</span><br>
+                <strong>{{ empresa_nombre }}</strong>
+            </div>
+
+            <h3>Acciones</h3>
+
+            <div class="sidebar-actions">
+                <a href="/empresas" class="sidebar-btn">Cambiar empresa</a>
+                <a href="/sedes" class="sidebar-btn">Gestionar sedes</a>
+                <a href="/nuevo" class="sidebar-btn sidebar-btn-primary">Registrar movimiento</a>
+                <a href="/movimientos" class="sidebar-btn">Ver movimientos</a>
+                <a href="/reportes" class="sidebar-btn">Ver reportes</a>
+
+                {% if empresa_nombre == "ECOBIKE" %}
+                <a href="/ventas-ecobike/nueva" class="sidebar-btn sidebar-btn-primary">Registrar venta bici</a>
+                <a href="/ventas-ecobike" class="sidebar-btn">Ver ventas bici</a>
+                <a href="/ventas-ecobike/reporte" class="sidebar-btn">Reporte ventas bici</a>
+                <a href="/ecobike/cierre-mensual" class="sidebar-btn">Cierre mensual</a>
+                <a href="/ecobike/inventario">Inventario ECOBIKE</a>
+                <a href="/ecobike/inventario/movimientos">Movimientos inventario</a>
+                {% endif %}
+
+                <a href="/logout" class="sidebar-btn sidebar-btn-danger">Cerrar sesión</a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="dashboard-main">
+
+        <!-- TOOLBAR -->
+        <div class="report-toolbar">
+
+            <a href="/empresas" class="btn-volver">← Volver</a>
+
+            <form method="GET" action="/dashboard">
+                <input type="month" name="mes" value="{{ mes_actual }}">
+
+                {% if sedes %}
+                <select name="sede_id">
+                    <option value="">Todas las sedes</option>
+                    {% for sede in sedes %}
+                    <option value="{{ sede.id }}" {% if sede_actual == sede.id|string %}selected{% endif %}>
+                        {{ sede.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+
+                <button type="submit" class="btn-primary">Aplicar filtro</button>
+                <a href="/dashboard" class="btn-secondary">Limpiar</a>
+            </form>
+
+        </div>
+
+        <!-- CARDS -->
+        <div class="cards">
+
+            <div class="card ingreso">
+                <h2>Ingresos</h2>
+                <p class="gold">${{ "{:,.0f}".format(ingresos) }}</p>
+            </div>
+
+            <div class="card gasto">
+                <h2>Gastos</h2>
+                <p>${{ "{:,.0f}".format(gastos) }}</p>
+            </div>
+
+            <div class="card {{ 'utilidad-positiva' if utilidad >= 0 else 'utilidad-negativa' }}">
+                <h2>{{ 'Utilidad' if utilidad >= 0 else 'Pérdida' }}</h2>
+                <p>${{ "{:,.0f}".format(utilidad) }}</p>
+            </div>
+
+        </div>
+
+        <!-- DETALLE -->
+        {% if ingresos_cuentas %}
+        <div class="table-container" style="margin-top:25px;">
+            <h2>Detalle de ingresos por cuenta</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cuenta</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cuenta, total in ingresos_cuentas %}
+                    <tr>
+                        <td>{{ cuenta }}</td>
+                        <td class="ingreso-text">${{ "{:,.0f}".format(total) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+    </main>
+</div>
+
+</body>
+</html>

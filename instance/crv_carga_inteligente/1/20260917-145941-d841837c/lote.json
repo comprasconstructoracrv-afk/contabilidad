@@ -1,0 +1,59 @@
+{
+  "lote_id": "20260917-145941-d841837c",
+  "empresa_id": 1,
+  "empresa_nombre": "CRV CONSTRUCTORA",
+  "fecha_creacion": "2026-09-17T14:59:42",
+  "usuario": "admin",
+  "estado": "PENDIENTE_REVISION",
+  "archivos": [
+    {
+      "archivo_id": "7bea91e8a185",
+      "nombre_original": "03-09-2026 FERRETERIA AL DIA.pdf",
+      "nombre_guardado": "7bea91e8a185.pdf",
+      "extension": ".pdf",
+      "tamano_bytes": 656897,
+      "estado": "REVISION_REQUERIDA",
+      "proveedor": "FME 93789",
+      "identificacion": "890705697-9",
+      "numero_documento": "",
+      "fecha_documento": "2026-09-03",
+      "base_gravable": 958201.69,
+      "tarifa_iva": 19.0,
+      "valor_iva": 19.0,
+      "total_documento": 958220.69,
+      "duplicado": false,
+      "observaciones": "Revisar: factura. IVA inconsistente: con base 958,201.69 y tarifa 19% se esperan aproximadamente 182,058.32. El NIT no existe todavía en Terceros.",
+      "tercero_existente": false,
+      "tercero_id": null,
+      "fecha_lectura": "2026-10-14T16:11:19",
+      "revision_manual": false,
+      "alertas_validacion": [
+        "IVA inconsistente: con base 958,201.69 y tarifa 19% se esperan aproximadamente 182,058.32."
+      ]
+    },
+    {
+      "archivo_id": "510c53d15fb1",
+      "nombre_original": "03-09-2026 multiobras.pdf",
+      "nombre_guardado": "510c53d15fb1.pdf",
+      "extension": ".pdf",
+      "tamano_bytes": 258364,
+      "estado": "REVISION_REQUERIDA",
+      "proveedor": "DE18764101936477 24-11-2025",
+      "identificacion": "890319193-3",
+      "numero_documento": "",
+      "fecha_documento": "2026-09-04",
+      "base_gravable": null,
+      "tarifa_iva": 19.0,
+      "valor_iva": null,
+      "total_documento": null,
+      "duplicado": false,
+      "observaciones": "Revisar: factura, base, IVA, total. El NIT no existe todavía en Terceros.",
+      "tercero_existente": false,
+      "tercero_id": null,
+      "fecha_lectura": "2026-10-14T16:11:19",
+      "revision_manual": false,
+      "alertas_validacion": []
+    }
+  ],
+  "fecha_ultima_lectura": "2026-10-14T16:11:19"
+}

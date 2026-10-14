@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ empresa_nombre }} - Gestionar pagos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .hotel-page {
+            max-width: 1320px;
+            margin: 0 auto 40px;
+            padding: 22px;
+        }
+
+        .hotel-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 26px;
+            box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+            padding: 22px;
+            margin-bottom: 20px;
+        }
+
+        .hotel-title {
+            margin: 0 0 8px;
+            font-size: 40px;
+            color: {{ config.color_primario }};
+            font-weight: 900;
+            text-align: center;
+        }
+
+        .hotel-sub {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        .hotel-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .hotel-resumen p {
+            margin: 8px 0;
+            font-size: 16px;
+        }
+
+        .hotel-resumen strong {
+            color: {{ config.color_primario }};
+        }
+    </style>
+</head>
+<body>
+
+<div class="hotel-page">
+
+    <h1 class="hotel-title">{{ empresa_nombre }} - Gestionar pagos</h1>
+    <div class="hotel-sub">Selecciona exactamente qué recibo quieres imprimir, editar o eliminar</div>
+
+    <div class="hotel-card">
+        <div class="hotel-top">
+            <div class="hotel-resumen">
+                <p><strong>Venta:</strong> #{{ venta.consecutivo_venta }}</p>
+                <p><strong>Cliente:</strong> {{ venta.cliente }}</p>
+                <p><strong>Total final:</strong> ${{ "{:,.0f}".format(venta.valor_total_final) }}</p>
+                <p><strong>Inicial:</strong> ${{ "{:,.0f}".format(venta.valor_inicial) }}</p>
+                <p><strong>Total recibido:</strong> ${{ "{:,.0f}".format(venta.valor_recibido) }}</p>
+                <p><strong>Saldo pendiente:</strong> ${{ "{:,.0f}".format(venta.saldo_pendiente) }}</p>
+            </div>
+
+            <div>
+                <a href="/hotel-sky-view/ventas" class="btn-secondary">← Volver</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="hotel-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Recibo</th>
+                    <th>Valor pagado</th>
+                    <th>Cuota aplicada</th>
+                    <th>Saldo resultante</th>
+                    <th>Forma pago</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pago in pagos %}
+                <tr>
+                    <td>{{ pago.fecha }}</td>
+                    <td>#{{ "%02d"|format(pago.consecutivo_recibo) }}</td>
+                    <td>${{ "{:,.0f}".format(pago.valor_pagado) }}</td>
+                    <td>
+                        {% if pago.cuota_aplicada_numero == 0 %}
+                            Inicial
+                        {% elif pago.cuota_aplicada_numero %}
+                            Cuota {{ pago.cuota_aplicada_numero }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>${{ "{:,.0f}".format(pago.saldo_resultante) }}</td>
+                    <td>{{ pago.forma_pago if pago.forma_pago else "" }}</td>
+                    <td>
+                        <div class="acciones-inline">
+                            <a href="/hotel-sky-view/recibo/{{ pago.id }}" class="btn-primary btn-small">Recibo caja</a>
+                            <a href="/hotel-sky-view/editar-pago/{{ pago.id }}" class="btn-secondary btn-small">Editar</a>
+
+                            <form method="POST" action="/hotel-sky-view/eliminar-pago/{{ pago.id }}" onsubmit="return confirm('¿Seguro que quieres eliminar este pago?');" style="display:inline;">
+                                <button type="submit" class="btn-danger btn-small">Eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+</body>
+</html>

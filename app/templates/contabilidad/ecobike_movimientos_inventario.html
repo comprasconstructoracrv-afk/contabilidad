@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ empresa_nombre }} - Movimientos de inventario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="page-header">
+    <h1>{{ empresa_nombre }} - Movimientos de inventario</h1>
+    <p>Historial de entradas, traslados, ajustes, ventas y salidas</p>
+</div>
+
+<div class="table-container">
+
+    <div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+        <a href="/ecobike/inventario" class="btn-primary">← Volver al inventario</a>
+        <a href="/dashboard" class="btn-secondary">Dashboard</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Producto</th>
+                <th>Tipo</th>
+                <th>Cantidad</th>
+                <th>Origen</th>
+                <th>Destino</th>
+                <th>Observación</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in movimientos %}
+            <tr>
+                <td>{{ m.fecha.strftime("%Y-%m-%d %H:%M") if m.fecha else "" }}</td>
+                <td>{{ m.producto.referencia if m.producto else "" }}</td>
+                <td>{{ m.tipo_movimiento }}</td>
+                <td>{{ m.cantidad }}</td>
+                <td>{{ m.sede_origen.nombre if m.sede_origen else "Bodega / General" }}</td>
+                <td>{{ m.sede_destino.nombre if m.sede_destino else "Bodega / General" }}</td>
+                <td>{{ m.observacion or "" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>

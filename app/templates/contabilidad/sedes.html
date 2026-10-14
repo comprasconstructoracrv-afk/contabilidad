@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ empresa_nombre }} - Sedes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <div class="page-header">
+        <h1>{{ empresa_nombre }} - Sedes</h1>
+        <p>Gestiona las sedes o locales de la empresa activa</p>
+    </div>
+
+    <div class="empresa-actual-bar">
+        <div class="empresa-actual-info">
+            <span class="empresa-badge">Empresa activa</span>
+            <strong>{{ empresa_nombre }}</strong>
+        </div>
+
+        <div class="empresa-actual-actions">
+            <a href="/dashboard" class="btn-secondary">Volver al dashboard</a>
+            <a href="/empresas" class="btn-secondary">Cambiar empresa</a>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <div class="form-card">
+            <h2 style="margin-top:0;">+ Crear otra sede</h2>
+
+            <form method="POST" class="movimiento-form">
+                <div class="form-grid">
+                    <div class="form-group form-group-full">
+                        <label for="nombre">Nombre de la sede</label>
+                        <input type="text" name="nombre" id="nombre" placeholder="Ej: SEDE IBAGUE" required>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Guardar sede</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <h2>Sedes registradas</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre de la sede</th>
+                    <th style="width: 220px;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sede in sedes %}
+                <tr>
+                    <td>{{ sede.nombre }}</td>
+                    <td>
+                        <div class="acciones-inline">
+                            <a href="/sedes/editar/{{ sede.id }}" class="btn-secondary btn-small">Editar</a>
+
+                            <form method="POST" action="/sedes/eliminar/{{ sede.id }}" onsubmit="return confirm('¿Seguro que deseas eliminar esta sede? Solo se elimina si no tiene movimientos asociados.');" style="display:inline;">
+                                <button type="submit" class="btn-danger btn-small">Eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <p style="margin-top: 15px; color: #667085;">
+            Nota: una sede solo se puede eliminar si no tiene movimientos registrados.
+        </p>
+    </div>
+
+</body>
+</html>

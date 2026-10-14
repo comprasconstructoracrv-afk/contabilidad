@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recibo de Caja</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #eef2f6;
+            color: #111827;
+        }
+
+        .recibo-wrapper {
+            max-width: 980px;
+            margin: 24px auto 40px;
+            padding: 0 16px;
+        }
+
+        .recibo-card {
+            position: relative;
+            overflow: hidden;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 12px 36px rgba(15, 23, 42, 0.12);
+            border: 1px solid #e5e7eb;
+            padding: 28px 28px 24px;
+        }
+
+        .recibo-card::before {
+            content: "";
+            position: absolute;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            border: 26px solid rgba(212, 175, 55, 0.14);
+            top: -120px;
+            right: -90px;
+            pointer-events: none;
+        }
+
+        .recibo-card::after {
+            content: "";
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: 20px solid rgba(212, 175, 55, 0.10);
+            bottom: -120px;
+            right: -70px;
+            pointer-events: none;
+        }
+
+        .recibo-topbar {
+            display: grid;
+            grid-template-columns: 170px 1fr 220px;
+            gap: 24px;
+            align-items: start;
+            padding-bottom: 20px;
+            margin-bottom: 18px;
+            border-bottom: 1px solid #d8dee8;
+            position: relative;
+            z-index: 1;
+        }
+
+        .recibo-logo-box {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            padding-top: 6px;
+        }
+
+        .recibo-logo {
+            width: 110px;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.12));
+        }
+
+        .empresa-linea {
+            font-size: 14px;
+            color: #1f3a5a;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .recibo-titulo-box {
+            text-align: center;
+            padding-top: 2px;
+        }
+
+        .recibo-titulo-box h1 {
+            margin: 0 0 12px 0;
+            font-size: 26px;
+            color: #111827;
+            letter-spacing: 0.3px;
+        }
+
+        .empresa-info {
+            margin-top: 8px;
+            font-size: 14px;
+            line-height: 1.55;
+            color: #111827;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .empresa-info .empresa-dorada {
+            color: #b8860b;
+        }
+
+        .recibo-meta {
+            text-align: right;
+            font-size: 15px;
+            line-height: 1.8;
+            color: #111827;
+            font-weight: 700;
+            padding-top: 6px;
+        }
+
+        .numero-recibo-badge {
+            display: inline-block;
+            margin-top: 6px;
+            background: linear-gradient(90deg, #d4af37 0%, #f3d36a 100%);
+            color: #111827;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            box-shadow: 0 6px 14px rgba(212, 175, 55, 0.22);
+        }
+
+        .recibo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .recibo-box {
+            background: #fbfbfc;
+            border-radius: 18px;
+            padding: 18px;
+            border: 1px solid #e6ebf1;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+        }
+
+        .recibo-box h3 {
+            margin: 0 0 14px 0;
+            font-size: 18px;
+            color: #111827;
+            border-left: 5px solid #d4af37;
+            padding-left: 10px;
+        }
+
+        .recibo-box p {
+            margin: 0 0 10px 0;
+            font-size: 15px;
+            color: #111827;
+            line-height: 1.5;
+        }
+
+        .recibo-box strong {
+            color: #000000;
+        }
+
+        .tabla-wrap {
+            overflow-x: auto;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tabla-recibo {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+            border-radius: 16px;
+            background: #ffffff;
+        }
+
+        .tabla-recibo thead tr {
+            background: #18293d;
+            color: #ffffff;
+        }
+
+        .tabla-recibo th,
+        .tabla-recibo td {
+            padding: 14px 12px;
+            text-align: left;
+            border: 1px solid #dbe2ea;
+            font-size: 15px;
+        }
+
+        .tabla-recibo tbody tr:nth-child(odd) {
+            background: #fffdf7;
+        }
+
+        .tabla-recibo tbody tr:nth-child(even) {
+            background: #ffffff;
+        }
+
+        .tabla-recibo tbody td:last-child,
+        .tabla-recibo tbody td:nth-last-child(2) {
+            font-weight: 700;
+        }
+
+        .resumen-final {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 4px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .resumen-card {
+            background: linear-gradient(180deg, #fffdf7 0%, #fff9eb 100%);
+            border: 1px solid rgba(212, 175, 55, 0.30);
+            border-radius: 18px;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 800;
+            color: #111827;
+            box-shadow: 0 8px 18px rgba(212, 175, 55, 0.10);
+        }
+
+        .resumen-card span {
+            color: #0f5132;
+        }
+
+        .resumen-card.saldo span {
+            color: #8b5e00;
+        }
+
+        .leyenda-final {
+            margin-top: 18px;
+            text-align: center;
+            font-size: 13px;
+            color: #4b5563;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        .leyenda-final strong {
+            color: #111827;
+        }
+
+        .acciones-recibo {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 22px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-recibo {
+            display: inline-block;
+            padding: 12px 18px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .btn-primario {
+            background: linear-gradient(90deg, #0f2238 0%, #1f3a5a 100%);
+            color: #ffffff;
+            box-shadow: 0 8px 18px rgba(15, 34, 56, 0.20);
+        }
+
+        .btn-dorado {
+            background: linear-gradient(90deg, #d4af37 0%, #f3d36a 100%);
+            color: #111827;
+            box-shadow: 0 8px 18px rgba(212, 175, 55, 0.20);
+        }
+
+        .btn-secundario {
+            background: #eef2f7;
+            color: #111827;
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+            }
+
+            .recibo-wrapper {
+                margin: 0;
+                max-width: 100%;
+                padding: 0;
+            }
+
+            .recibo-card {
+                box-shadow: none;
+                border: none;
+                border-radius: 0;
+                padding: 0;
+            }
+
+            .acciones-recibo {
+                display: none;
+            }
+
+            @page {
+                margin: 14mm;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .recibo-topbar {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .recibo-logo-box,
+            .recibo-meta {
+                align-items: center;
+                text-align: center;
+            }
+
+            .recibo-grid,
+            .resumen-final {
+                grid-template-columns: 1fr;
+            }
+
+            .acciones-recibo {
+                flex-direction: column;
+            }
+
+            .btn-recibo {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="recibo-wrapper">
+    <div class="recibo-card">
+
+        <div class="recibo-topbar">
+            <div class="recibo-logo-box">
+                <img src="{{ url_for('static', filename='logo_crv.png') }}" alt="Logo CRV" class="recibo-logo">
+                <div class="empresa-linea">{{ empresa_nombre }}</div>
+            </div>
+
+            <div class="recibo-titulo-box">
+                <h1>Recibo de Caja</h1>
+
+                <div class="empresa-info">
+                    <div class="empresa-dorada">CONSTRUCCIONES Y URBANIZACIONES S.A.S</div>
+                    <div>NIT: 901.527.083-2</div>
+                    <div>AV. AMBALA N° 27-136 - PISO 3</div>
+                    <div>IBAGUÉ - TOLIMA</div>
+                    <div>TELÉFONO: 311 414 5843</div>
+                </div>
+            </div>
+
+            <div class="recibo-meta">
+                <div>Fecha: {{ venta.fecha.strftime('%Y-%m-%d') if venta.fecha else '' }}</div>
+                <div class="numero-recibo-badge">RECIBO DE CAJA N° {{ venta.id }}</div>
+            </div>
+        </div>
+
+        <div class="recibo-grid">
+            <div class="recibo-box">
+                <h3>Datos del cliente</h3>
+                <p><strong>Nombre:</strong> {{ venta.cliente if venta.cliente else 'No registrado' }}</p>
+                <p><strong>Cédula:</strong> {{ venta.cliente_cedula if venta.cliente_cedula else 'No registrada' }}</p>
+                <p><strong>Dirección:</strong> {{ venta.cliente_direccion if venta.cliente_direccion else 'No registrada' }}</p>
+                <p><strong>Celular:</strong> {{ venta.cliente_celular if venta.cliente_celular else 'No registrado' }}</p>
+                <p><strong>Correo:</strong> {{ venta.cliente_correo if venta.cliente_correo else 'No registrado' }}</p>
+            </div>
+
+            <div class="recibo-box">
+                <h3>Datos de la venta</h3>
+                <p><strong>Sede:</strong> {{ venta.sede.nombre if venta.sede else 'General' }}</p>
+                <p><strong>Tipo de venta:</strong> {{ venta.tipo_venta }}</p>
+                <p><strong>Cuenta / Medio:</strong> {{ venta.cuenta if venta.cuenta else 'No registrado' }}</p>
+                <p><strong>Observación:</strong> {{ venta.observacion if venta.observacion else 'Sin observación' }}</p>
+            </div>
+        </div>
+
+        <div class="tabla-wrap">
+            <table class="tabla-recibo">
+                <thead>
+                    <tr>
+                        <th>Referencia</th>
+                        <th>Cantidad</th>
+                        <th>Precio unitario</th>
+                        <th>Descuento</th>
+                        <th>Valor total</th>
+                        <th>Valor recibido</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ venta.referencia }}</td>
+                        <td>{{ venta.cantidad }}</td>
+                        <td>${{ "{:,.0f}".format(venta.precio_unitario) }}</td>
+                        <td>${{ "{:,.0f}".format(venta.descuento if venta.descuento else 0) }}</td>
+                        <td>${{ "{:,.0f}".format(venta.valor_total) }}</td>
+                        <td>${{ "{:,.0f}".format(venta.valor_recibido) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="resumen-final">
+            <div class="resumen-card saldo">
+                Saldo pendiente: <span>${{ "{:,.0f}".format(venta.saldo_pendiente) }}</span>
+            </div>
+
+            <div class="resumen-card">
+                Total recibido hoy: <span>${{ "{:,.0f}".format(venta.valor_recibido) }}</span>
+            </div>
+        </div>
+
+        <div class="leyenda-final">
+            <div><strong>Gracias por su compra.</strong></div>
+            <div>Conserve este documento para control interno, soporte de pago y seguimiento comercial.</div>
+        </div>
+
+        <div class="acciones-recibo">
+            <button onclick="window.print()" class="btn-recibo btn-dorado">Imprimir recibo</button>
+            <a href="/ventas-ecobike" class="btn-recibo btn-secundario">Volver</a>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Venta ECOBIKE</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .reportes-page-layout {
+            max-width: 1400px;
+            margin: 0 auto 40px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 270px minmax(0, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .reportes-sidebar {
+            position: sticky;
+            top: 20px;
+        }
+
+        .reportes-sidebar-card {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            border: 1px solid #e5e7eb;
+            padding: 20px;
+        }
+
+        .reportes-sidebar-card h3 {
+            margin: 0 0 16px 0;
+            font-size: 24px;
+            color: #0f2744;
+        }
+
+        .reportes-sidebar-card p {
+            margin: 0 0 18px 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .sidebar-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sidebar-actions a {
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .reportes-main {
+            min-width: 0;
+        }
+
+        .form-container {
+            margin: 0;
+        }
+
+        .form-card {
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+        }
+
+        @media (max-width: 992px) {
+            .reportes-page-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .reportes-sidebar {
+                position: static;
+                order: 2;
+            }
+
+            .reportes-main {
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <h1>{{ empresa_nombre }} - Registrar Venta</h1>
+    <p>Ventas de bicicletas por sede, contado, crédito o separado</p>
+</div>
+
+<div class="empresa-actual-bar">
+    <div class="empresa-actual-info">
+        <span class="empresa-badge">Empresa activa</span>
+        <strong>{{ empresa_nombre }}</strong>
+    </div>
+
+    <div class="empresa-actual-actions">
+        <a href="/ventas-ecobike" class="btn-secondary">Ver ventas</a>
+        <a href="/ventas-ecobike/reporte" class="btn-secondary">Reporte ventas</a>
+    </div>
+</div>
+
+<div class="reportes-page-layout">
+
+    <aside class="reportes-sidebar">
+        <div class="reportes-sidebar-card">
+            <h3>Acciones</h3>
+            <p>Accesos rápidos para registrar ventas ECOBIKE</p>
+
+            <div class="sidebar-actions">
+                <a href="/ventas-ecobike" class="btn-secondary">Ver ventas</a>
+                <a href="/ventas-ecobike/reporte" class="btn-secondary">Reporte ventas</a>
+                <a href="/dashboard" class="btn-secondary">Volver al dashboard</a>
+                <a href="/empresas" class="btn-secondary">Cambiar empresa</a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="reportes-main">
+        <div class="form-container">
+            <div class="form-card">
+                <form method="POST" class="movimiento-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="fecha">Fecha</label>
+                            <input type="date" name="fecha" id="fecha" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tipo_venta">Tipo de venta</label>
+                            <select name="tipo_venta" id="tipo_venta" required>
+                                <option value="">Seleccione</option>
+                                <option value="CONTADO">Contado</option>
+                                <option value="CREDITO">Crédito</option>
+                                <option value="SEPARADO">Separado</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group form-group-full">
+                            <label for="sede_id">Sede</label>
+                            <select name="sede_id" id="sede_id">
+                                <option value="">General / Sin sede</option>
+                                {% for sede in sedes %}
+                                <option value="{{ sede.id }}">{{ sede.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group form-group-full">
+                            <label for="producto_id">Referencia del catálogo</label>
+                            <select name="producto_id" id="producto_id" onchange="llenarCostoProducto()">
+                                <option value="">Seleccione del catálogo</option>
+                                {% for producto in productos %}
+                                <option value="{{ producto.id }}" data-costo="{{ producto.costo_compra }}">
+                                    {{ producto.referencia }} - ${{ "{:,.0f}".format(producto.costo_compra) }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group form-group-full">
+                            <label for="referencia_manual">O escribir referencia manual</label>
+                            <input type="text" name="referencia_manual" id="referencia_manual" placeholder="Ej: ECO MAX PRO 2026">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cantidad">Cantidad vendida</label>
+                            <input type="number" name="cantidad" id="cantidad" min="1" value="1" required oninput="calcularSaldo()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="precio_unitario">Precio venta unitario</label>
+                            <input type="number" step="0.01" name="precio_unitario" id="precio_unitario" required oninput="calcularSaldo()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="costo_manual">Costo compra / importación unitario</label>
+                            <input type="number" step="0.01" name="costo_manual" id="costo_manual">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="descuento">Descuento aplicado</label>
+                            <input type="number" step="0.01" name="descuento" id="descuento" value="0" oninput="calcularSaldo()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="valor_recibido">Valor recibido hoy</label>
+                            <input type="number" step="0.01" name="valor_recibido" id="valor_recibido" value="0" required oninput="calcularSaldo()">
+                        </div>
+
+                        <div class="form-group form-group-full">
+                            <label for="cuenta">Cuenta / Medio por donde entró</label>
+                            <select name="cuenta" id="cuenta" onchange="mostrarOtraCuenta()" required>
+                                <option value="">Seleccione</option>
+                                <option value="EFECTIVO">EFECTIVO</option>
+                                <option value="BANCOLOMBIA SAS">BANCOLOMBIA SAS</option>
+                                <option value="BANCOLOMBIA ING">BANCOLOMBIA ING</option>
+                                <option value="NEQUI ING">NEQUI ING</option>
+                                <option value="BANCOLOMBIA SRA ALISA">BANCOLOMBIA SRA ALISA</option>
+                                <option value="BOLD SRA ALISA">BOLD SRA ALISA</option>
+                                <option value="OTRO">OTRO</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group form-group-full" id="otra_cuenta_div" style="display:none;">
+                            <label for="otra_cuenta">Otra cuenta / medio</label>
+                            <input type="text" name="otra_cuenta" id="otra_cuenta" placeholder="Escriba la cuenta">
+                        </div>
+
+                        <div class="form-group form-group-full">
+                            <label for="cliente">Nombre completo del cliente</label>
+                            <input type="text" name="cliente" id="cliente">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cliente_cedula">Cédula</label>
+                            <input type="text" name="cliente_cedula" id="cliente_cedula">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cliente_celular">Celular</label>
+                            <input type="text" name="cliente_celular" id="cliente_celular">
+                        </div>
+
+                        <div class="form-group form-group-full">
+                            <label for="cliente_direccion">Dirección</label>
+                            <input type="text" name="cliente_direccion" id="cliente_direccion">
+                        </div>
+
+                        <div class="form-group form-group-full">
+                            <label for="cliente_correo">Correo</label>
+                            <input type="email" name="cliente_correo" id="cliente_correo">
+                        </div>
+
+                        <div class="form-group form-group-full">
+                            <label for="observacion">Observación</label>
+                            <textarea name="observacion" id="observacion" rows="4" placeholder="Detalle de la venta"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="table-container" style="margin-top: 25px;">
+                        <h2>Resumen rápido</h2>
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <th>Valor total venta</th>
+                                    <td id="valor_total_mostrar">$0</td>
+                                </tr>
+                                <tr>
+                                    <th>Saldo pendiente</th>
+                                    <td id="saldo_pendiente_mostrar">$0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Guardar venta</button>
+                        <a href="/ventas-ecobike" class="btn-secondary">Ver ventas</a>
+                        <a href="/ventas-ecobike/reporte" class="btn-secondary">Ver reporte</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+</div>
+
+<script>
+function mostrarOtraCuenta() {
+    const cuenta = document.getElementById("cuenta").value;
+    document.getElementById("otra_cuenta_div").style.display = (cuenta === "OTRO") ? "block" : "none";
+}
+
+function llenarCostoProducto() {
+    const select = document.getElementById("producto_id");
+    const option = select.options[select.selectedIndex];
+    const costo = option.getAttribute("data-costo");
+
+    if (costo) {
+        document.getElementById("costo_manual").value = costo;
+    }
+}
+
+function calcularSaldo() {
+    const cantidad = parseFloat(document.getElementById("cantidad").value || 0);
+    const precio = parseFloat(document.getElementById("precio_unitario").value || 0);
+    const descuento = parseFloat(document.getElementById("descuento").value || 0);
+    const recibido = parseFloat(document.getElementById("valor_recibido").value || 0);
+
+    let total = (cantidad * precio) - descuento;
+    if (total < 0) total = 0;
+
+    let saldo = total - recibido;
+    if (saldo < 0) saldo = 0;
+
+    document.getElementById("valor_total_mostrar").innerText = "$" + total.toLocaleString("es-CO");
+    document.getElementById("saldo_pendiente_mostrar").innerText = "$" + saldo.toLocaleString("es-CO");
+}
+</script>
+
+</body>
+</html>

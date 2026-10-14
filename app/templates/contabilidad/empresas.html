@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selecciona una empresa</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .empresas-shell {
+            max-width: 1280px;
+            margin: 0 auto 40px;
+            padding: 0 20px 30px;
+        }
+
+        .empresas-hero {
+            background: linear-gradient(135deg, #0f2238 0%, #1c2f4a 70%, #233b5a 100%);
+            border-radius: 28px;
+            padding: 26px 28px;
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 18px 40px rgba(15, 34, 56, 0.18);
+            margin-bottom: 26px;
+        }
+
+        .empresas-hero::before {
+            content: "";
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            border: 22px solid rgba(212, 175, 55, 0.18);
+            border-radius: 50%;
+            right: -90px;
+            top: -110px;
+        }
+
+        .empresas-hero-inner {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 110px 1fr auto;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .empresas-hero-logo {
+            text-align: center;
+        }
+
+        .empresas-hero-logo img {
+            width: 86px;
+            filter: drop-shadow(0 6px 14px rgba(0,0,0,0.18));
+        }
+
+        .empresas-hero h1 {
+            margin: 0 0 8px 0;
+            font-size: 40px;
+            line-height: 1.1;
+            color: #ffffff;
+        }
+
+        .empresas-hero p {
+            margin: 0;
+            color: #dbe7f7;
+            font-size: 16px;
+        }
+
+        .empresas-hero-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .empresas-gold-line {
+            width: 86px;
+            height: 4px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #d4af37 0%, #f3d36a 100%);
+            margin: 0 0 14px 0;
+        }
+
+        .empresas-toolbar-card,
+        .empresas-summary-card,
+        .empresas-report-card,
+        .empresas-empty-card,
+        .empresas-alert,
+        .premium-empresa-card {
+            background: linear-gradient(180deg, #ffffff 0%, #fcfcfd 100%);
+            border: 1px solid #e5e7eb;
+            border-radius: 22px;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+        }
+
+        .empresas-toolbar-card {
+            padding: 16px 18px;
+            margin-bottom: 22px;
+        }
+
+        .empresas-toolbar-inner {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .empresas-toolbar-left {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .empresas-toolbar-left .filters {
+            margin: 0;
+        }
+
+        .premium-empresas-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .premium-empresa-card {
+            padding: 22px 18px 18px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .premium-empresa-card::before {
+            content: "";
+            position: absolute;
+            height: 4px;
+            left: 0;
+            right: 0;
+            top: 0;
+            background: linear-gradient(90deg, #d4af37 0%, #f3d36a 100%);
+        }
+
+        .empresa-card-top h2 {
+            margin: 12px 0 10px 0;
+            font-size: 28px;
+            color: #16283d;
+            line-height: 1.15;
+        }
+
+        .empresa-card-top p {
+            margin: 0;
+            color: #64748b;
+            min-height: 44px;
+            font-size: 14px;
+        }
+
+        .empresa-icon-circle {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e9f1ff 0%, #dce8ff 100%);
+            color: #2754b8;
+            font-weight: 800;
+            font-size: 20px;
+            box-shadow: inset 0 0 0 1px rgba(39, 84, 184, 0.10);
+        }
+
+        .premium-empresa-actions {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 18px;
+            align-items: stretch;
+        }
+
+        .btn-empresa-mini {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 44px;
+            border-radius: 14px;
+            font-weight: 800;
+        }
+
+        .empresa-delete-form {
+            margin: 0;
+        }
+
+        .empresa-delete-form button {
+            width: 100%;
+        }
+
+        .empresas-summary {
+            margin: 0 0 24px 0;
+        }
+
+        .empresas-summary .card {
+            min-height: 170px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .empresas-report-card {
+            padding: 20px;
+        }
+
+        .empresas-report-card h2 {
+            margin-top: 0;
+            color: #16283d;
+        }
+
+        .empresas-total-row {
+            background: #f4f7fb;
+            font-weight: 800;
+        }
+
+        .empresas-alert {
+            padding: 14px 18px;
+            margin-bottom: 16px;
+        }
+
+        .empresas-alert p {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .empresas-alert-error {
+            border-left: 5px solid #dc2626;
+        }
+
+        .empresas-alert-ok {
+            border-left: 5px solid #16a34a;
+        }
+
+        @media (max-width: 1180px) {
+            .premium-empresas-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 860px) {
+            .empresas-hero-inner {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .empresas-hero-actions {
+                justify-content: center;
+            }
+
+            .empresas-gold-line {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .premium-empresas-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .premium-empresa-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .empresas-shell {
+                padding: 0 14px 30px;
+            }
+
+            .empresas-hero h1 {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="empresas-shell">
+
+        <div class="empresas-hero">
+            <div class="empresas-hero-inner">
+                <div class="empresas-hero-logo">
+                    <img src="{{ url_for('static', filename='logo_crv.png') }}" alt="Logo CRV">
+                </div>
+
+                <div>
+                    <div class="empresas-gold-line"></div>
+                    <h1>Selecciona una empresa</h1>
+                    <p>Administra cada unidad de negocio por separado con una vista más clara, corporativa y ordenada.</p>
+                </div>
+
+                <div class="empresas-hero-actions no-print">
+                    <a href="/empresas/nueva" class="btn-primary">+ Crear empresa</a>
+                    <a href="/cambiar-password" class="btn-secondary">Cambiar contraseña</a>
+                    <a href="/logout" class="btn-secondary">Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="empresas-alert empresas-alert-error">
+            <p>{{ error }}</p>
+        </div>
+        {% endif %}
+
+        {% if ok %}
+        <div class="empresas-alert empresas-alert-ok">
+            <p>{{ ok }}</p>
+        </div>
+        {% endif %}
+
+        <div class="empresas-toolbar-card no-print">
+            <div class="empresas-toolbar-inner">
+                <div class="empresas-toolbar-left">
+                    <form method="GET" action="/empresas" class="filters-form">
+                        <div class="filters">
+                            <input type="month" name="mes" value="{{ mes_actual }}">
+                            <button type="submit" class="btn-primary">Aplicar filtro</button>
+                            <a href="/empresas" class="btn-secondary">Limpiar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% if empresas %}
+        <div class="premium-empresas-grid">
+            {% for empresa in empresas %}
+            <div class="premium-empresa-card">
+                <div class="empresa-card-top">
+                    <div class="empresa-icon-circle">
+                        {{ empresa.nombre[:2] }}
+                    </div>
+
+                    <h2>{{ empresa.nombre }}</h2>
+                    <p>Ingresar al módulo contable de esta empresa</p>
+                </div>
+
+                <div class="premium-empresa-actions">
+                    <a href="/seleccionar_empresa/{{ empresa.id }}" class="btn-primary btn-empresa-mini">Entrar</a>
+                    <a href="/empresas/editar/{{ empresa.id }}" class="btn-secondary btn-empresa-mini">Editar</a>
+
+                    <form method="POST"
+                          action="/empresas/eliminar/{{ empresa.id }}"
+                          class="empresa-delete-form"
+                          onsubmit="return confirm('¿Seguro que deseas eliminar esta empresa? Solo se elimina si no tiene datos registrados.');">
+                        <button type="submit" class="btn-danger btn-empresa-mini">Eliminar</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empresas-empty-card report-card" style="padding:24px;">
+            <h2>No hay empresas registradas</h2>
+            <p>Crea la primera empresa para empezar a trabajar.</p>
+        </div>
+        {% endif %}
+
+        <div class="report-summary empresas-summary">
+            <div class="card ingreso">
+                <h2>Ingresos generales</h2>
+                <p>${{ "{:,.0f}".format(total_ingresos) }}</p>
+            </div>
+
+            <div class="card gasto">
+                <h2>Gastos generales</h2>
+                <p>${{ "{:,.0f}".format(total_gastos) }}</p>
+            </div>
+
+            <div class="card utilidad {{ 'utilidad-positiva' if total_utilidad >= 0 else 'utilidad-negativa' }}">
+                <h2>{{ 'Utilidad general' if total_utilidad >= 0 else 'Pérdida general' }}</h2>
+                <p>${{ "{:,.0f}".format(total_utilidad) }}</p>
+            </div>
+        </div>
+
+        <div class="empresas-report-card">
+            <h2>Resumen general de empresas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Empresa</th>
+                        <th>Ingresos</th>
+                        <th>Gastos</th>
+                        <th>Utilidad / Pérdida</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fila in resumen_empresas %}
+                    <tr>
+                        <td>{{ fila.empresa }}</td>
+                        <td class="ingreso-text">${{ "{:,.0f}".format(fila.ingresos) }}</td>
+                        <td class="gasto-text">${{ "{:,.0f}".format(fila.gastos) }}</td>
+                        <td class="{{ 'ingreso-text' if fila.utilidad >= 0 else 'gasto-text' }}">
+                            ${{ "{:,.0f}".format(fila.utilidad) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                    <tr class="empresas-total-row">
+                        <td>TOTAL GENERAL</td>
+                        <td class="ingreso-text">${{ "{:,.0f}".format(total_ingresos) }}</td>
+                        <td class="gasto-text">${{ "{:,.0f}".format(total_gastos) }}</td>
+                        <td class="{{ 'ingreso-text' if total_utilidad >= 0 else 'gasto-text' }}">
+                            ${{ "{:,.0f}".format(total_utilidad) }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ empresa_nombre }} - Cierre mensual</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root{
+            --bg:#eef2f5;
+            --card:#ffffff;
+            --text:#102a43;
+            --muted:#5f7287;
+            --navy:#17304f;
+            --green:#15803d;
+            --green-soft:#dcfce7;
+            --gold:#d8b541;
+            --gold-soft:#fff7d6;
+            --red:#dc2626;
+            --red-soft:#fee2e2;
+            --line:#d9e2ec;
+            --shadow:0 10px 25px rgba(15, 23, 42, .08);
+            --radius:22px;
+        }
+
+        *{box-sizing:border-box}
+
+        body{
+            margin:0;
+            font-family:Arial, Helvetica, sans-serif;
+            background:var(--bg);
+            color:var(--text);
+        }
+
+        .page{
+            max-width:1450px;
+            margin:0 auto;
+            padding:24px;
+        }
+
+        .top-brand{
+            text-align:center;
+            margin-bottom:20px;
+        }
+
+        .top-brand img{
+            width:110px;
+            max-height:110px;
+            object-fit:contain;
+            display:block;
+            margin:0 auto 10px;
+        }
+
+        .top-brand h1{
+            margin:0;
+            font-size:34px;
+            line-height:1.1;
+            color:#16361c;
+            letter-spacing:.5px;
+        }
+
+        .top-brand p{
+            margin:10px 0 0;
+            color:var(--muted);
+            font-size:15px;
+        }
+
+        .toolbar{
+            background:var(--card);
+            border:1px solid var(--line);
+            border-radius:24px;
+            box-shadow:var(--shadow);
+            padding:18px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:16px;
+            flex-wrap:wrap;
+            margin-bottom:22px;
+        }
+
+        .toolbar-left,
+        .toolbar-right{
+            display:flex;
+            gap:12px;
+            align-items:center;
+            flex-wrap:wrap;
+        }
+
+        .btn{
+            text-decoration:none;
+            border:none;
+            cursor:pointer;
+            border-radius:14px;
+            padding:13px 18px;
+            font-weight:700;
+            font-size:15px;
+            transition:.2s ease;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        .btn:hover{transform:translateY(-1px)}
+        .btn-navy{background:var(--navy); color:#fff; box-shadow:var(--shadow)}
+        .btn-light{background:#eef3f8; color:var(--navy); border:1px solid #d7e0ea}
+        .btn-gold{background:var(--gold); color:#1f2937}
+
+        .month-input{
+            padding:13px 14px;
+            border-radius:14px;
+            border:1px solid #c9d5e2;
+            background:#fff;
+            min-width:185px;
+            font-size:15px;
+        }
+
+        .hero-grid{
+            display:grid;
+            grid-template-columns:repeat(3, minmax(220px, 1fr));
+            gap:18px;
+            margin-bottom:22px;
+        }
+
+        .hero-card{
+            background:var(--card);
+            border-radius:24px;
+            box-shadow:var(--shadow);
+            border:1px solid var(--line);
+            padding:24px 22px 18px;
+            position:relative;
+            overflow:hidden;
+            display:flex;
+            flex-direction:column;
+            gap:14px;
+        }
+
+        .hero-card::before{
+            content:"";
+            position:absolute;
+            left:0;
+            top:0;
+            width:100%;
+            height:5px;
+        }
+
+        .hero-card.green::before{background:#22c55e}
+        .hero-card.red::before{background:#ef4444}
+        .hero-card.gold::before{background:#d8b541}
+
+        .hero-card .label{
+            font-size:16px;
+            font-weight:700;
+            color:#17361f;
+        }
+
+        .hero-card .value{
+            font-size:28px;
+            font-weight:800;
+            color:#000;
+        }
+
+        .stats-grid{
+            display:grid;
+            grid-template-columns:repeat(3, 1fr);
+            gap:18px;
+            margin-bottom:22px;
+        }
+
+        .mini-stat{
+            border-radius:20px;
+            padding:20px;
+            border:1px solid var(--line);
+            background:#fff;
+            box-shadow:0 6px 18px rgba(15,23,42,.04);
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+        }
+
+        .mini-stat .kicker{
+            font-size:14px;
+            font-weight:700;
+            color:#17361f;
+        }
+
+        .mini-stat .big{
+            font-size:24px;
+            font-weight:900;
+        }
+
+        .mini-gold{background:linear-gradient(180deg, #fffdf5 0%, #ffffff 100%)}
+        .mini-green{background:linear-gradient(180deg, #f2fff6 0%, #ffffff 100%)}
+        .mini-red{background:linear-gradient(180deg, #fff7f7 0%, #ffffff 100%)}
+
+        .section{
+            background:var(--card);
+            border:1px solid var(--line);
+            border-radius:26px;
+            box-shadow:var(--shadow);
+            overflow:hidden;
+        }
+
+        .section-header{
+            padding:22px 24px 12px;
+        }
+
+        .section-header h2{
+            margin:0;
+            font-size:22px;
+            color:#17361f;
+        }
+
+        .section-header p{
+            margin:6px 0 0;
+            color:var(--muted);
+            font-size:15px;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+        }
+
+        thead{
+            background:#17304f;
+            color:#fff;
+        }
+
+        th, td{
+            padding:14px 12px;
+            border-bottom:1px solid #e5edf5;
+            font-size:14px;
+            text-align:left;
+            vertical-align:top;
+        }
+
+        .money-green{color:#15803d; font-weight:800}
+        .money-red{color:#dc2626; font-weight:800}
+        .money-navy{color:#17304f; font-weight:800}
+
+        .tipo-ingreso{
+            color:#15803d;
+            font-weight:800;
+        }
+
+        .tipo-gasto{
+            color:#dc2626;
+            font-weight:800;
+        }
+
+        @media (max-width: 1000px){
+            .hero-grid,
+            .stats-grid{
+                grid-template-columns:1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <div class="top-brand">
+        {% if config and config.logo_url %}
+            <img src="{{ config.logo_url }}" alt="Logo">
+        {% else %}
+            <img src="{{ url_for('static', filename='logo_hotel_sky_view.png.jpg') }}" alt="Logo">
+        {% endif %}
+        <h1>{{ empresa_nombre }}</h1>
+        <p>Cierre mensual financiero y comercial del proyecto hotelero</p>
+    </div>
+
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <a href="/hotel-sky-view/dashboard" class="btn btn-navy">← Volver</a>
+        </div>
+
+        <form method="GET" action="/hotel-sky-view/cierre-mensual" class="toolbar-right">
+            <input type="month" name="mes" value="{{ mes_actual }}" class="month-input">
+            <button type="submit" class="btn btn-navy">Aplicar filtro</button>
+            <a href="/hotel-sky-view/cierre-mensual" class="btn btn-light">Limpiar</a>
+            <a href="/hotel-sky-view/cierre-mensual-pdf{% if mes_actual %}?mes={{ mes_actual }}{% endif %}" class="btn btn-gold">📄 Exportar PDF</a>
+        </form>
+    </div>
+
+    <div class="hero-grid">
+        <div class="hero-card green">
+            <div class="label">Ingresos del periodo</div>
+            <div class="value">${{ "{:,.0f}".format(ingresos) }}</div>
+        </div>
+
+        <div class="hero-card red">
+            <div class="label">Gastos del periodo</div>
+            <div class="value">${{ "{:,.0f}".format(gastos) }}</div>
+        </div>
+
+        <div class="hero-card gold">
+            <div class="label">Utilidad / Pérdida</div>
+            <div class="value">${{ "{:,.0f}".format(utilidad) }}</div>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="mini-stat mini-green">
+            <div class="kicker">Ventas del mes</div>
+            <div class="big">${{ "{:,.0f}".format(total_ventas) }}</div>
+        </div>
+
+        <div class="mini-stat mini-gold">
+            <div class="kicker">Total recaudado</div>
+            <div class="big">${{ "{:,.0f}".format(total_recaudado) }}</div>
+        </div>
+
+        <div class="mini-stat mini-green">
+            <div class="kicker">Acciones vendidas</div>
+            <div class="big">{{ total_acciones }}</div>
+        </div>
+
+        <div class="mini-stat mini-gold">
+            <div class="kicker">Cartera total</div>
+            <div class="big">${{ "{:,.0f}".format(cartera_total) }}</div>
+        </div>
+
+        <div class="mini-stat mini-red">
+            <div class="kicker">Cartera vencida</div>
+            <div class="big">${{ "{:,.0f}".format(cartera_vencida) }}</div>
+        </div>
+
+        <div class="mini-stat mini-gold">
+            <div class="kicker">Por vencer</div>
+            <div class="big">${{ "{:,.0f}".format(cartera_por_vencer) }}</div>
+        </div>
+    </div>
+
+    <section class="section">
+        <div class="section-header">
+            <h2>Detalle de movimientos del periodo</h2>
+            <p>Total registros: {{ total_movimientos }}</p>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Categoría</th>
+                    <th>Cuenta</th>
+                    <th>Descripción</th>
+                    <th>Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in movimientos %}
+                <tr>
+                    <td>{{ m.fecha }}</td>
+                    <td class="{{ 'tipo-ingreso' if m.tipo == 'INGRESO' else 'tipo-gasto' }}">
+                        {{ m.tipo }}
+                    </td>
+                    <td>{{ m.categoria }}</td>
+                    <td>{{ m.cuenta if m.cuenta else "" }}</td>
+                    <td>{{ m.descripcion }}</td>
+                    <td class="{{ 'money-green' if m.tipo == 'INGRESO' else 'money-red' }}">
+                        ${{ "{:,.0f}".format(m.valor) }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+</div>
+</body>
+</html>

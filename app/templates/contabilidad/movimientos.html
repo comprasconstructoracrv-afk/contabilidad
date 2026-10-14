@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Movimientos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="page-header">
+    <h1>{{ empresa_nombre }} - Movimientos</h1>
+    <p>Consulta, filtra y analiza los registros financieros</p>
+</div>
+
+<div class="empresa-actual-bar">
+    <div class="empresa-actual-info">
+        <span class="empresa-badge">Empresa activa</span>
+        <strong>{{ empresa_nombre }}</strong>
+    </div>
+
+    <div class="empresa-actual-actions">
+        <a href="/empresas" class="btn-secondary">Cambiar empresa</a>
+        <a href="/sedes" class="btn-secondary">Gestionar sedes</a>
+    </div>
+</div>
+
+<div class="table-container">
+
+<div style="display:flex; justify-content:flex-start; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+    <a href="/dashboard" class="btn-primary">← Volver</a>
+    <a href="/nuevo" class="btn-primary">+ Nuevo movimiento</a>
+    <a href="/hotel-sky-view/movimientos-pdf" class="btn-secondary">📄 Exportar PDF</a>
+</div>
+
+    <form method="GET" action="/movimientos" class="filters" style="margin-bottom:20px;">
+        <input type="month" name="mes" value="{{ mes_actual }}">
+
+        {% if sedes %}
+        <select name="sede_id">
+            <option value="">Todas las sedes</option>
+            {% for sede in sedes %}
+            <option value="{{ sede.id }}" {% if sede_actual == sede.id|string %}selected{% endif %}>{{ sede.nombre }}</option>
+            {% endfor %}
+        </select>
+        {% endif %}
+
+        <button type="submit" class="btn-primary">Filtrar</button>
+        <a href="/movimientos" class="btn-secondary">Limpiar</a>
+        <a href="/hotel-sky-view/movimientos-pdf" class="btn-secondary">📄 Exportar PDF</a>
+    </form>
+
+    <div class="filters">
+        <input type="text" id="busqueda" placeholder="Buscar..." onkeyup="filtrarTabla()">
+
+        <select id="filtroTipo" onchange="filtrarTabla()">
+            <option value="">Todos</option>
+            <option value="INGRESO">Ingresos</option>
+            <option value="GASTO">Gastos</option>
+        </select>
+    </div>
+
+    <table id="tablaMovimientos">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Sede</th>
+                <th>Categoría</th>
+                <th>Cuenta / Medio</th>
+                <th>Tercero</th>
+                <th>Valor</th>
+                <th>Descripción</th>
+                <th style="width: 220px;">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in movimientos %}
+            <tr>
+                <td>{{ m.fecha }}</td>
+                <td class="{{ 'ingreso-text' if m.tipo == 'INGRESO' else 'gasto-text' }}">
+                    {{ m.tipo }}
+                </td>
+                <td>{{ m.sede.nombre if m.sede else "General" }}</td>
+                <td>{{ m.categoria }}</td>
+                <td>{{ m.cuenta if m.cuenta else "" }}</td>
+                <td>{{ m.tercero if m.tercero else "" }}</td>
+                <td>${{ "{:,.0f}".format(m.valor) }}</td>
+                <td>{{ m.descripcion }}</td>
+                <td>
+                    <div class="acciones-inline">
+                        <a href="/movimientos/editar/{{ m.id }}" class="btn-secondary btn-small">Editar</a>
+
+                        <form method="POST" action="/movimientos/eliminar/{{ m.id }}" onsubmit="return confirm('¿Seguro que deseas eliminar este movimiento?');" style="display:inline;">
+                            <button type="submit" class="btn-danger btn-small">Eliminar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+<div class="table-actions">
+    <a href="/empresas" class="btn-secondary">Cambiar empresa</a>
+</div>
+
+</div>
+
+<script>
+function filtrarTabla() {
+    const texto = document.getElementById("busqueda").value.toLowerCase();
+    const tipo = document.getElementById("filtroTipo").value;
+
+    const filas = document.querySelectorAll("#tablaMovimientos tbody tr");
+
+    filas.forEach(fila => {
+        const contenido = fila.innerText.toLowerCase();
+        const tipoFila = fila.children[1].innerText.trim();
+
+        const coincideTexto = contenido.includes(texto);
+        const coincideTipo = tipo === "" || tipoFila === tipo;
+
+        fila.style.display = (coincideTexto && coincideTipo) ? "" : "none";
+    });
+}
+</script>
+
+</body>
+</html>

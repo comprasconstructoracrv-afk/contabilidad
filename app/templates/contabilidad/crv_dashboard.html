@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CRV CONSTRUCTORA - Contabilidad</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            color: #132238;
+        }
+
+        .crv-page {
+            width: 100%;
+            min-height: 100vh;
+            padding: 28px;
+        }
+
+        .crv-shell {
+            max-width: 1450px;
+            margin: 0 auto;
+        }
+
+        .crv-header {
+            text-align: center;
+            margin-bottom: 26px;
+        }
+
+        .crv-logo {
+            width: 105px;
+            max-height: 95px;
+            object-fit: contain;
+            margin-bottom: 8px;
+        }
+
+        .crv-header h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: .3px;
+            color: #15283f;
+        }
+
+        .crv-header p {
+            margin: 7px 0 0;
+            color: #697b90;
+            font-size: 14px;
+        }
+
+        .crv-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .crv-sidebar {
+            background: white;
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 12px 30px rgba(20, 40, 65, .08);
+            position: sticky;
+            top: 20px;
+        }
+
+        .empresa-activa {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #e8f7ee;
+            color: #168446;
+            padding: 7px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .empresa-activa::before {
+            content: "●";
+            font-size: 8px;
+        }
+
+        .sidebar-title {
+            font-size: 19px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-subtitle {
+            color: #cda52b;
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+
+        .sidebar-menu {
+            display: grid;
+            gap: 8px;
+        }
+
+        .sidebar-menu a {
+            text-decoration: none;
+            padding: 12px 13px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            color: #19314f;
+            background: #eef3f8;
+            transition: .15s ease;
+        }
+
+        .sidebar-menu a:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(20, 40, 65, .08);
+        }
+
+        .sidebar-menu .primary {
+            background: #17304f;
+            color: white;
+        }
+
+        .sidebar-menu .gold {
+            background: #d8b541;
+            color: white;
+        }
+
+        .sidebar-menu .smart {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .sidebar-menu .danger {
+            background: #ef2b2d;
+            color: white;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .crv-content {
+            min-width: 0;
+        }
+
+        .top-toolbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 18px;
+            background: white;
+            border-radius: 16px;
+            padding: 14px 18px;
+            box-shadow: 0 8px 24px rgba(20, 40, 65, .06);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            border: none;
+            border-radius: 9px;
+            padding: 11px 16px;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .btn-dark {
+            background: #111;
+            color: white;
+        }
+
+        .btn-navy {
+            background: #17304f;
+            color: white;
+        }
+
+        .btn-light {
+            background: #eef3f8;
+            color: #17304f;
+        }
+
+        .btn-smart {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .filter-form {
+            display: flex;
+            gap: 9px;
+            align-items: center;
+        }
+
+        .filter-form input {
+            padding: 10px 12px;
+            border: 1px solid #d6dee7;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            min-height: 135px;
+            box-shadow: 0 10px 28px rgba(20, 40, 65, .07);
+            border-top: 4px solid #17304f;
+        }
+
+        .summary-card.gold {
+            border-top-color: #d8b541;
+        }
+
+        .summary-card.green {
+            border-top-color: #12a150;
+        }
+
+        .summary-card.red {
+            border-top-color: #ef2b2d;
+        }
+
+        .summary-card.black {
+            border-top-color: #141b26;
+        }
+
+        .summary-card.blue {
+            border-top-color: #3452a4;
+        }
+
+        .summary-card.orange {
+            border-top-color: #d98a1c;
+        }
+
+        .summary-label {
+            font-size: 14px;
+            font-weight: 800;
+            margin-bottom: 13px;
+            color: #2d4159;
+        }
+
+        .summary-value {
+            font-size: 26px;
+            font-weight: 900;
+            color: #101c2c;
+        }
+
+        .summary-value.positive {
+            color: #078a3e;
+        }
+
+        .summary-value.negative {
+            color: #e22025;
+        }
+
+        .summary-note {
+            margin-top: 8px;
+            color: #718096;
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .detail-box {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e6ebf0;
+            display: grid;
+            gap: 4px;
+            font-size: 11px;
+            color: #617387;
+        }
+
+        .detail-box strong {
+            color: #17304f;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 10px 28px rgba(20, 40, 65, .07);
+            margin-bottom: 18px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 17px;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 21px;
+            color: #18304d;
+        }
+
+        .section-header p {
+            margin: 3px 0 0;
+            color: #708196;
+            font-size: 13px;
+        }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .module-card {
+            border: 1px solid #dce4ed;
+            border-radius: 14px;
+            padding: 17px;
+            min-height: 145px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: #fff;
+        }
+
+        .module-icon {
+            font-size: 24px;
+            margin-bottom: 9px;
+        }
+
+        .module-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: #16304f;
+        }
+
+        .module-text {
+            color: #708196;
+            font-size: 13px;
+            line-height: 1.4;
+            margin: 7px 0 15px;
+        }
+
+        .module-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px 10px;
+            background: #17304f;
+            color: white;
+            font-size: 12px;
+        }
+
+        td {
+            padding: 11px 10px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 12px;
+            vertical-align: top;
+        }
+
+        .tipo-ingreso {
+            color: #079747;
+            font-weight: 800;
+        }
+
+        .tipo-egreso {
+            color: #e42b30;
+            font-weight: 800;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #8391a3;
+        }
+
+        @media (max-width: 1100px) {
+            .crv-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .crv-sidebar {
+                position: static;
+            }
+
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .module-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .crv-page {
+                padding: 14px;
+            }
+
+            .summary-grid,
+            .module-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .top-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-form {
+                flex-wrap: wrap;
+            }
+        }
+    
+        /* =====================================================
+           ICONOS PREMIUM DEL MENÚ LATERAL CRV
+        ===================================================== */
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-menu .menu-icon {
+            width: 26px;
+            height: 26px;
+            min-width: 26px;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 8px;
+
+            background: rgba(23, 48, 79, .08);
+            color: #17304f;
+
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .sidebar-menu .primary .menu-icon,
+        .sidebar-menu .gold .menu-icon,
+        .sidebar-menu .smart .menu-icon,
+        .sidebar-menu .danger .menu-icon {
+            background: rgba(255, 255, 255, .16);
+            color: white;
+        }
+
+        .sidebar-menu .danger {
+            justify-content: center;
+        }
+
+        .sidebar-menu .danger .menu-icon {
+            margin-left: -4px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="crv-page">
+<div class="crv-shell">
+
+    <div class="crv-header">
+
+        <img
+            src="{{ url_for('static', filename='logo_crv.png') }}"
+            alt="CRV"
+            class="crv-logo"
+        >
+
+        <h1>CRV CONSTRUCTORA - Contabilidad</h1>
+
+        <p>
+            Control financiero, proveedores, terceros,
+            cuentas y reportes contables
+        </p>
+
+    </div>
+
+    <div class="crv-layout">
+
+        <aside class="crv-sidebar">
+
+            <div class="empresa-activa">
+                Empresa activa
+            </div>
+
+            <div class="sidebar-title">
+                {{ empresa_nombre }}
+            </div>
+
+            <div class="sidebar-subtitle">
+                Módulo Contable
+            </div>
+
+            
+            <nav class="sidebar-menu">
+
+                <a href="/empresas">
+                    <span class="menu-icon">🏢</span>
+                    <span>Cambiar empresa</span>
+                </a>
+
+                <a href="/crv/movimientos/nuevo"
+                   class="gold">
+                    <span class="menu-icon">＋</span>
+                    <span>Registrar movimiento</span>
+                </a>
+
+                <a href="/crv/carga-inteligente"
+                   class="smart">
+                    <span class="menu-icon">✨</span>
+                    <span>Carga inteligente</span>
+                </a>
+
+                <a href="/crv/movimientos">
+                    <span class="menu-icon">📋</span>
+                    <span>Movimientos</span>
+                </a>
+
+                <a href="/crv/terceros">
+                    <span class="menu-icon">👤</span>
+                    <span>Terceros</span>
+                </a>
+
+                <a href="/crv/terceros?buscar="
+                   class="primary">
+                    <span class="menu-icon">👥</span>
+                    <span>Proveedores / Clientes</span>
+                </a>
+
+                <a href="/crv/cuentas-por-pagar">
+                    <span class="menu-icon">🧾</span>
+                    <span>Cuentas por pagar</span>
+                </a>
+
+                <a href="/crv/cuentas-por-cobrar">
+                    <span class="menu-icon">💰</span>
+                    <span>Cuentas por cobrar</span>
+                </a>
+
+                <a href="/crv/bancos-caja">
+                    <span class="menu-icon">🏦</span>
+                    <span>Bancos y caja</span>
+                </a>
+
+                <a href="/crv/conciliacion-bancaria">
+                    <span class="menu-icon">⚖️</span>
+                    <span>Conciliación bancaria</span>
+                </a>
+
+                <a href="/crv/proyectos">
+                    <span class="menu-icon">🏗️</span>
+                    <span>Proyectos / obras</span>
+                </a>
+
+                <a href="/crv/reportes-contador">
+                    <span class="menu-icon">📊</span>
+                    <span>Reportes contador</span>
+                </a>
+
+                <a href="/crv/cierre-mensual">
+                    <span class="menu-icon">📅</span>
+                    <span>Cierre mensual</span>
+                </a>
+
+                <a href="/crv/exportaciones">
+                    <span class="menu-icon">⬇️</span>
+                    <span>Importar / Exportar</span>
+                </a>
+
+                <a href="/logout"
+                   class="danger">
+                    <span class="menu-icon">⏻</span>
+                    <span>Cerrar sesión</span>
+                </a>
+
+            </nav>
+
+
+        </aside>
+
+        <main class="crv-content">
+
+            <div class="top-toolbar">
+
+                <a href="/empresas"
+                   class="btn btn-dark">
+                    ← Volver
+                </a>
+
+                <div style="display:flex; gap:9px; align-items:center; flex-wrap:wrap;">
+
+                    <a
+                        href="/crv/carga-inteligente"
+                        class="btn btn-smart"
+                    >
+                        ✨ Carga inteligente
+                    </a>
+
+                    <form
+                        method="GET"
+                        action="/crv/dashboard"
+                        class="filter-form"
+                    >
+
+                    <input
+                        type="month"
+                        name="mes"
+                        value="{{ mes_actual }}"
+                    >
+
+                    <button
+                        type="submit"
+                        class="btn btn-navy"
+                    >
+                        Aplicar filtro
+                    </button>
+
+                    <a
+                        href="/crv/dashboard"
+                        class="btn btn-light"
+                    >
+                        Limpiar
+                    </a>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+            <!-- =================================================
+                 RESUMEN FINANCIERO PRINCIPAL
+            ================================================== -->
+
+            <div class="summary-grid">
+
+                <div class="summary-card green">
+
+                    <div class="summary-label">
+                        Ingresos
+                    </div>
+
+                    <div class="summary-value positive">
+                        ${{ "{:,.0f}".format(ingresos or 0) }}
+                    </div>
+
+                    <div class="summary-note">
+                        Total de ingresos del periodo consultado.
+                    </div>
+
+                </div>
+
+                <div class="summary-card gold">
+
+                    <div class="summary-label">
+                        Compras
+                    </div>
+
+                    <div class="summary-value">
+                        ${{ "{:,.0f}".format(compras or 0) }}
+                    </div>
+
+                    <div class="summary-note">
+                        Compras registradas en CRV.
+                    </div>
+
+                </div>
+
+                <div class="summary-card red">
+
+                    <div class="summary-label">
+                        Gastos totales
+                    </div>
+
+                    <div class="summary-value">
+                        ${{ "{:,.0f}".format(gastos_totales or 0) }}
+                    </div>
+
+                    <div class="summary-note">
+                        Incluye gasto general, nómina,
+                        anticipos, préstamos y otros egresos.
+                    </div>
+
+                </div>
+
+                <div class="summary-card black">
+
+                    <div class="summary-label">
+                        Resultado
+                    </div>
+
+                    <div class="
+                        summary-value
+                        {% if utilidad >= 0 %}
+                            positive
+                        {% else %}
+                            negative
+                        {% endif %}
+                    ">
+                        ${{ "{:,.0f}".format(utilidad or 0) }}
+                    </div>
+
+                    <div class="summary-note">
+                        Ingresos - Compras - Gastos totales
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- =================================================
+                 DESGLOSE DE GASTOS
+            ================================================== -->
+
+            <div class="summary-grid">
+
+                <div class="summary-card blue">
+
+                    <div class="summary-label">
+                        Nómina total
+                    </div>
+
+                    <div class="summary-value">
+                        ${{ "{:,.0f}".format(
+                            (gasto_nomina_afiliados or 0)
+                            +
+                            (gasto_nomina_obra or 0)
+                        ) }}
+                    </div>
+
+                    <div class="detail-box">
+
+                        <div>
+                            Afiliados:
+                            <strong>
+                                ${{ "{:,.0f}".format(gasto_nomina_afiliados or 0) }}
+                            </strong>
+                        </div>
+
+                        <div>
+                            Obra:
+                            <strong>
+                                ${{ "{:,.0f}".format(gasto_nomina_obra or 0) }}
+                            </strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="summary-card orange">
+
+                    <div class="summary-label">
+                        Anticipos
+                    </div>
+
+                    <div class="summary-value">
+                        ${{ "{:,.0f}".format(gasto_anticipos or 0) }}
+                    </div>
+
+                    <div class="summary-note">
+                        Anticipos registrados como egreso.
+                    </div>
+
+                </div>
+
+                <div class="summary-card">
+
+                    <div class="summary-label">
+                        Gasto general
+                    </div>
+
+                    <div class="summary-value">
+                        ${{ "{:,.0f}".format(gasto_general or 0) }}
+                    </div>
+
+                    <div class="detail-box">
+
+                        <div>
+                            Préstamos empleados:
+                            <strong>
+                                ${{ "{:,.0f}".format(gasto_prestamos or 0) }}
+                            </strong>
+                        </div>
+
+                        <div>
+                            Otros:
+                            <strong>
+                                ${{ "{:,.0f}".format(gasto_otros or 0) }}
+                            </strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="summary-card">
+
+                    <div class="summary-label">
+                        Egresos totales
+                    </div>
+
+                    <div class="summary-value">
+                        ${{ "{:,.0f}".format(egresos_totales or 0) }}
+                    </div>
+
+                    <div class="summary-note">
+                        Compras + todos los gastos.
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- =================================================
+                 CONTROL DE REGISTROS
+            ================================================== -->
+
+            <div class="summary-grid">
+
+                <div class="summary-card">
+
+                    <div class="summary-label">
+                        Movimientos
+                    </div>
+
+                    <div class="summary-value">
+                        {{ cantidad_movimientos or 0 }}
+                    </div>
+
+                    <div class="summary-note">
+                        Registros del periodo consultado.
+                    </div>
+
+                </div>
+
+                <div class="summary-card">
+
+                    <div class="summary-label">
+                        Terceros registrados
+                    </div>
+
+                    <div class="summary-value">
+                        {{ cantidad_terceros or 0 }}
+                    </div>
+
+                    <div class="summary-note">
+                        Proveedores, clientes, empleados y terceros.
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- =================================================
+                 MÓDULOS
+            ================================================== -->
+
+            <section class="section-card">
+
+                <div class="section-header">
+
+                    <div>
+                        <h2>
+                            Gestión contable CRV
+                        </h2>
+
+                        <p>
+                            Accesos principales para el registro
+                            y control de la empresa.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="module-grid">
+
+                    <div class="module-card">
+
+                        <div>
+
+                            <div class="module-icon">
+                                ✨
+                            </div>
+
+                            <div class="module-title">
+                                Carga inteligente
+                            </div>
+
+                            <div class="module-text">
+                                Sube una o varias facturas para preparar
+                                su revisión antes del registro contable.
+                                La carga no crea movimientos ni consume
+                                consecutivos hasta que se apruebe.
+                            </div>
+
+                        </div>
+
+                        <div class="module-actions">
+
+                            <a
+                                href="/crv/carga-inteligente"
+                                class="btn btn-smart"
+                            >
+                                Abrir módulo
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                    <div class="module-card">
+
+                        <div>
+
+                            <div class="module-icon">
+                                🧾
+                            </div>
+
+                            <div class="module-title">
+                                Movimientos
+                            </div>
+
+                            <div class="module-text">
+                                Registra ingresos, compras, gastos,
+                                nómina, anticipos y otros movimientos
+                                con su fecha contable real.
+                            </div>
+
+                        </div>
+
+                        <div class="module-actions">
+
+                            <a
+                                href="/crv/movimientos/nuevo"
+                                class="btn btn-navy"
+                            >
+                                Nuevo
+                            </a>
+
+                            <a
+                                href="/crv/movimientos"
+                                class="btn btn-light"
+                            >
+                                Ver detalle
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                    <div class="module-card">
+
+                        <div>
+
+                            <div class="module-icon">
+                                👥
+                            </div>
+
+                            <div class="module-title">
+                                Terceros
+                            </div>
+
+                            <div class="module-text">
+                                Proveedores, clientes, empleados,
+                                contratistas y demás terceros de CRV.
+                            </div>
+
+                        </div>
+
+                        <div class="module-actions">
+
+                            <a
+                                href="/crv/terceros"
+                                class="btn btn-navy"
+                            >
+                                Administrar
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                    <div class="module-card">
+
+                        <div>
+
+                            <div class="module-icon">
+                                📑
+                            </div>
+
+                            <div class="module-title">
+                                Cuentas por pagar
+                            </div>
+
+                            <div class="module-text">
+                                Control de facturas, proveedores,
+                                vencimientos, abonos y saldos.
+                            </div>
+
+                        </div>
+
+                        <div class="module-actions">
+
+                            <a
+                                href="/crv/cuentas-por-pagar"
+                                class="btn btn-navy"
+                            >
+                                Ver detalle
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                    <div class="module-card">
+
+                        <div>
+
+                            <div class="module-icon">
+                                💰
+                            </div>
+
+                            <div class="module-title">
+                                Cuentas por cobrar
+                            </div>
+
+                            <div class="module-text">
+                                Control de clientes, anticipos,
+                                cobros, recaudos y saldos.
+                            </div>
+
+                        </div>
+
+                        <div class="module-actions">
+                            <a href="/crv/cuentas-por-cobrar" class="btn btn-navy">Ver detalle</a>
+                        </div>
+
+                    </div>
+
+                    <div class="module-card">
+
+                        <div>
+
+                            <div class="module-icon">
+                                🏦
+                            </div>
+
+                            <div class="module-title">
+                                Bancos y caja
+                            </div>
+
+                            <div class="module-text">
+                                Control de cuentas bancarias,
+                                caja, transferencias y conciliación.
+                            </div>
+
+                        </div>
+
+                        <div class="module-actions">
+
+                            <a
+                                href="/crv/bancos-caja"
+                                class="btn btn-navy"
+                            >
+                                Ver detalle
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                    <div class="module-card">
+
+                        <div>
+
+                            <div class="module-icon">
+                                🏗️
+                            </div>
+
+                            <div class="module-title">
+                                Proyectos y obras
+                            </div>
+
+                            <div class="module-text">
+                                Consulta costos y movimientos
+                                por proyecto, obra y centro de costo.
+                            </div>
+
+                        </div>
+
+                        <div class="module-actions">
+                            <a href="/crv/proyectos" class="btn btn-navy">
+                                Ver detalle
+                            </a>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- =================================================
+                 REPORTES CONTADOR
+            ================================================== -->
+
+            <section class="section-card">
+
+                <div class="section-header">
+
+                    <div>
+                        <h2>Reportes contables</h2>
+                        <p>Genera informes filtrados para contador, gerencia y revisión interna.</p>
+                    </div>
+
+                    <a href="/crv/reportes-contador" class="btn btn-navy">
+                        Abrir reportes
+                    </a>
+
+                </div>
+
+                <div class="module-grid">
+
+                    <div class="module-card">
+                        <div>
+                            <div class="module-icon">📊</div>
+                            <div class="module-title">Reporte contador</div>
+                            <div class="module-text">
+                                Resumen financiero, movimientos, cuentas por pagar, proveedores, terceros y proyectos.
+                            </div>
+                        </div>
+                        <div class="module-actions">
+                            <a href="/crv/reportes-contador" class="btn btn-navy">Ver reportes</a>
+                            <a href="/crv/reportes-contador/excel" class="btn btn-light">Excel</a>
+                            <a href="/crv/reportes-contador/pdf" class="btn btn-light">PDF</a>
+                        </div>
+                    </div>
+
+                    <div class="module-card">
+                        <div>
+                            <div class="module-icon">📅</div>
+                            <div class="module-title">Cierre mensual</div>
+                            <div class="module-text">
+                                Próximo módulo: validación de movimientos, saldos, bancos y documentos antes de cerrar cada mes.
+                            </div>
+                        </div>
+                        <div class="module-actions">
+                            <<a
+    href="/crv/cierre-mensual"
+    class="btn btn-navy"
+>
+    Ver detalle
+</a>
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- =================================================
+                 ÚLTIMOS MOVIMIENTOS
+            ================================================== -->
+
+            <section class="section-card">
+
+                <div class="section-header">
+
+                    <div>
+
+                        <h2>
+                            Últimos movimientos
+                        </h2>
+
+                        <p>
+                            Registros recientes de CRV Constructora.
+                        </p>
+
+                    </div>
+
+                    <a
+                        href="/crv/movimientos"
+                        class="btn btn-light"
+                    >
+                        Ver todos
+                    </a>
+
+                </div>
+
+                {% if ultimos_movimientos %}
+
+                <div class="table-wrap">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Tercero</th>
+                                <th>Concepto</th>
+                                <th>Cuenta</th>
+                                <th>Proyecto</th>
+                                <th>Valor</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for m in ultimos_movimientos %}
+
+                            <tr>
+
+                                <td>
+                                    {{ m.fecha }}
+                                </td>
+
+                                <td>
+
+                                    <span class="
+                                        {% if m.tipo == 'INGRESO' %}
+                                            tipo-ingreso
+                                        {% else %}
+                                            tipo-egreso
+                                        {% endif %}
+                                    ">
+                                        {{ m.tipo }}
+                                    </span>
+
+                                </td>
+
+                                <td>
+                                    {{ m.nombre_tercero or "" }}
+                                </td>
+
+                                <td>
+                                    {{ m.concepto or "" }}
+                                </td>
+
+                                <td>
+                                    {{ m.cuenta or "" }}
+                                </td>
+
+                                <td>
+                                    {{ m.proyecto or "" }}
+                                </td>
+
+                                <td>
+                                    ${{ "{:,.0f}".format(
+                                        m.valor_neto
+                                        or m.valor
+                                        or 0
+                                    ) }}
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                {% else %}
+
+                <div class="empty-state">
+
+                    Todavía no hay movimientos registrados
+                    en el nuevo módulo contable de CRV.
+
+                    <br><br>
+
+                    <a
+                        href="/crv/movimientos/nuevo"
+                        class="btn btn-navy"
+                    >
+                        Registrar primer movimiento
+                    </a>
+
+                </div>
+
+                {% endif %}
+
+            </section>
+
+        </main>
+
+    </div>
+
+</div>
+</div>
+
+</body>
+</html>

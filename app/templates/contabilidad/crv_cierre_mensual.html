@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CRV CONSTRUCTORA - Cierre mensual</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;color:#17283f}.page{min-height:100vh;padding:28px}.shell{max-width:1500px;margin:0 auto}
+.header{text-align:center;margin-bottom:20px}.header img{width:90px;max-height:76px;object-fit:contain}.header h1{margin:5px 0 0;color:#17304f;font-size:29px;font-weight:900}.header p{margin:7px 0 0;color:#6d7f93;font-size:12px}
+.topbar,.card{background:#fff;border-radius:16px;box-shadow:0 10px 27px rgba(18,40,64,.07)}.topbar{padding:14px 16px;margin-bottom:17px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.left,.right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{padding:7px 10px;border-radius:999px;background:#e8f7ee;color:#168446;font-size:11px;font-weight:900}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:9px 13px;border:0;border-radius:9px;text-decoration:none;cursor:pointer;font-size:11px;font-weight:900}.black{background:#111;color:#fff}.navy{background:#17304f;color:#fff}.gold{background:#d8b541;color:#fff}.light{background:#edf2f7;color:#17304f}.green{background:#149653;color:#fff}.red{background:#ef2b2d;color:#fff}
+.period{display:flex;gap:8px;align-items:end}.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:9px;font-weight:900;color:#5d7084}input,textarea{padding:10px 11px;border:1px solid #d4dde7;border-radius:8px;font-family:inherit}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:17px}.sum{background:#fff;border-radius:15px;padding:16px;border-top:4px solid #17304f;box-shadow:0 8px 24px rgba(18,40,64,.06)}.sum.greenline{border-top-color:#16a05b}.sum.goldline{border-top-color:#d8b541}.sum.redline{border-top-color:#ef2b2d}.sum span{display:block;color:#63758a;font-size:9px;font-weight:900}.sum strong{display:block;margin-top:6px;color:#17304f;font-size:20px}.sum small{display:block;margin-top:5px;color:#8493a3;font-size:8.5px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:17px;align-items:start}.card{margin-bottom:17px;overflow:hidden}.head{padding:17px 18px;border-bottom:1px solid #e6ebf0;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.head h2{margin:0;color:#17304f;font-size:18px}.head p{margin:4px 0 0;color:#738397;font-size:10px}.body{padding:17px 18px}
+.status{display:inline-flex;padding:7px 11px;border-radius:999px;font-size:9px;font-weight:900}.open{background:#e8f7ee;color:#168446}.closed{background:#ffe0e0;color:#c62323}.alert{padding:11px 13px;margin-bottom:8px;border-radius:9px;background:#fff2d2;color:#825f00;font-size:10px}.ok{padding:11px 13px;border-radius:9px;background:#e5f8ec;color:#137844;font-size:10px}
+.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:850px}th{background:#17304f;color:#fff;text-align:left;padding:10px 8px;font-size:9px}td{padding:10px 8px;border-bottom:1px solid #e7ecf1;font-size:9.5px}.money{font-weight:900;white-space:nowrap}.action{padding:14px;border:1px solid #e1e8ef;border-radius:11px;background:#f8fafc;margin-bottom:10px}.action h3{margin:0;color:#17304f;font-size:12px}.action p{margin:6px 0 10px;color:#78899c;font-size:9.5px;line-height:1.4}.action textarea{width:100%;min-height:72px;resize:vertical;margin-bottom:8px}
+
+        .cm-layout{max-width:1760px;margin:0 auto;display:grid;grid-template-columns:245px minmax(0,1fr);gap:20px;align-items:start}
+        .cm-sidebar{position:sticky;top:18px;background:#fff;border-radius:18px;padding:18px;box-shadow:0 12px 30px rgba(18,40,64,.08)}
+        .cm-side-badge{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;margin-bottom:10px;border-radius:999px;background:#e8f7ee;color:#168446;font-size:11px;font-weight:900}
+        .cm-side-badge::before{content:"●";font-size:8px}.cm-side-company{color:#17304f;font-size:18px;line-height:1.2;font-weight:900}.cm-side-subtitle{margin:3px 0 15px;color:#cda52b;font-size:12px;font-weight:800}
+        .cm-side-menu{display:grid;gap:7px}.cm-side-menu a{display:flex;align-items:center;gap:9px;min-height:40px;padding:8px 10px;border-radius:9px;background:#eef3f8;color:#17304f;text-decoration:none;font-size:11px;font-weight:800}
+        .cm-side-icon{width:25px;height:25px;min-width:25px;display:inline-flex;align-items:center;justify-content:center;border-radius:7px;background:rgba(23,48,79,.08);font-size:13px}
+        .cm-side-menu a.active{background:#17304f;color:#fff}.cm-side-menu a.gold{background:#d8b541;color:#fff}.cm-side-menu a.danger{justify-content:center;margin-top:5px;background:#ef2b2d;color:#fff}
+        .cm-side-menu a.active .cm-side-icon,.cm-side-menu a.gold .cm-side-icon,.cm-side-menu a.danger .cm-side-icon{background:rgba(255,255,255,.16)}
+        .cm-main{min-width:0}@media(max-width:1050px){.cm-layout{grid-template-columns:1fr}.cm-sidebar{position:static}.cm-side-menu{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:720px){.cm-side-menu{grid-template-columns:1fr}}
+
+@media(max-width:1100px){.summary{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}@media(max-width:720px){.page{padding:12px}.summary{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="cm-layout">
+<aside class="cm-sidebar">
+<div class="cm-side-badge">Empresa activa</div>
+<div class="cm-side-company">CRV<br>CONSTRUCTORA</div>
+<div class="cm-side-subtitle">Módulo Contable</div>
+<nav class="cm-side-menu">
+<a href="/empresas"><span class="cm-side-icon">🏢</span><span>Cambiar empresa</span></a>
+<a href="/crv/movimientos/nuevo" class="gold"><span class="cm-side-icon">＋</span><span>Registrar movimiento</span></a>
+<a href="/crv/movimientos"><span class="cm-side-icon">📋</span><span>Movimientos</span></a>
+<a href="/crv/terceros"><span class="cm-side-icon">👤</span><span>Terceros</span></a>
+<a href="/crv/terceros?buscar="><span class="cm-side-icon">👥</span><span>Proveedores / Clientes</span></a>
+<a href="/crv/cuentas-por-pagar"><span class="cm-side-icon">🧾</span><span>Cuentas por pagar</span></a>
+<a href="/crv/cuentas-por-cobrar"><span class="cm-side-icon">💰</span><span>Cuentas por cobrar</span></a>
+<a href="/crv/bancos-caja"><span class="cm-side-icon">🏦</span><span>Bancos y caja</span></a>
+<a href="/crv/conciliacion-bancaria"><span class="cm-side-icon">⚖️</span><span>Conciliación bancaria</span></a>
+<a href="/crv/proyectos"><span class="cm-side-icon">🏗️</span><span>Proyectos / obras</span></a>
+<a href="/crv/reportes-contador"><span class="cm-side-icon">📊</span><span>Reportes contador</span></a>
+<a href="/crv/cierre-mensual" class="active"><span class="cm-side-icon">📅</span><span>Cierre mensual</span></a>
+<a href="/crv/exportaciones"><span class="cm-side-icon">⬇️</span><span>Importar / Exportar</span></a>
+<a href="/logout" class="danger"><span class="cm-side-icon">⏻</span><span>Cerrar sesión</span></a>
+</nav>
+</aside>
+<main class="cm-main">
+
+<div class="shell">
+<header class="header"><img src="{{ url_for('static',filename='logo_crv.png') }}" alt="CRV"><h1>CRV CONSTRUCTORA - Cierre mensual</h1><p>Validación, consolidación, bloqueo y trazabilidad de cada periodo contable</p></header>
+
+<section class="topbar">
+<div class="left"><a href="/crv/dashboard" class="btn black">← Volver</a><span class="badge">● Empresa activa</span><strong>{{ empresa_nombre }}</strong></div>
+<div class="right">
+<form method="GET" action="/crv/cierre-mensual" class="period"><div class="field"><label>Periodo</label><input type="month" name="periodo" value="{{ periodo }}"></div><button class="btn navy">Consultar</button></form>
+<a href="/crv/cierre-mensual/pdf?periodo={{ periodo }}" class="btn light">📄 PDF</a><a href="/crv/cierre-mensual/excel?periodo={{ periodo }}" class="btn green">📊 Excel</a>
+</div>
+</section>
+
+<section class="summary">
+<div class="sum greenline"><span>INGRESOS</span><strong>${{ "{:,.0f}".format(resumen.ingresos or 0) }}</strong><small>Periodo {{ periodo }}</small></div>
+<div class="sum goldline"><span>COMPRAS</span><strong>${{ "{:,.0f}".format(resumen.compras or 0) }}</strong><small>Compras reconocidas</small></div>
+<div class="sum redline"><span>GASTOS</span><strong>${{ "{:,.0f}".format(resumen.gastos or 0) }}</strong><small>Nómina + gastos + anticipos</small></div>
+<div class="sum"><span>RESULTADO</span><strong>${{ "{:,.0f}".format(resumen.resultado or 0) }}</strong><small>Ingresos - compras - gastos</small></div>
+<div class="sum goldline"><span>CxP PENDIENTE</span><strong>${{ "{:,.0f}".format(resumen.cxp_pendiente or 0) }}</strong><small>Obligaciones del mes con saldo</small></div>
+<div class="sum greenline"><span>CxC PENDIENTE</span><strong>${{ "{:,.0f}".format(resumen.cxc_pendiente or 0) }}</strong><small>Cartera del mes con saldo</small></div>
+<div class="sum"><span>BANCOS / CAJA</span><strong>${{ "{:,.0f}".format(resumen.saldo_bancos_caja or 0) }}</strong><small>Saldo calculado al último día del mes</small></div>
+<div class="sum {% if resumen.movimientos_sin_conciliar %}redline{% else %}greenline{% endif %}"><span>SIN CONCILIAR</span><strong>{{ resumen.movimientos_sin_conciliar }}</strong><small>Movimientos bancarios pendientes</small></div>
+</section>
+
+<div class="grid">
+<main>
+<section class="card"><div class="head"><div><h2>Validación del cierre</h2><p>Revisión previa antes de bloquear el periodo</p></div><span class="status {{ 'closed' if cierre and cierre.estado == 'CERRADO' else 'open' }}">{{ cierre.estado if cierre else 'ABIERTO' }}</span></div>
+<div class="body">
+{% if resumen.alertas %}{% for alerta in resumen.alertas %}<div class="alert">⚠️ {{ alerta }}</div>{% endfor %}{% else %}<div class="ok">✓ El periodo no presenta movimientos bancarios pendientes de conciliación.</div>{% endif %}
+</div></section>
+
+<section class="card"><div class="head"><div><h2>Movimientos del periodo</h2><p>{{ resumen.movimientos_mes }} registros entre {{ resumen.fecha_inicio.strftime('%d/%m/%Y') }} y {{ resumen.fecha_fin.strftime('%d/%m/%Y') }}</p></div></div>
+<div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Tercero</th><th>Concepto</th><th>Cuenta</th><th>Proyecto</th><th>Valor</th><th>Conciliado</th></tr></thead><tbody>
+{% for m in resumen.movimientos %}<tr><td>{{ m.fecha.strftime('%d/%m/%Y') if m.fecha else '' }}</td><td>{{ m.tipo }}</td><td>{{ m.nombre_tercero or '-' }}</td><td>{{ m.concepto or '-' }}</td><td>{{ m.cuenta or '-' }}</td><td>{{ m.proyecto or '-' }}</td><td class="money">${{ "{:,.0f}".format(m.valor_neto or m.valor or 0) }}</td><td>{{ 'SI' if m.revisado else 'NO' }}</td></tr>{% else %}<tr><td colspan="8">No hay movimientos para este periodo.</td></tr>{% endfor %}
+</tbody></table></div></section>
+
+<section class="card"><div class="head"><div><h2>Historial de cierres</h2><p>Trazabilidad de periodos cerrados y reabiertos</p></div></div>
+<div class="table-wrap"><table><thead><tr><th>Periodo</th><th>Estado</th><th>Ingresos</th><th>Compras</th><th>Gastos</th><th>Resultado</th><th>Cierre</th><th>Reapertura</th></tr></thead><tbody>
+{% for c in cierres %}<tr><td>{{ c.anio }}-{{ "%02d"|format(c.mes) }}</td><td>{{ c.estado }}</td><td class="money">${{ "{:,.0f}".format(c.ingresos or 0) }}</td><td class="money">${{ "{:,.0f}".format(c.compras or 0) }}</td><td class="money">${{ "{:,.0f}".format(c.gastos or 0) }}</td><td class="money">${{ "{:,.0f}".format(c.resultado or 0) }}</td><td>{{ c.fecha_cierre.strftime('%d/%m/%Y %H:%M') if c.fecha_cierre else '-' }}</td><td>{{ c.fecha_reapertura.strftime('%d/%m/%Y %H:%M') if c.fecha_reapertura else '-' }}</td></tr>{% else %}<tr><td colspan="8">Todavía no hay cierres registrados.</td></tr>{% endfor %}
+</tbody></table></div></section>
+</main>
+
+<aside>
+<section class="card"><div class="head"><div><h2>Acciones del periodo</h2><p>{{ periodo }}</p></div></div><div class="body">
+{% if cierre and cierre.estado == 'CERRADO' %}
+<div class="action"><h3>Periodo cerrado</h3><p>Los movimientos y documentos contables con fecha dentro de este mes están bloqueados.</p></div>
+<div class="action"><h3>Reabrir periodo</h3><p>Úsalo solamente cuando sea necesario corregir información. El motivo queda registrado.</p><form method="POST" action="/crv/cierre-mensual/{{ cierre.id }}/reabrir"><textarea name="motivo_reapertura" required placeholder="Motivo de reapertura..."></textarea><button type="submit" class="btn red" onclick="return confirm('¿Confirmas la reapertura de este periodo?');">Reabrir periodo</button></form></div>
+{% else %}
+<div class="action"><h3>Cerrar {{ periodo }}</h3><p>Al cerrar, el sistema guarda una fotografía del mes y bloquea modificaciones contables con fechas de este periodo.</p>
+{% if resumen.puede_cerrar %}
+<form method="POST" action="/crv/cierre-mensual"><input type="hidden" name="periodo" value="{{ periodo }}"><input type="hidden" name="accion" value="cerrar"><textarea name="observaciones" placeholder="Observaciones del cierre..."></textarea><button type="submit" class="btn gold" onclick="return confirm('¿Confirmas el cierre contable de {{ periodo }}?');">Cerrar periodo</button></form>
+{% else %}<div class="alert">Primero debes registrar los extractos, cuadrar las diferencias y conciliar todos los movimientos bancarios del periodo.</div><a href="/crv/conciliacion-bancaria?periodo={{ periodo }}" class="btn navy">Ir a conciliación</a>{% endif %}
+</div>
+{% endif %}
+</div></section>
+</aside>
+</div>
+
+</div>
+</main>
+</div>
+</div>
+</body>
+</html>

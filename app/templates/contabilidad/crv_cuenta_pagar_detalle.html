@@ -1,0 +1,2402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CRV CONSTRUCTORA - Detalle cuenta por pagar</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            color: #17283f;
+        }
+
+        body.cxp-modal-open {
+            overflow: hidden;
+        }
+
+        /* =====================================================
+           CONTENEDOR GENERAL
+        ===================================================== */
+
+        .cxp-page {
+            width: 100%;
+            min-height: 100vh;
+            padding: 26px 28px 40px;
+        }
+
+        .cxp-shell {
+            width: 100%;
+            max-width: 1450px;
+            margin: 0 auto;
+        }
+
+        /* =====================================================
+           ENCABEZADO
+        ===================================================== */
+
+        .cxp-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .cxp-logo {
+            width: 82px;
+            height: 65px;
+            object-fit: contain;
+            margin-bottom: 4px;
+        }
+
+        .cxp-header h1 {
+            margin: 0;
+            color: #17304f;
+            font-size: 28px;
+            font-weight: 900;
+        }
+
+        .cxp-header p {
+            margin: 7px 0 0;
+            color: #718398;
+            font-size: 12px;
+        }
+
+        /* =====================================================
+           BOTONES
+        ===================================================== */
+
+        .cxp-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+
+            min-height: 38px;
+            padding: 9px 14px;
+
+            border: none;
+            border-radius: 9px;
+
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 800;
+
+            text-decoration: none;
+            cursor: pointer;
+
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+
+        .cxp-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .cxp-btn-black {
+            background: #111111;
+            color: white;
+        }
+
+        .cxp-btn-navy {
+            background: #17304f;
+            color: white;
+        }
+
+        .cxp-btn-gold {
+            background: #d8b541;
+            color: white;
+        }
+
+        .cxp-btn-light {
+            background: #edf2f7;
+            color: #17304f;
+        }
+
+        .cxp-btn-red {
+            background: #ef2b2d;
+            color: white;
+        }
+
+        .cxp-btn-small {
+            min-height: 32px;
+            padding: 6px 10px;
+            font-size: 10px;
+        }
+
+        .cxp-btn-full {
+            width: 100%;
+        }
+
+        /* =====================================================
+           BARRA SUPERIOR
+        ===================================================== */
+
+        .cxp-topbar {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+
+            background: #ffffff;
+            border-radius: 16px;
+
+            box-shadow: 0 10px 28px rgba(18, 40, 64, .07);
+        }
+
+        .cxp-topbar-left,
+        .cxp-topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            flex-wrap: wrap;
+        }
+
+        .cxp-company-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+
+            padding: 7px 11px;
+
+            border-radius: 999px;
+
+            background: #e4f8eb;
+            color: #138246;
+
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .cxp-company-badge::before {
+            content: "●";
+            font-size: 8px;
+        }
+
+        .cxp-company-name {
+            color: #17304f;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        /* =====================================================
+           RESUMEN
+        ===================================================== */
+
+        .cxp-summary {
+            width: 100%;
+
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+
+            margin-bottom: 18px;
+        }
+
+        .cxp-summary-card {
+            min-width: 0;
+            min-height: 112px;
+
+            display: flex;
+            align-items: center;
+            gap: 13px;
+
+            padding: 17px;
+
+            background: #ffffff;
+            border-radius: 16px;
+
+            border-top: 4px solid #17304f;
+
+            box-shadow: 0 8px 24px rgba(18, 40, 64, .06);
+        }
+
+        .cxp-summary-card.cxp-summary-net {
+            border-top-color: #d8b541;
+        }
+
+        .cxp-summary-card.cxp-summary-paid {
+            border-top-color: #16a05b;
+        }
+
+        .cxp-summary-card.cxp-summary-balance {
+            border-top-color: #17304f;
+        }
+
+        .cxp-summary-card.cxp-summary-state {
+            border-top-color: #ef2b2d;
+        }
+
+        .cxp-summary-icon {
+            width: 47px;
+            height: 47px;
+
+            flex: 0 0 47px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 13px;
+
+            font-size: 20px;
+        }
+
+        .cxp-summary-net .cxp-summary-icon {
+            background: #fff3cd;
+        }
+
+        .cxp-summary-paid .cxp-summary-icon {
+            background: #dcf7e7;
+        }
+
+        .cxp-summary-balance .cxp-summary-icon {
+            background: #e7eef8;
+        }
+
+        .cxp-summary-state .cxp-summary-icon {
+            background: #ffe2e2;
+        }
+
+        .cxp-summary-text {
+            min-width: 0;
+        }
+
+        .cxp-summary-label {
+            color: #63768b;
+            font-size: 10px;
+            font-weight: 900;
+        }
+
+        .cxp-summary-value {
+            margin-top: 5px;
+
+            color: #17304f;
+
+            font-size: 23px;
+            line-height: 1.1;
+            font-weight: 900;
+        }
+
+        .cxp-summary-note {
+            margin-top: 5px;
+
+            color: #8998a8;
+
+            font-size: 9px;
+            line-height: 1.3;
+        }
+
+        /* =====================================================
+           ESTADOS
+        ===================================================== */
+
+        .cxp-status {
+            display: inline-flex;
+            align-items: center;
+
+            padding: 6px 10px;
+
+            border-radius: 999px;
+
+            font-size: 9px;
+            font-weight: 900;
+        }
+
+        .cxp-status-pending {
+            background: #fff4d3;
+            color: #8d6800;
+        }
+
+        .cxp-status-partial {
+            background: #e5efff;
+            color: #2f5ca8;
+        }
+
+        .cxp-status-paid {
+            background: #dcf7e7;
+            color: #087b3a;
+        }
+
+        .cxp-status-overdue {
+            background: #ffe0e0;
+            color: #c72027;
+        }
+
+        /* =====================================================
+           GRID PRINCIPAL
+        ===================================================== */
+
+        .cxp-main-grid {
+            width: 100%;
+
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 330px;
+            gap: 18px;
+
+            align-items: start;
+        }
+
+        .cxp-main-left {
+            width: 100%;
+            min-width: 0;
+        }
+
+        .cxp-main-right {
+            width: 330px;
+            min-width: 330px;
+        }
+
+        /* =====================================================
+           TARJETA
+        ===================================================== */
+
+        .cxp-card {
+            width: 100%;
+
+            background: white;
+            border-radius: 17px;
+
+            overflow: hidden;
+
+            box-shadow: 0 12px 30px rgba(18, 40, 64, .07);
+        }
+
+        .cxp-card + .cxp-card {
+            margin-top: 18px;
+        }
+
+        .cxp-card-header {
+            width: 100%;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+
+            padding: 17px 19px;
+
+            border-bottom: 1px solid #e5ebf0;
+        }
+
+        .cxp-card-title {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+
+            min-width: 0;
+        }
+
+        .cxp-card-title-icon {
+            width: 42px;
+            height: 42px;
+
+            flex: 0 0 42px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 12px;
+
+            background: #fff4d3;
+
+            font-size: 19px;
+        }
+
+        .cxp-card-title h2 {
+            margin: 0;
+
+            color: #17304f;
+
+            font-size: 19px;
+            font-weight: 900;
+        }
+
+        .cxp-card-title p {
+            margin: 4px 0 0;
+
+            color: #78899c;
+
+            font-size: 10px;
+        }
+
+        .cxp-card-body {
+            width: 100%;
+            padding: 18px 20px 21px;
+        }
+
+        /* =====================================================
+           PROVEEDOR
+        ===================================================== */
+
+        .cxp-provider-row {
+            width: 100%;
+
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 240px;
+            gap: 10px;
+
+            margin-bottom: 11px;
+        }
+
+        .cxp-provider-main,
+        .cxp-provider-document {
+            min-width: 0;
+
+            padding: 14px;
+
+            background: #f8fafc;
+            border: 1px solid #e2e9ef;
+            border-radius: 11px;
+        }
+
+        .cxp-provider-main {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+
+        .cxp-provider-avatar {
+            width: 49px;
+            height: 49px;
+
+            flex: 0 0 49px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 50%;
+
+            background: #ffedb3;
+            color: #876500;
+
+            font-size: 17px;
+            font-weight: 900;
+        }
+
+        .cxp-provider-info {
+            min-width: 0;
+        }
+
+        .cxp-provider-name {
+            color: #17304f;
+
+            font-size: 14px;
+            font-weight: 900;
+
+            white-space: normal;
+            word-break: normal;
+        }
+
+        .cxp-provider-meta {
+            margin-top: 4px;
+
+            color: #77899d;
+
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        /* =====================================================
+           DATOS DE LA FACTURA
+        ===================================================== */
+
+        .cxp-data-grid {
+            width: 100%;
+
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .cxp-data-item {
+            min-width: 0;
+
+            padding: 12px 13px;
+
+            background: #f8fafc;
+
+            border: 1px solid #e5ebf0;
+            border-radius: 10px;
+        }
+
+        .cxp-data-span-2 {
+            grid-column: span 2;
+        }
+
+        .cxp-data-span-4 {
+            grid-column: span 4;
+        }
+
+        .cxp-data-highlight {
+            background: #fff8dd;
+            border-color: #efdc93;
+        }
+
+        .cxp-data-label {
+            color: #73859a;
+
+            font-size: 9px;
+            font-weight: 900;
+        }
+
+        .cxp-data-value {
+            margin-top: 5px;
+
+            color: #17283f;
+
+            font-size: 11px;
+            line-height: 1.35;
+            font-weight: 800;
+
+            word-break: normal;
+            overflow-wrap: break-word;
+        }
+
+        .cxp-data-value-strong {
+            color: #17304f;
+
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        /* =====================================================
+           PANEL DERECHO
+        ===================================================== */
+
+        .cxp-actions-panel {
+            width: 100%;
+
+            padding: 17px;
+
+            background: white;
+            border-radius: 17px;
+
+            box-shadow: 0 12px 30px rgba(18, 40, 64, .07);
+        }
+
+        .cxp-actions-heading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            padding-bottom: 13px;
+            margin-bottom: 13px;
+
+            border-bottom: 1px solid #e4eaf0;
+        }
+
+        .cxp-actions-heading-icon {
+            width: 42px;
+            height: 42px;
+
+            flex: 0 0 42px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: #fff4d3;
+
+            border-radius: 12px;
+
+            font-size: 18px;
+        }
+
+        .cxp-actions-heading h2 {
+            margin: 0;
+
+            color: #17304f;
+
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .cxp-actions-heading p {
+            margin: 4px 0 0;
+
+            color: #7b8b9d;
+
+            font-size: 10px;
+        }
+
+        .cxp-action {
+            width: 100%;
+
+            padding: 14px;
+            margin-bottom: 11px;
+
+            background: #f8fafc;
+
+            border: 1px solid #e1e8ef;
+            border-radius: 12px;
+        }
+
+        .cxp-action:last-child {
+            margin-bottom: 0;
+        }
+
+        .cxp-action-gold {
+            background: #fffaf0;
+            border-color: #efd77d;
+        }
+
+        .cxp-action-blue {
+            background: #f3f7fc;
+        }
+
+        .cxp-action-title {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+
+            color: #17304f;
+
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+        .cxp-action-icon {
+            width: 31px;
+            height: 31px;
+
+            flex: 0 0 31px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: #fff1ba;
+            border-radius: 9px;
+
+            font-size: 14px;
+        }
+
+        .cxp-action-description {
+            margin: 8px 0 12px;
+
+            color: #718398;
+
+            font-size: 10px;
+            line-height: 1.45;
+        }
+
+        /* =====================================================
+           HISTORIAL
+        ===================================================== */
+
+        .cxp-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .cxp-table {
+            width: 100%;
+            min-width: 850px;
+
+            border-collapse: collapse;
+        }
+
+        .cxp-table th {
+            padding: 11px 10px;
+
+            background: #17304f;
+            color: white;
+
+            text-align: left;
+
+            font-size: 9.5px;
+            font-weight: 900;
+        }
+
+        .cxp-table td {
+            padding: 11px 10px;
+
+            border-bottom: 1px solid #e7ecf1;
+
+            color: #17283f;
+
+            font-size: 10px;
+            vertical-align: middle;
+        }
+
+        .cxp-money {
+            white-space: nowrap;
+            font-weight: 900;
+        }
+
+        .cxp-money-green {
+            color: #0f8a47 !important;
+        }
+
+        .cxp-empty {
+            width: 100%;
+
+            padding: 48px 20px;
+
+            text-align: center;
+
+            color: #78899c;
+        }
+
+        .cxp-empty-icon {
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .cxp-empty strong {
+            display: block;
+
+            margin-bottom: 6px;
+
+            color: #17304f;
+
+            font-size: 15px;
+        }
+
+        /* =====================================================
+           MODAL
+        ===================================================== */
+
+        .cxp-overlay {
+            position: fixed;
+            inset: 0;
+
+            z-index: 9998;
+
+            background: rgba(13, 29, 48, .52);
+            backdrop-filter: blur(3px);
+
+            opacity: 0;
+            visibility: hidden;
+
+            transition: .18s ease;
+        }
+
+        .cxp-overlay.cxp-active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .cxp-modal {
+            position: fixed;
+            inset: 0;
+
+            z-index: 9999;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 22px;
+
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+
+            transform: scale(.98);
+
+            transition: .18s ease;
+        }
+
+        .cxp-modal.cxp-active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+
+            transform: scale(1);
+        }
+
+        .cxp-modal-box {
+            width: 100%;
+            max-width: 900px;
+            max-height: 92vh;
+
+            display: flex;
+            flex-direction: column;
+
+            background: white;
+
+            border-radius: 18px;
+
+            overflow: hidden;
+
+            box-shadow: 0 30px 80px rgba(10, 28, 48, .30);
+        }
+
+        .cxp-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+
+            padding: 18px 21px;
+
+            border-bottom: 1px solid #e5eaf0;
+        }
+
+        .cxp-modal-header h2 {
+            margin: 0;
+
+            color: #17304f;
+
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .cxp-modal-header p {
+            margin: 4px 0 0;
+
+            color: #7b8b9d;
+
+            font-size: 10px;
+        }
+
+        .cxp-modal-close {
+            width: 37px;
+            height: 37px;
+
+            flex: 0 0 37px;
+
+            border: none;
+            border-radius: 9px;
+
+            background: #edf2f7;
+            color: #17304f;
+
+            font-size: 19px;
+
+            cursor: pointer;
+        }
+
+        .cxp-modal-body {
+            overflow-y: auto;
+
+            padding: 20px 22px 24px;
+
+            background: #fbfcfd;
+        }
+
+        .cxp-payment-summary {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+
+            margin-bottom: 17px;
+        }
+
+        .cxp-payment-summary-card {
+            padding: 13px;
+
+            background: white;
+
+            border: 1px solid #e2e8ee;
+            border-radius: 11px;
+        }
+
+        .cxp-payment-summary-card span {
+            color: #76879a;
+
+            font-size: 9px;
+            font-weight: 900;
+        }
+
+        .cxp-payment-summary-card strong {
+            display: block;
+
+            margin-top: 5px;
+
+            color: #17304f;
+
+            font-size: 18px;
+        }
+
+        .cxp-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 13px 15px;
+        }
+
+        .cxp-field {
+            min-width: 0;
+
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .cxp-field-full {
+            grid-column: span 2;
+        }
+
+        .cxp-field label {
+            color: #50667d;
+
+            font-size: 10px;
+            font-weight: 900;
+        }
+
+        .cxp-field input,
+        .cxp-field select,
+        .cxp-field textarea {
+            width: 100%;
+
+            padding: 10px 11px;
+
+            border: 1px solid #d4dde7;
+            border-radius: 8px;
+
+            background: white;
+            color: #17283f;
+
+            font-family: inherit;
+            font-size: 11px;
+
+            outline: none;
+        }
+
+        .cxp-field input:focus,
+        .cxp-field select:focus,
+        .cxp-field textarea:focus {
+            border-color: #d8b541;
+
+            box-shadow: 0 0 0 3px rgba(216, 181, 65, .12);
+        }
+
+        .cxp-field textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .cxp-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 9px;
+
+            padding-top: 16px;
+            margin-top: 20px;
+
+            border-top: 1px solid #e3e9ef;
+        }
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
+
+        @media (max-width: 1100px) {
+
+            .cxp-summary {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .cxp-main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cxp-main-right {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .cxp-actions-panel {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 11px;
+            }
+
+            .cxp-actions-heading {
+                grid-column: span 2;
+            }
+
+            .cxp-action {
+                margin: 0;
+            }
+
+        }
+
+        @media (max-width: 760px) {
+
+            .cxp-data-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .cxp-data-span-4 {
+                grid-column: span 2;
+            }
+
+            .cxp-provider-row {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            .cxp-page {
+                padding: 12px;
+            }
+
+            .cxp-header h1 {
+                font-size: 22px;
+            }
+
+            .cxp-summary,
+            .cxp-data-grid,
+            .cxp-form-grid,
+            .cxp-payment-summary,
+            .cxp-actions-panel {
+                grid-template-columns: 1fr;
+            }
+
+            .cxp-data-span-2,
+            .cxp-data-span-4,
+            .cxp-field-full,
+            .cxp-actions-heading {
+                grid-column: auto;
+            }
+
+            .cxp-modal {
+                padding: 8px;
+            }
+
+            .cxp-modal-box {
+                max-height: 96vh;
+            }
+
+            .cxp-modal-actions {
+                flex-direction: column;
+            }
+
+            .cxp-modal-actions .cxp-btn {
+                width: 100%;
+            }
+
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="cxp-page">
+<div class="cxp-shell">
+
+    <!-- ENCABEZADO -->
+
+    <header class="cxp-header">
+
+        <img
+            class="cxp-logo"
+            src="{{ url_for('static', filename='logo_crv.png') }}"
+            alt="CRV"
+        >
+
+        <h1>
+            CRV CONSTRUCTORA - Detalle cuenta por pagar
+        </h1>
+
+        <p>
+            Consulta la obligación, pagos realizados, vencimiento y saldo pendiente
+        </p>
+
+    </header>
+
+
+    <!-- BARRA SUPERIOR -->
+
+    <section class="cxp-topbar">
+
+        <div class="cxp-topbar-left">
+
+            <a
+                href="/crv/cuentas-por-pagar"
+                class="cxp-btn cxp-btn-black"
+            >
+                ← Volver
+            </a>
+
+            <span class="cxp-company-badge">
+                Empresa activa
+            </span>
+
+            <span class="cxp-company-name">
+                {{ empresa_nombre }}
+            </span>
+
+        </div>
+
+
+        <div class="cxp-topbar-right">
+
+            <a
+                href="/crv/terceros"
+                class="cxp-btn cxp-btn-light"
+            >
+                👥 Proveedores
+            </a>
+
+            <a
+                href="/crv/movimientos"
+                class="cxp-btn cxp-btn-light"
+            >
+                📋 Movimientos
+            </a>
+
+            {% if cuenta.saldo_pendiente > 0 %}
+
+                <button
+                    type="button"
+                    class="cxp-btn cxp-btn-gold"
+                    onclick="abrirPagoCXP()"
+                >
+                    + Registrar pago
+                </button>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+    <!-- RESUMEN -->
+
+    <section class="cxp-summary">
+
+
+        <article class="cxp-summary-card cxp-summary-net">
+
+            <div class="cxp-summary-icon">
+                🧾
+            </div>
+
+            <div class="cxp-summary-text">
+
+                <div class="cxp-summary-label">
+                    Neto obligación
+                </div>
+
+                <div class="cxp-summary-value">
+
+                    ${{ "{:,.0f}".format(cuenta.valor_neto or 0) }}
+
+                </div>
+
+                <div class="cxp-summary-note">
+                    Valor después de descuentos y retenciones
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <article class="cxp-summary-card cxp-summary-paid">
+
+            <div class="cxp-summary-icon">
+                ✓
+            </div>
+
+            <div class="cxp-summary-text">
+
+                <div class="cxp-summary-label">
+                    Total pagado
+                </div>
+
+                <div class="cxp-summary-value">
+
+                    ${{ "{:,.0f}".format(cuenta.total_pagado or 0) }}
+
+                </div>
+
+                <div class="cxp-summary-note">
+                    Pagos aplicados a esta obligación
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <article class="cxp-summary-card cxp-summary-balance">
+
+            <div class="cxp-summary-icon">
+                $
+            </div>
+
+            <div class="cxp-summary-text">
+
+                <div class="cxp-summary-label">
+                    Saldo pendiente
+                </div>
+
+                <div class="cxp-summary-value">
+
+                    ${{ "{:,.0f}".format(cuenta.saldo_pendiente or 0) }}
+
+                </div>
+
+                <div class="cxp-summary-note">
+                    Valor actualmente pendiente
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <article class="cxp-summary-card cxp-summary-state">
+
+            <div class="cxp-summary-icon">
+                📅
+            </div>
+
+            <div class="cxp-summary-text">
+
+                <div class="cxp-summary-label">
+                    Estado
+                </div>
+
+                <div class="cxp-summary-value">
+
+                    {% if cuenta.estado == "PAGADA" %}
+
+                        <span class="cxp-status cxp-status-paid">
+                            PAGADA
+                        </span>
+
+                    {% elif cuenta.estado == "PARCIAL" %}
+
+                        <span class="cxp-status cxp-status-partial">
+                            PARCIAL
+                        </span>
+
+                    {% elif cuenta.estado == "VENCIDA" %}
+
+                        <span class="cxp-status cxp-status-overdue">
+                            VENCIDA
+                        </span>
+
+                    {% else %}
+
+                        <span class="cxp-status cxp-status-pending">
+                            PENDIENTE
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+                <div class="cxp-summary-note">
+
+                    {% if cuenta.estado == "VENCIDA" %}
+
+                        {{ cuenta.dias_vencida }} día(s) vencida
+
+                    {% elif cuenta.fecha_vencimiento %}
+
+                        Vence:
+                        {{ cuenta.fecha_vencimiento.strftime('%d/%m/%Y') }}
+
+                    {% else %}
+
+                        Sin fecha de vencimiento
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- CONTENIDO -->
+
+    <section class="cxp-main-grid">
+
+
+        <!-- IZQUIERDA -->
+
+        <main class="cxp-main-left">
+
+
+            <article class="cxp-card">
+
+                <div class="cxp-card-header">
+
+                    <div class="cxp-card-title">
+
+                        <div class="cxp-card-title-icon">
+                            🧾
+                        </div>
+
+                        <div>
+
+                            <h2>
+                                Información de la obligación
+                            </h2>
+
+                            <p>
+                                Datos principales de la factura o documento
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="cxp-card-body">
+
+
+                    <div class="cxp-provider-row">
+
+
+                        <div class="cxp-provider-main">
+
+                            <div class="cxp-provider-avatar">
+
+                                {{
+                                    (
+                                        cuenta.proveedor.razon_social
+                                        if cuenta.proveedor
+                                        else "P"
+                                    )[:1]|upper
+                                }}
+
+                            </div>
+
+
+                            <div class="cxp-provider-info">
+
+                                <div class="cxp-provider-name">
+
+                                    {{
+                                        cuenta.proveedor.razon_social
+                                        if cuenta.proveedor
+                                        else "Proveedor"
+                                    }}
+
+                                </div>
+
+
+                                <div class="cxp-provider-meta">
+
+                                    {% if cuenta.proveedor %}
+
+                                        NIT / ID:
+                                        {{ cuenta.proveedor.identificacion or "-" }}
+
+                                        {% if cuenta.proveedor.celular or cuenta.proveedor.telefono %}
+
+                                            ·
+                                            {{
+                                                cuenta.proveedor.celular
+                                                or cuenta.proveedor.telefono
+                                            }}
+
+                                        {% endif %}
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="cxp-provider-document">
+
+                            <div class="cxp-data-label">
+                                Tipo documento
+                            </div>
+
+                            <div class="cxp-data-value cxp-data-value-strong">
+
+                                {{ cuenta.tipo_documento or "-" }}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="cxp-data-grid">
+
+
+                        <div class="cxp-data-item">
+
+                            <div class="cxp-data-label">
+                                Número documento
+                            </div>
+
+                            <div class="cxp-data-value cxp-data-value-strong">
+                                {{ cuenta.numero_documento }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="cxp-data-item">
+
+                            <div class="cxp-data-label">
+                                Fecha documento
+                            </div>
+
+                            <div class="cxp-data-value cxp-data-value-strong">
+
+                                {{
+                                    cuenta.fecha_documento.strftime('%d/%m/%Y')
+                                    if cuenta.fecha_documento
+                                    else "-"
+                                }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="cxp-data-item">
+
+                            <div class="cxp-data-label">
+                                Fecha vencimiento
+                            </div>
+
+                            <div class="cxp-data-value cxp-data-value-strong">
+
+                                {{
+                                    cuenta.fecha_vencimiento.strftime('%d/%m/%Y')
+                                    if cuenta.fecha_vencimiento
+                                    else "Sin vencimiento"
+                                }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="cxp-data-item">
+
+                            <div class="cxp-data-label">
+                                Sede
+                            </div>
+
+                            <div class="cxp-data-value cxp-data-value-strong">
+
+                                {{
+                                    cuenta.sede.nombre
+                                    if cuenta.sede
+                                    else "General"
+                                }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="cxp-data-item cxp-data-span-4">
+
+                            <div class="cxp-data-label">
+                                Concepto
+                            </div>
+
+                            <div class="cxp-data-value cxp-data-value-strong">
+                                {{ cuenta.concepto }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="cxp-data-item cxp-data-span-4">
+
+                            <div class="cxp-data-label">
+                                Descripción
+                            </div>
+
+                            <div class="cxp-data-value">
+                                {{ cuenta.descripcion or "-" }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="cxp-data-item">
+
+                            <div class="cxp-data-label">
+                                Categoría
+                            </div>
+
+                            <div class="cxp-data-value">
+                                {{ cuenta.categoria or "-" }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="cxp-data-item">
+
+                            <div class="cxp-data-label">
+                                Subcategoría
+                            </div>
+
+                            <div class="cxp-data-value">
+                                {{ cuenta.subcategoria or "-" }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="cxp-data-item">
+
+                            <div class="cxp-data-label">
+                                Proyecto
+                            </div>
+
+                            <div class="cxp-data-value">
+                                {{ cuenta.proyecto or "-" }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="cxp-data-item">
+
+                            <div class="cxp-data-label">
+                                Centro de costo
+                            </div>
+
+                            <div class="cxp-data-value">
+                                {{ cuenta.centro_costo or "-" }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="cxp-data-item">
+
+                            <div class="cxp-data-label">
+                                Obra
+                            </div>
+
+                            <div class="cxp-data-value">
+                                {{ cuenta.obra or "-" }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="cxp-data-item">
+
+                            <div class="cxp-data-label">
+                                Valor bruto
+                            </div>
+
+                            <div class="cxp-data-value cxp-data-value-strong">
+
+                                ${{ "{:,.0f}".format(cuenta.valor_bruto or 0) }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="cxp-data-item">
+
+                            <div class="cxp-data-label">
+                                Descuento
+                            </div>
+
+                            <div class="cxp-data-value cxp-data-value-strong">
+
+                                ${{ "{:,.0f}".format(cuenta.descuento or 0) }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="cxp-data-item">
+
+                            <div class="cxp-data-label">
+                                Retención
+                            </div>
+
+                            <div class="cxp-data-value cxp-data-value-strong">
+
+                                ${{ "{:,.0f}".format(cuenta.retencion or 0) }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="cxp-data-item">
+
+                            <div class="cxp-data-label">
+                                Otros descuentos
+                            </div>
+
+                            <div class="cxp-data-value cxp-data-value-strong">
+
+                                ${{ "{:,.0f}".format(cuenta.otros_descuentos or 0) }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="cxp-data-item cxp-data-highlight">
+
+                            <div class="cxp-data-label">
+                                Valor neto
+                            </div>
+
+                            <div class="cxp-data-value cxp-data-value-strong">
+
+                                ${{ "{:,.0f}".format(cuenta.valor_neto or 0) }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="cxp-data-item cxp-data-span-4">
+
+                            <div class="cxp-data-label">
+                                Observaciones
+                            </div>
+
+                            <div class="cxp-data-value">
+                                {{ cuenta.observaciones or "-" }}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+
+            <!-- HISTORIAL -->
+
+            <article class="cxp-card">
+
+                <div class="cxp-card-header">
+
+                    <div class="cxp-card-title">
+
+                        <div class="cxp-card-title-icon">
+                            $
+                        </div>
+
+                        <div>
+
+                            <h2>
+                                Historial de pagos
+                            </h2>
+
+                            <p>
+                                Abonos registrados sobre esta obligación
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    {% if cuenta.saldo_pendiente > 0 %}
+
+                        <button
+                            type="button"
+                            class="cxp-btn cxp-btn-gold"
+                            onclick="abrirPagoCXP()"
+                        >
+                            + Registrar pago
+                        </button>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="cxp-card-body">
+
+                    {% if pagos %}
+
+                        <div class="cxp-table-wrap">
+
+                            <table class="cxp-table">
+
+                                <thead>
+
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Valor</th>
+                                        <th>Forma pago</th>
+                                        <th>Cuenta origen</th>
+                                        <th>Referencia</th>
+                                        <th>Soporte</th>
+                                        <th>Observación</th>
+                                        <th>Acción</th>
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody>
+
+                                    {% for pago in pagos %}
+
+                                        <tr>
+
+                                            <td>
+
+                                                {{
+                                                    pago.fecha.strftime('%d/%m/%Y')
+                                                    if pago.fecha
+                                                    else ""
+                                                }}
+
+                                            </td>
+
+                                            <td class="cxp-money cxp-money-green">
+
+                                                ${{ "{:,.0f}".format(pago.valor_pagado or 0) }}
+
+                                            </td>
+
+                                            <td>
+                                                {{ pago.forma_pago or "-" }}
+                                            </td>
+
+                                            <td>
+                                                {{ pago.cuenta_origen or "-" }}
+                                            </td>
+
+                                            <td>
+                                                {{ pago.referencia_pago or "-" }}
+                                            </td>
+
+                                            <td>
+                                                {{ pago.numero_soporte or "-" }}
+                                            </td>
+
+                                            <td>
+                                                {{ pago.observaciones or "-" }}
+                                            </td>
+
+                                            <td>
+
+                                                <form
+                                                    method="POST"
+                                                    action="/crv/cuentas-por-pagar/{{ cuenta.id }}/pagos/{{ pago.id }}/eliminar"
+                                                    onsubmit="return confirm('¿Seguro que deseas reversar este pago? El movimiento asociado también será eliminado.');"
+                                                >
+
+                                                    <button
+                                                        type="submit"
+                                                        class="cxp-btn cxp-btn-red cxp-btn-small"
+                                                    >
+                                                        Reversar
+                                                    </button>
+
+                                                </form>
+
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="cxp-empty">
+
+                            <div class="cxp-empty-icon">
+                                🧾
+                            </div>
+
+                            <strong>
+                                Todavía no hay pagos registrados
+                            </strong>
+
+                            La obligación conserva su saldo completo.
+
+                            {% if cuenta.saldo_pendiente > 0 %}
+
+                                <br><br>
+
+                                <button
+                                    type="button"
+                                    class="cxp-btn cxp-btn-gold"
+                                    onclick="abrirPagoCXP()"
+                                >
+                                    + Registrar primer pago
+                                </button>
+
+                            {% endif %}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </article>
+
+        </main>
+
+
+        <!-- DERECHA -->
+
+        <aside class="cxp-main-right">
+
+            <div class="cxp-actions-panel">
+
+                <div class="cxp-actions-heading">
+
+                    <div class="cxp-actions-heading-icon">
+                        ⚙
+                    </div>
+
+                    <div>
+
+                        <h2>
+                            Acciones
+                        </h2>
+
+                        <p>
+                            Gestión de esta obligación
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                {% if cuenta.saldo_pendiente > 0 %}
+
+                    <div class="cxp-action cxp-action-gold">
+
+                        <div class="cxp-action-title">
+
+                            <div class="cxp-action-icon">
+                                $
+                            </div>
+
+                            Registrar pago
+
+                        </div>
+
+                        <div class="cxp-action-description">
+
+                            Registra un abono o el pago total conservando
+                            la fecha real en que se realizó.
+
+                        </div>
+
+                        <button
+                            type="button"
+                            class="cxp-btn cxp-btn-gold cxp-btn-full"
+                            onclick="abrirPagoCXP()"
+                        >
+                            + Registrar pago
+                        </button>
+
+                    </div>
+
+                {% endif %}
+
+
+                <div class="cxp-action cxp-action-blue">
+
+                    <div class="cxp-action-title">
+
+                        <div class="cxp-action-icon">
+                            📋
+                        </div>
+
+                        Ver movimientos
+
+                    </div>
+
+                    <div class="cxp-action-description">
+
+                        Consulta los registros contables asociados al proveedor.
+
+                    </div>
+
+                    <a
+                        href="/crv/movimientos?tercero={{ cuenta.proveedor.razon_social if cuenta.proveedor else '' }}"
+                        class="cxp-btn cxp-btn-light cxp-btn-full"
+                    >
+                        Ver movimientos
+                    </a>
+
+                </div>
+
+
+                <div class="cxp-action">
+
+                    <div class="cxp-action-title">
+
+                        <div class="cxp-action-icon">
+                            👥
+                        </div>
+
+                        Proveedor
+
+                    </div>
+
+                    <div class="cxp-action-description">
+
+                        Consulta o completa sus datos generales,
+                        bancarios y de contacto.
+
+                    </div>
+
+                    <a
+                        href="/crv/terceros"
+                        class="cxp-btn cxp-btn-light cxp-btn-full"
+                    >
+                        Ir a proveedores
+                    </a>
+
+                </div>
+
+
+                <div class="cxp-action">
+
+                    <div class="cxp-action-title">
+
+                        <div class="cxp-action-icon">
+                            ←
+                        </div>
+
+                        Volver a cartera
+
+                    </div>
+
+                    <div class="cxp-action-description">
+
+                        Regresa al listado general de cuentas por pagar.
+
+                    </div>
+
+                    <a
+                        href="/crv/cuentas-por-pagar"
+                        class="cxp-btn cxp-btn-navy cxp-btn-full"
+                    >
+                        ← Cuentas por pagar
+                    </a>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+    </section>
+
+</div>
+</div>
+
+
+<!-- FONDO MODAL -->
+
+<div
+    id="cxpOverlayPago"
+    class="cxp-overlay"
+    onclick="cerrarPagoCXP()"
+></div>
+
+
+<!-- MODAL -->
+
+<div
+    id="cxpModalPago"
+    class="cxp-modal"
+>
+
+    <div class="cxp-modal-box">
+
+        <div class="cxp-modal-header">
+
+            <div>
+
+                <h2>
+                    Registrar pago
+                </h2>
+
+                <p>
+                    Documento {{ cuenta.numero_documento }}
+                    ·
+                    {{
+                        cuenta.proveedor.razon_social
+                        if cuenta.proveedor
+                        else ""
+                    }}
+                </p>
+
+            </div>
+
+            <button
+                type="button"
+                class="cxp-modal-close"
+                onclick="cerrarPagoCXP()"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="cxp-modal-body">
+
+
+            <div class="cxp-payment-summary">
+
+                <div class="cxp-payment-summary-card">
+
+                    <span>
+                        SALDO ACTUAL
+                    </span>
+
+                    <strong>
+
+                        ${{ "{:,.0f}".format(cuenta.saldo_pendiente or 0) }}
+
+                    </strong>
+
+                </div>
+
+
+                <div class="cxp-payment-summary-card">
+
+                    <span>
+                        TOTAL PAGADO
+                    </span>
+
+                    <strong>
+
+                        ${{ "{:,.0f}".format(cuenta.total_pagado or 0) }}
+
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <form
+                method="POST"
+                action="/crv/cuentas-por-pagar/{{ cuenta.id }}/pagar"
+            >
+
+                <div class="cxp-form-grid">
+
+
+                    <div class="cxp-field">
+
+                        <label>
+                            Fecha real del pago *
+                        </label>
+
+                        <input
+                            type="date"
+                            name="fecha"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="cxp-field">
+
+                        <label>
+                            Valor pagado *
+                        </label>
+
+                        <input
+                            type="number"
+                            name="valor_pagado"
+                            min="0.01"
+                            max="{{ cuenta.saldo_pendiente }}"
+                            step="0.01"
+                            required
+                            placeholder="0"
+                        >
+
+                    </div>
+
+
+                    <div class="cxp-field">
+
+                        <label>
+                            Forma de pago
+                        </label>
+
+                        <select name="forma_pago">
+
+                            <option value="">
+                                Seleccione...
+                            </option>
+
+                            <option value="TRANSFERENCIA">
+                                Transferencia
+                            </option>
+
+                            <option value="EFECTIVO">
+                                Efectivo
+                            </option>
+
+                            <option value="CHEQUE">
+                                Cheque
+                            </option>
+
+                            <option value="PSE">
+                                PSE
+                            </option>
+
+                            <option value="OTRO">
+                                Otro
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="cxp-field">
+
+                        <label>
+                            Cuenta origen
+                        </label>
+
+                        <input
+                            type="text"
+                            name="cuenta_origen"
+                            placeholder="Ej: Bancolombia CRV"
+                        >
+
+                    </div>
+
+
+                    <div class="cxp-field">
+
+                        <label>
+                            Cuenta destino
+                        </label>
+
+                        <input
+                            type="text"
+                            name="cuenta_destino"
+                            value="{% if cuenta.proveedor %}{{ cuenta.proveedor.banco or '' }}{% endif %}"
+                            placeholder="Cuenta del proveedor"
+                        >
+
+                    </div>
+
+
+                    <div class="cxp-field">
+
+                        <label>
+                            Beneficiario
+                        </label>
+
+                        <input
+                            type="text"
+                            name="beneficiario"
+                            value="{% if cuenta.proveedor %}{{ cuenta.proveedor.razon_social }}{% endif %}"
+                            placeholder="Beneficiario"
+                        >
+
+                    </div>
+
+
+                    <div class="cxp-field">
+
+                        <label>
+                            Referencia del pago
+                        </label>
+
+                        <input
+                            type="text"
+                            name="referencia_pago"
+                            placeholder="Referencia transferencia"
+                        >
+
+                    </div>
+
+
+                    <div class="cxp-field">
+
+                        <label>
+                            Número de soporte
+                        </label>
+
+                        <input
+                            type="text"
+                            name="numero_soporte"
+                            placeholder="Comprobante / egreso"
+                        >
+
+                    </div>
+
+
+                    <div class="cxp-field cxp-field-full">
+
+                        <label>
+                            Observaciones
+                        </label>
+
+                        <textarea
+                            name="observaciones"
+                            placeholder="Información adicional del pago..."
+                        ></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="cxp-modal-actions">
+
+                    <button
+                        type="button"
+                        class="cxp-btn cxp-btn-light"
+                        onclick="cerrarPagoCXP()"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="cxp-btn cxp-btn-gold"
+                    >
+                        Registrar pago
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    function abrirPagoCXP() {
+
+        const overlay =
+            document.getElementById("cxpOverlayPago");
+
+        const modal =
+            document.getElementById("cxpModalPago");
+
+        if (overlay) {
+            overlay.classList.add("cxp-active");
+        }
+
+        if (modal) {
+            modal.classList.add("cxp-active");
+        }
+
+        document.body.classList.add("cxp-modal-open");
+    }
+
+
+    function cerrarPagoCXP() {
+
+        const overlay =
+            document.getElementById("cxpOverlayPago");
+
+        const modal =
+            document.getElementById("cxpModalPago");
+
+        if (overlay) {
+            overlay.classList.remove("cxp-active");
+        }
+
+        if (modal) {
+            modal.classList.remove("cxp-active");
+        }
+
+        document.body.classList.remove("cxp-modal-open");
+    }
+
+
+    document.addEventListener(
+        "keydown",
+        function(evento) {
+
+            if (evento.key === "Escape") {
+                cerrarPagoCXP();
+            }
+
+        }
+    );
+
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function() {
+
+            const modalBox =
+                document.querySelector(".cxp-modal-box");
+
+            if (modalBox) {
+
+                modalBox.addEventListener(
+                    "click",
+                    function(evento) {
+                        evento.stopPropagation();
+                    }
+                );
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+</html>

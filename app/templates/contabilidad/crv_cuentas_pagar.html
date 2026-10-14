@@ -1,0 +1,3584 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        CRV CONSTRUCTORA - Cuentas por pagar
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            color: #17283f;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        .page {
+            min-height: 100vh;
+            padding: 26px;
+        }
+
+        .shell {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+
+        /* =====================================================
+           ENCABEZADO
+        ===================================================== */
+
+        .header {
+            text-align: center;
+            margin-bottom: 21px;
+        }
+
+        .header img {
+            width: 90px;
+            height: 72px;
+            object-fit: contain;
+            margin-bottom: 4px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 29px;
+            font-weight: 900;
+            color: #17304f;
+        }
+
+        .header p {
+            margin: 7px 0 0;
+            color: #6c7f94;
+            font-size: 13px;
+        }
+
+
+        /* =====================================================
+           BARRA SUPERIOR
+        ===================================================== */
+
+        .topbar {
+            background: #ffffff;
+
+            border-radius: 17px;
+
+            padding: 14px 17px;
+
+            margin-bottom: 17px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 14px;
+            flex-wrap: wrap;
+
+            box-shadow:
+                0 10px 28px rgba(18, 40, 64, .07);
+        }
+
+        .topbar-left,
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            flex-wrap: wrap;
+        }
+
+        .empresa-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+
+            padding: 7px 11px;
+
+            border-radius: 999px;
+
+            background: #e4f8eb;
+            color: #138246;
+
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .empresa-badge::before {
+            content: "●";
+            font-size: 8px;
+        }
+
+
+        /* =====================================================
+           BOTONES
+        ===================================================== */
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+
+            border: none;
+            outline: none;
+
+            border-radius: 9px;
+
+            padding: 10px 14px;
+
+            font-size: 12px;
+            font-weight: 900;
+
+            text-decoration: none;
+
+            cursor: pointer;
+
+            transition: .15s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-dark {
+            background: #111111;
+            color: white;
+        }
+
+        .btn-navy {
+            background: #17304f;
+            color: white;
+        }
+
+        .btn-gold {
+            background: #d8b541;
+            color: white;
+        }
+
+        .btn-light {
+            background: #edf2f7;
+            color: #17304f;
+        }
+
+        .btn-danger {
+            background: #ef2b2d;
+            color: white;
+        }
+
+        .btn-small {
+            padding: 7px 10px;
+            font-size: 10px;
+        }
+
+
+        /* =====================================================
+           RESUMEN
+        ===================================================== */
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+
+            gap: 14px;
+
+            margin-bottom: 18px;
+        }
+
+        .summary-card {
+            background: #ffffff;
+
+            border-radius: 17px;
+
+            min-height: 112px;
+
+            padding: 17px 18px;
+
+            display: flex;
+            align-items: center;
+            gap: 14px;
+
+            box-shadow:
+                0 8px 24px rgba(18, 40, 64, .06);
+
+            border-top: 4px solid #17304f;
+        }
+
+        .summary-card.facturado {
+            border-top-color: #d8b541;
+        }
+
+        .summary-card.pagado {
+            border-top-color: #16a05b;
+        }
+
+        .summary-card.pendiente {
+            border-top-color: #17304f;
+        }
+
+        .summary-card.vencido {
+            border-top-color: #ef2b2d;
+        }
+
+        .summary-icon {
+            width: 48px;
+            height: 48px;
+
+            border-radius: 13px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            flex: 0 0 auto;
+
+            font-size: 21px;
+        }
+
+        .summary-card.facturado .summary-icon {
+            background: #fff4d3;
+        }
+
+        .summary-card.pagado .summary-icon {
+            background: #dcf7e7;
+        }
+
+        .summary-card.pendiente .summary-icon {
+            background: #e7eef8;
+        }
+
+        .summary-card.vencido .summary-icon {
+            background: #ffe3e3;
+        }
+
+        .summary-label {
+            color: #60758b;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .summary-value {
+            margin-top: 5px;
+
+            color: #17304f;
+
+            font-size: 23px;
+            font-weight: 900;
+        }
+
+        .summary-card.vencido .summary-value {
+            color: #dc2626;
+        }
+
+        .summary-note {
+            margin-top: 3px;
+
+            color: #8998a8;
+
+            font-size: 10px;
+        }
+
+
+        /* =====================================================
+           TARJETA PRINCIPAL
+        ===================================================== */
+
+        .main-card {
+            background: white;
+
+            border-radius: 18px;
+
+            box-shadow:
+                0 12px 32px rgba(18, 40, 64, .07);
+
+            overflow: hidden;
+        }
+
+        .main-header {
+            padding: 18px 21px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 14px;
+            flex-wrap: wrap;
+
+            border-bottom: 1px solid #e5ebf0;
+        }
+
+        .main-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .main-icon {
+            width: 42px;
+            height: 42px;
+
+            border-radius: 11px;
+
+            background: #fff4d3;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 20px;
+        }
+
+        .main-header h2 {
+            margin: 0;
+
+            color: #17304f;
+
+            font-size: 20px;
+        }
+
+        .main-header p {
+            margin: 4px 0 0;
+
+            color: #76879a;
+
+            font-size: 11px;
+        }
+
+
+        /* =====================================================
+           FILTROS
+        ===================================================== */
+
+        .filters {
+            padding: 15px 20px;
+
+            display: grid;
+
+            grid-template-columns:
+                170px
+                240px
+                170px
+                minmax(250px, 1fr)
+                auto
+                auto;
+
+            gap: 9px;
+
+            align-items: end;
+
+            background: #fbfcfd;
+
+            border-bottom: 1px solid #e5ebf0;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .field label {
+            color: #51677e;
+
+            font-size: 10px;
+            font-weight: 900;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+
+            border: 1px solid #d4dde7;
+
+            border-radius: 8px;
+
+            padding: 10px 11px;
+
+            font-family: inherit;
+            font-size: 11px;
+
+            color: #17283f;
+
+            background: white;
+
+            outline: none;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #d8b541;
+
+            box-shadow:
+                0 0 0 3px rgba(216, 181, 65, .12);
+        }
+
+
+        /* =====================================================
+           TABLA
+        ===================================================== */
+
+        .table-wrap {
+            overflow-x: auto;
+
+            padding: 0 15px 16px;
+        }
+
+        table {
+            width: 100%;
+
+            border-collapse: collapse;
+
+            min-width: 1280px;
+        }
+
+        thead th {
+            background: #17304f;
+            color: white;
+
+            padding: 12px 9px;
+
+            text-align: left;
+
+            font-size: 10px;
+            font-weight: 900;
+
+            white-space: nowrap;
+        }
+
+        thead th:first-child {
+            border-radius: 9px 0 0 0;
+        }
+
+        thead th:last-child {
+            border-radius: 0 9px 0 0;
+        }
+
+        tbody td {
+            padding: 13px 9px;
+
+            border-bottom: 1px solid #e7ecf1;
+
+            vertical-align: middle;
+
+            font-size: 10.5px;
+        }
+
+        tbody tr:hover {
+            background: #fafbfd;
+        }
+
+        .proveedor-name {
+            color: #17283f;
+
+            font-weight: 900;
+
+            font-size: 11px;
+        }
+
+        .muted {
+            margin-top: 3px;
+
+            color: #8392a3;
+
+            font-size: 9px;
+        }
+
+        .money {
+            white-space: nowrap;
+
+            color: #17283f;
+
+            font-weight: 900;
+        }
+
+        .money.red {
+            color: #dc2626;
+        }
+
+        .money.green {
+            color: #0f8a47;
+        }
+
+
+        /* =====================================================
+           ESTADOS
+        ===================================================== */
+
+        .status {
+            display: inline-flex;
+
+            padding: 5px 8px;
+
+            border-radius: 999px;
+
+            font-size: 9px;
+            font-weight: 900;
+
+            white-space: nowrap;
+        }
+
+        .status-pendiente {
+            background: #fff4d3;
+            color: #8d6800;
+        }
+
+        .status-parcial {
+            background: #e5efff;
+            color: #2f5ca8;
+        }
+
+        .status-pagada {
+            background: #dcf7e7;
+            color: #087b3a;
+        }
+
+        .status-vencida {
+            background: #ffe0e0;
+            color: #c72027;
+        }
+
+
+        /* =====================================================
+           VACÍO
+        ===================================================== */
+
+        .empty {
+            padding: 55px 20px;
+
+            text-align: center;
+
+            color: #78899c;
+        }
+
+        .empty-icon {
+            font-size: 37px;
+
+            margin-bottom: 12px;
+        }
+
+        .empty strong {
+            display: block;
+
+            margin-bottom: 7px;
+
+            color: #17304f;
+
+            font-size: 17px;
+        }
+
+
+        /* =====================================================
+           INFORMACIÓN INFERIOR
+        ===================================================== */
+
+        .info-footer {
+            margin-top: 15px;
+
+            padding: 12px 14px;
+
+            border-radius: 11px;
+
+            background: #eaf3ff;
+
+            color: #285c96;
+
+            font-size: 10px;
+        }
+
+
+        /* =====================================================
+           MODAL
+        ===================================================== */
+
+        .overlay {
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(13, 29, 48, .52);
+
+            backdrop-filter: blur(3px);
+
+            opacity: 0;
+            visibility: hidden;
+
+            transition: .18s ease;
+
+            z-index: 9998;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-cxp {
+            position: fixed;
+
+            inset: 0;
+
+            padding: 24px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            opacity: 0;
+            visibility: hidden;
+
+            transform: scale(.98);
+
+            transition: .18s ease;
+
+            pointer-events: none;
+
+            z-index: 9999;
+        }
+
+        .modal-cxp.active {
+            opacity: 1;
+            visibility: visible;
+
+            transform: scale(1);
+
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            width: 100%;
+            max-width: 1200px;
+
+            max-height: 92vh;
+
+            background: white;
+
+            border-radius: 19px;
+
+            box-shadow:
+                0 30px 80px rgba(10, 28, 48, .30);
+
+            display: flex;
+            flex-direction: column;
+
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 18px 21px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 15px;
+
+            border-bottom: 1px solid #e5eaf0;
+        }
+
+        .modal-header-left {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .modal-icon {
+            width: 42px;
+            height: 42px;
+
+            border-radius: 11px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: #17304f;
+            color: white;
+
+            font-size: 22px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+
+            color: #17304f;
+
+            font-size: 19px;
+        }
+
+        .modal-header p {
+            margin: 3px 0 0;
+
+            color: #78899c;
+
+            font-size: 10px;
+        }
+
+        .modal-close {
+            width: 37px;
+            height: 37px;
+
+            border: none;
+
+            border-radius: 9px;
+
+            background: #edf2f7;
+
+            color: #17304f;
+
+            cursor: pointer;
+
+            font-size: 19px;
+        }
+
+        .modal-body {
+            flex: 1;
+
+            overflow-y: auto;
+
+            padding: 21px 24px 25px;
+
+            background: #fbfcfd;
+        }
+
+        .section-title {
+            margin: 5px 0 12px;
+
+            padding-bottom: 8px;
+
+            border-bottom: 1px solid #e3e9ef;
+
+            color: #17304f;
+
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+        .section-title:not(:first-child) {
+            margin-top: 23px;
+        }
+
+        .form-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
+
+            gap: 13px 15px;
+        }
+
+        .span-2 {
+            grid-column: span 2;
+        }
+
+        .span-3 {
+            grid-column: span 3;
+        }
+
+        .span-4 {
+            grid-column: span 4;
+        }
+
+        textarea {
+            min-height: 78px;
+
+            resize: vertical;
+        }
+
+
+        /* =====================================================
+           PREVISUALIZACIÓN VALORES
+        ===================================================== */
+
+        .value-preview {
+            margin-top: 17px;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 10px;
+        }
+
+        .preview-card {
+            padding: 13px;
+
+            border-radius: 11px;
+
+            background: white;
+
+            border: 1px solid #e1e7ed;
+        }
+
+        .preview-label {
+            color: #75869a;
+
+            font-size: 9px;
+            font-weight: 900;
+        }
+
+        .preview-value {
+            margin-top: 4px;
+
+            color: #17304f;
+
+            font-size: 16px;
+            font-weight: 900;
+        }
+
+        .preview-card.neto {
+            border-top: 3px solid #16a05b;
+        }
+
+        .preview-card.descuentos {
+            border-top: 3px solid #ef2b2d;
+        }
+
+        .preview-card.bruto {
+            border-top: 3px solid #d8b541;
+        }
+
+
+        /* =====================================================
+           ACCIONES MODAL
+        ===================================================== */
+
+        .modal-actions {
+            margin-top: 23px;
+
+            padding-top: 17px;
+
+            border-top: 1px solid #e3e9ef;
+
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+
+            gap: 9px;
+        }
+
+
+
+        /* =====================================================
+           ACCIONES DE CADA OBLIGACIÓN
+        ===================================================== */
+
+        .row-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            min-width: 230px;
+        }
+
+        .btn-edit {
+            background: #eaf0f7;
+            color: #17304f;
+        }
+
+        .btn-edit:hover {
+            background: #dfe8f2;
+        }
+
+        .btn-delete-disabled {
+            background: #f1f3f5;
+            color: #9aa6b2;
+            cursor: not-allowed;
+        }
+
+        .btn-delete-disabled:hover {
+            transform: none;
+        }
+
+        .row-help {
+            width: 100%;
+            margin-top: 2px;
+            color: #8a98a8;
+            font-size: 8.5px;
+            line-height: 1.25;
+        }
+
+        /* =====================================================
+           TARIFA IVA PERSONALIZADA
+        ===================================================== */
+
+        .tarifa-personalizada {
+            display: none;
+            margin-top: 7px;
+        }
+
+        .tarifa-personalizada.active {
+            display: block;
+        }
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
+
+        @media (max-width: 1100px) {
+
+            .summary-grid {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+            .filters {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+            .form-grid {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+            .span-3,
+            .span-4 {
+                grid-column: span 2;
+            }
+
+        }
+
+        @media (max-width: 650px) {
+
+            .page {
+                padding: 13px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .summary-grid,
+            .filters,
+            .form-grid,
+            .value-preview {
+                grid-template-columns: 1fr;
+            }
+
+            .span-2,
+            .span-3,
+            .span-4 {
+                grid-column: auto;
+            }
+
+            .modal-cxp {
+                padding: 9px;
+            }
+
+            .modal-box {
+                max-height: 96vh;
+
+                border-radius: 13px;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+
+            .modal-actions .btn {
+                width: 100%;
+            }
+
+        }
+
+    
+        /* =====================================================
+           MENÚ LATERAL PERMANENTE CRV
+        ===================================================== */
+        .crv-fixed-layout {
+            max-width: 1760px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 245px minmax(0,1fr);
+            gap: 20px;
+            align-items: start;
+        }
+        .crv-fixed-sidebar {
+            position: sticky;
+            top: 18px;
+            background: #fff;
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 12px 30px rgba(18,40,64,.08);
+        }
+        .crv-fixed-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 10px;
+            margin-bottom: 10px;
+            border-radius: 999px;
+            background: #e8f7ee;
+            color: #168446;
+            font-size: 11px;
+            font-weight: 900;
+        }
+        .crv-fixed-badge::before { content:"●"; font-size:8px; }
+        .crv-fixed-company {
+            color:#17304f;
+            font-size:18px;
+            line-height:1.2;
+            font-weight:900;
+        }
+        .crv-fixed-subtitle {
+            margin:3px 0 15px;
+            color:#cda52b;
+            font-size:12px;
+            font-weight:800;
+        }
+        .crv-fixed-menu { display:grid; gap:7px; }
+        .crv-fixed-menu a {
+            display:flex;
+            align-items:center;
+            gap:9px;
+            min-height:40px;
+            padding:8px 10px;
+            border-radius:9px;
+            background:#eef3f8;
+            color:#17304f;
+            text-decoration:none;
+            font-size:11px;
+            font-weight:800;
+            transition:.15s ease;
+        }
+        .crv-fixed-menu a:hover {
+            transform:translateY(-1px);
+            box-shadow:0 5px 14px rgba(18,40,64,.08);
+        }
+        .crv-fixed-icon {
+            width:25px;
+            height:25px;
+            min-width:25px;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            border-radius:7px;
+            background:rgba(23,48,79,.08);
+            font-size:13px;
+        }
+        .crv-fixed-menu a.active {
+            background:#17304f;
+            color:#fff;
+        }
+        .crv-fixed-menu a.gold {
+            background:#d8b541;
+            color:#fff;
+        }
+        .crv-fixed-menu a.danger {
+            justify-content:center;
+            margin-top:5px;
+            background:#ef2b2d;
+            color:#fff;
+        }
+        .crv-fixed-menu a.active .crv-fixed-icon,
+        .crv-fixed-menu a.gold .crv-fixed-icon,
+        .crv-fixed-menu a.danger .crv-fixed-icon {
+            background:rgba(255,255,255,.16);
+        }
+        .crv-fixed-main { min-width:0; }
+        @media(max-width:1050px){
+            .crv-fixed-layout{grid-template-columns:1fr;}
+            .crv-fixed-sidebar{position:static;}
+            .crv-fixed-menu{grid-template-columns:repeat(3,minmax(0,1fr));}
+        }
+        @media(max-width:720px){
+            .crv-fixed-menu{grid-template-columns:1fr;}
+        }
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="page">
+
+<div class="crv-fixed-layout">
+    <aside class="crv-fixed-sidebar">
+        <div class="crv-fixed-badge">Empresa activa</div>
+        <div class="crv-fixed-company">CRV<br>CONSTRUCTORA</div>
+        <div class="crv-fixed-subtitle">Módulo Contable</div>
+        <nav class="crv-fixed-menu">
+                <a href="/empresas">
+                    <span class="crv-fixed-icon">🏢</span>
+                    <span>Cambiar empresa</span>
+                </a>
+<a href="/crv/movimientos/nuevo" class="gold">
+                    <span class="crv-fixed-icon">＋</span>
+                    <span>Registrar movimiento</span>
+                </a>
+<a href="/crv/movimientos">
+                    <span class="crv-fixed-icon">📋</span>
+                    <span>Movimientos</span>
+                </a>
+<a href="/crv/terceros">
+                    <span class="crv-fixed-icon">👤</span>
+                    <span>Terceros</span>
+                </a>
+<a href="/crv/terceros?buscar=">
+                    <span class="crv-fixed-icon">👥</span>
+                    <span>Proveedores / Clientes</span>
+                </a>
+<a href="/crv/cuentas-por-pagar" class="active">
+                    <span class="crv-fixed-icon">🧾</span>
+                    <span>Cuentas por pagar</span>
+                </a>
+<a href="/crv/cuentas-por-cobrar">
+                    <span class="crv-fixed-icon">💰</span>
+                    <span>Cuentas por cobrar</span>
+                </a>
+<a href="/crv/bancos-caja">
+                    <span class="crv-fixed-icon">🏦</span>
+                    <span>Bancos y caja</span>
+                </a>
+<a href="/crv/conciliacion-bancaria">
+                    <span class="crv-fixed-icon">⚖️</span>
+                    <span>Conciliación bancaria</span>
+                </a>
+<a href="/crv/proyectos">
+                    <span class="crv-fixed-icon">🏗️</span>
+                    <span>Proyectos / obras</span>
+                </a>
+<a href="/crv/reportes-contador">
+                    <span class="crv-fixed-icon">📊</span>
+                    <span>Reportes contador</span>
+                </a>
+<a href="/crv/cierre-mensual">
+                    <span class="crv-fixed-icon">📅</span>
+                    <span>Cierre mensual</span>
+                </a>
+<a href="/crv/exportaciones">
+                    <span class="crv-fixed-icon">⬇️</span>
+                    <span>Importar / Exportar</span>
+                </a>
+<a href="/logout" class="danger">
+                    <span class="crv-fixed-icon">⏻</span>
+                    <span>Cerrar sesión</span>
+                </a>
+        </nav>
+    </aside>
+    <main class="crv-fixed-main">
+
+
+<div class="shell">
+
+
+    <!-- =====================================================
+         ENCABEZADO
+    ====================================================== -->
+
+    <div class="header">
+
+        <img
+            src="{{ url_for('static', filename='logo_crv.png') }}"
+            alt="CRV"
+        >
+
+        <h1>
+            CRV CONSTRUCTORA - Cuentas por pagar
+        </h1>
+
+        <p>
+            Control de proveedores, facturas, obligaciones, pagos,
+            vencimientos y saldos pendientes
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         BARRA SUPERIOR
+    ====================================================== -->
+
+    <div class="topbar">
+
+        <div class="topbar-left">
+
+            <a
+                href="/crv/dashboard"
+                class="btn btn-dark"
+            >
+                ← Volver
+            </a>
+
+            <span class="empresa-badge">
+                Empresa activa
+            </span>
+
+            <strong>
+                {{ empresa_nombre }}
+            </strong>
+
+        </div>
+
+
+        <div class="topbar-right">
+
+            <a
+                href="/crv/cuentas-por-pagar/pdf"
+                class="btn btn-light"
+            >
+                📄 Exportar PDF
+            </a>
+
+            <a
+                href="/crv/cuentas-por-pagar/excel"
+                class="btn btn-navy"
+            >
+                📊 Exportar Excel
+            </a>
+
+            <a
+                href="/crv/terceros"
+                class="btn btn-light"
+            >
+                👥 Proveedores
+            </a>
+
+            <a
+                href="/crv/movimientos"
+                class="btn btn-light"
+            >
+                📋 Movimientos
+            </a>
+
+            <button
+                type="button"
+                class="btn btn-gold"
+                onclick="abrirNuevaCuenta()"
+            >
+                + Nueva cuenta por pagar
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         RESUMEN FINANCIERO
+    ====================================================== -->
+
+    <div class="summary-grid">
+
+
+        <div class="summary-card facturado">
+
+            <div class="summary-icon">
+                🧾
+            </div>
+
+            <div>
+
+                <div class="summary-label">
+                    Total facturado
+                </div>
+
+                <div class="summary-value">
+                    ${{ "{:,.0f}".format(total_facturado or 0) }}
+                </div>
+
+                <div class="summary-note">
+                    Neto de obligaciones consultadas
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card pagado">
+
+            <div class="summary-icon">
+                ✓
+            </div>
+
+            <div>
+
+                <div class="summary-label">
+                    Total pagado
+                </div>
+
+                <div class="summary-value">
+                    ${{ "{:,.0f}".format(total_pagado or 0) }}
+                </div>
+
+                <div class="summary-note">
+                    Abonos y pagos realizados
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card pendiente">
+
+            <div class="summary-icon">
+                $
+            </div>
+
+            <div>
+
+                <div class="summary-label">
+                    Saldo pendiente
+                </div>
+
+                <div class="summary-value">
+                    ${{ "{:,.0f}".format(total_pendiente or 0) }}
+                </div>
+
+                <div class="summary-note">
+                    Valor actualmente por pagar
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card vencido">
+
+            <div class="summary-icon">
+                !
+            </div>
+
+            <div>
+
+                <div class="summary-label">
+                    Cartera vencida
+                </div>
+
+                <div class="summary-value">
+                    ${{ "{:,.0f}".format(total_vencido or 0) }}
+                </div>
+
+                <div class="summary-note">
+                    Obligaciones vencidas con saldo
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =====================================================
+         LISTADO PRINCIPAL
+    ====================================================== -->
+
+    <div class="main-card">
+
+
+        <div class="main-header">
+
+            <div class="main-title-wrap">
+
+                <div class="main-icon">
+                    🧾
+                </div>
+
+                <div>
+
+                    <h2>
+                        Obligaciones y facturas
+                    </h2>
+
+                    <p>
+                        Consulta la cartera por proveedor y revisa
+                        el estado de cada obligación
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="btn btn-gold"
+                onclick="abrirNuevaCuenta()"
+            >
+                + Registrar obligación
+            </button>
+
+        </div>
+
+
+        <!-- =================================================
+             FILTROS
+        ================================================== -->
+
+        <form
+            method="GET"
+            action="/crv/cuentas-por-pagar"
+            class="filters"
+        >
+
+
+            <div class="field">
+
+                <label>
+                    Mes factura
+                </label>
+
+                <input
+                    type="month"
+                    name="mes"
+                    value="{{ mes_actual or '' }}"
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Proveedor
+                </label>
+
+                <select name="proveedor_id">
+
+                    <option value="">
+                        Todos los proveedores
+                    </option>
+
+                    {% for proveedor in proveedores %}
+
+                    <option
+                        value="{{ proveedor.id }}"
+                        {% if proveedor_actual == proveedor.id|string %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ proveedor.razon_social }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Estado
+                </label>
+
+                <select name="estado">
+
+                    <option value="">
+                        Todos
+                    </option>
+
+                    <option
+                        value="PENDIENTE"
+                        {% if estado_actual == "PENDIENTE" %}
+                            selected
+                        {% endif %}
+                    >
+                        Pendiente
+                    </option>
+
+                    <option
+                        value="PARCIAL"
+                        {% if estado_actual == "PARCIAL" %}
+                            selected
+                        {% endif %}
+                    >
+                        Parcial
+                    </option>
+
+                    <option
+                        value="PAGADA"
+                        {% if estado_actual == "PAGADA" %}
+                            selected
+                        {% endif %}
+                    >
+                        Pagada
+                    </option>
+
+                    <option
+                        value="VENCIDA"
+                        {% if estado_actual == "VENCIDA" %}
+                            selected
+                        {% endif %}
+                    >
+                        Vencida
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Buscar
+                </label>
+
+                <input
+                    type="text"
+                    name="buscar"
+                    value="{{ buscar_actual or '' }}"
+                    placeholder="Factura, proveedor, NIT o concepto..."
+                >
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="btn btn-navy"
+            >
+                Filtrar
+            </button>
+
+
+            <a
+                href="/crv/cuentas-por-pagar"
+                class="btn btn-light"
+            >
+                Limpiar
+            </a>
+
+
+        </form>
+
+
+        <!-- =================================================
+             TABLA
+        ================================================== -->
+
+        {% if cuentas %}
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Fecha
+                        </th>
+
+                        <th>
+                            Proveedor
+                        </th>
+
+                        <th>
+                            Documento
+                        </th>
+
+                        <th>
+                            Concepto
+                        </th>
+
+                        <th>
+                            Proyecto / C.C.
+                        </th>
+
+                        <th>
+                            Vence
+                        </th>
+
+                        <th>
+                            Neto
+                        </th>
+
+                        <th>
+                            Pagado
+                        </th>
+
+                        <th>
+                            Saldo
+                        </th>
+
+                        <th>
+                            Estado
+                        </th>
+
+                        <th>
+                            Acciones
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                {% for cuenta in cuentas %}
+
+                    <tr>
+
+
+                        <!-- FECHA -->
+
+                        <td>
+
+                            <strong>
+
+                                {{
+                                    cuenta.fecha_documento.strftime(
+                                        '%d/%m/%Y'
+                                    )
+                                    if cuenta.fecha_documento
+                                    else ''
+                                }}
+
+                            </strong>
+
+                        </td>
+
+
+                        <!-- PROVEEDOR -->
+
+                        <td>
+
+                            <div class="proveedor-name">
+
+                                {{
+                                    cuenta.proveedor.razon_social
+                                    if cuenta.proveedor
+                                    else ''
+                                }}
+
+                            </div>
+
+                            {% if cuenta.proveedor %}
+
+                                <div class="muted">
+
+                                    {{
+                                        cuenta.proveedor.identificacion
+                                        or ''
+                                    }}
+
+                                </div>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- DOCUMENTO -->
+
+                        <td>
+
+                            <strong>
+                                {{ cuenta.numero_documento }}
+                            </strong>
+
+                            {% if cuenta.tipo_documento %}
+
+                                <div class="muted">
+                                    {{ cuenta.tipo_documento }}
+                                </div>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- CONCEPTO -->
+
+                        <td>
+
+                            <strong>
+                                {{ cuenta.concepto }}
+                            </strong>
+
+                            {% if cuenta.categoria %}
+
+                                <div class="muted">
+
+                                    {{ cuenta.categoria }}
+
+                                    {% if cuenta.subcategoria %}
+
+                                        · {{ cuenta.subcategoria }}
+
+                                    {% endif %}
+
+                                </div>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- PROYECTO -->
+
+                        <td>
+
+                            {% if cuenta.proyecto %}
+
+                                <strong>
+                                    {{ cuenta.proyecto }}
+                                </strong>
+
+                            {% else %}
+
+                                <span class="muted">
+                                    Sin proyecto
+                                </span>
+
+                            {% endif %}
+
+                            {% if cuenta.centro_costo %}
+
+                                <div class="muted">
+                                    {{ cuenta.centro_costo }}
+                                </div>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- VENCIMIENTO -->
+
+                        <td>
+
+                            {% if cuenta.fecha_vencimiento %}
+
+                                {{
+                                    cuenta.fecha_vencimiento.strftime(
+                                        '%d/%m/%Y'
+                                    )
+                                }}
+
+                                {% if cuenta.estado == "VENCIDA" %}
+
+                                    <div class="muted">
+
+                                        {{ cuenta.dias_vencida }}
+                                        día(s) vencida
+
+                                    </div>
+
+                                {% endif %}
+
+                            {% else %}
+
+                                <span class="muted">
+                                    Sin vencimiento
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- NETO -->
+
+                        <td class="money">
+
+                            ${{
+                                "{:,.0f}".format(
+                                    cuenta.valor_neto or 0
+                                )
+                            }}
+
+                        </td>
+
+
+                        <!-- PAGADO -->
+
+                        <td class="money green">
+
+                            ${{
+                                "{:,.0f}".format(
+                                    cuenta.total_pagado or 0
+                                )
+                            }}
+
+                        </td>
+
+
+                        <!-- SALDO -->
+
+                        <td
+                            class="
+                                money
+                                {% if cuenta.estado == 'VENCIDA' %}
+                                    red
+                                {% endif %}
+                            "
+                        >
+
+                            ${{
+                                "{:,.0f}".format(
+                                    cuenta.saldo_pendiente or 0
+                                )
+                            }}
+
+                        </td>
+
+
+                        <!-- ESTADO -->
+
+                        <td>
+
+                            {% if cuenta.estado == "PAGADA" %}
+
+                                <span class="status status-pagada">
+                                    PAGADA
+                                </span>
+
+                            {% elif cuenta.estado == "PARCIAL" %}
+
+                                <span class="status status-parcial">
+                                    PARCIAL
+                                </span>
+
+                            {% elif cuenta.estado == "VENCIDA" %}
+
+                                <span class="status status-vencida">
+                                    VENCIDA
+                                </span>
+
+                            {% else %}
+
+                                <span class="status status-pendiente">
+                                    PENDIENTE
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ACCIONES -->
+
+                        <td>
+
+                            <div class="row-actions">
+
+                                <a
+                                    href="/crv/cuentas-por-pagar/{{ cuenta.id }}"
+                                    class="btn btn-navy btn-small"
+                                >
+                                    Ver detalle
+                                </a>
+
+                                <button
+                                    type="button"
+                                    class="btn btn-edit btn-small"
+                                    onclick='abrirEditarCuenta({
+                                        id: {{ cuenta.id }},
+                                        proveedor_id: {{ cuenta.proveedor_id or 0 }},
+                                        sede_id: {{ cuenta.sede_id or 0 }},
+                                        tipo_documento: {{ (cuenta.tipo_documento or "")|tojson }},
+                                        numero_documento: {{ (cuenta.numero_documento or "")|tojson }},
+                                        fecha_documento: {{ (cuenta.fecha_documento.strftime("%Y-%m-%d") if cuenta.fecha_documento else "")|tojson }},
+                                        fecha_vencimiento: {{ (cuenta.fecha_vencimiento.strftime("%Y-%m-%d") if cuenta.fecha_vencimiento else "")|tojson }},
+                                        concepto: {{ (cuenta.concepto or "")|tojson }},
+                                        descripcion: {{ (cuenta.descripcion or "")|tojson }},
+                                        categoria: {{ (cuenta.categoria or "")|tojson }},
+                                        subcategoria: {{ (cuenta.subcategoria or "")|tojson }},
+                                        proyecto: {{ (cuenta.proyecto or "")|tojson }},
+                                        centro_costo: {{ (cuenta.centro_costo or "")|tojson }},
+                                        obra: {{ (cuenta.obra or "")|tojson }},
+                                        base_gravable: {{ cuenta.base_gravable or cuenta.valor_bruto or 0 }},
+                                        tipo_iva: {{ (cuenta.tipo_iva or "NO_APLICA")|tojson }},
+                                        tarifa_iva: {{ cuenta.tarifa_iva or 0 }},
+                                        valor_iva: {{ cuenta.valor_iva or 0 }},
+                                        valor_bruto: {{ cuenta.valor_bruto or 0 }},
+                                        descuento: {{ cuenta.descuento or 0 }},
+                                        retencion: {{ cuenta.retencion or 0 }},
+                                        otros_descuentos: {{ cuenta.otros_descuentos or 0 }},
+                                        observaciones: {{ (cuenta.observaciones or "")|tojson }}
+                                    })'
+                                >
+                                    Editar
+                                </button>
+
+                                {% if (cuenta.total_pagado or 0) <= 0 %}
+
+                                    <form
+                                        method="POST"
+                                        action="/crv/cuentas-por-pagar/{{ cuenta.id }}/eliminar"
+                                        style="display:inline;"
+                                        onsubmit="return confirm('¿Seguro que deseas eliminar esta obligación? También se eliminará el movimiento de compra asociado. Esta acción no se puede deshacer.');"
+                                    >
+                                        <button
+                                            type="submit"
+                                            class="btn btn-danger btn-small"
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </form>
+
+                                {% else %}
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-delete-disabled btn-small"
+                                        title="Primero debes reversar los pagos registrados."
+                                        disabled
+                                    >
+                                        Eliminar
+                                    </button>
+
+                                    <div class="row-help">
+                                        Reversa los pagos antes de eliminar.
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+
+                    </tr>
+
+                {% endfor %}
+
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        {% else %}
+
+
+        <div class="empty">
+
+            <div class="empty-icon">
+                🧾
+            </div>
+
+            <strong>
+                No hay cuentas por pagar registradas
+            </strong>
+
+            Registra la primera factura u obligación de un proveedor
+            para comenzar el control de saldos.
+
+            <br><br>
+
+            <button
+                type="button"
+                class="btn btn-gold"
+                onclick="abrirNuevaCuenta()"
+            >
+                + Registrar primera obligación
+            </button>
+
+        </div>
+
+
+        {% endif %}
+
+
+    </div>
+
+
+    <div class="info-footer">
+
+        ℹ️ Al registrar una obligación se genera automáticamente
+        el movimiento contable de tipo COMPRA en CRV. Cuando posteriormente
+        registres un pago, el sistema actualizará el saldo sin volver
+        a reconocer la compra como gasto.
+
+    </div>
+
+
+</div>
+
+</div>
+
+
+<!-- =========================================================
+     OVERLAY
+========================================================= -->
+
+<div
+    id="overlayCuenta"
+    class="overlay"
+    onclick="cerrarNuevaCuenta()"
+></div>
+    </main>
+</div>
+
+<!-- =========================================================
+     MODAL NUEVA CUENTA POR PAGAR
+========================================================= -->
+
+<div
+    id="modalCuenta"
+    class="modal-cxp"
+>
+
+
+    <div class="modal-box">
+
+
+        <!-- =================================================
+             ENCABEZADO MODAL
+        ================================================== -->
+
+        <div class="modal-header">
+
+
+            <div class="modal-header-left">
+
+                <div class="modal-icon">
+                    +
+                </div>
+
+                <div>
+
+                    <h2>
+                        Registrar cuenta por pagar
+                    </h2>
+
+                    <p>
+                        Registra la factura u obligación del proveedor
+                        con su fecha contable real
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="modal-close"
+                onclick="cerrarNuevaCuenta()"
+            >
+                ×
+            </button>
+
+
+        </div>
+
+
+        <!-- =================================================
+             CUERPO MODAL
+        ================================================== -->
+
+        <div class="modal-body">
+
+
+            <form
+                method="POST"
+                action="/crv/cuentas-por-pagar"
+                id="formCuentaPagar"
+            >
+
+
+                <!-- =============================================
+                     PROVEEDOR
+                ============================================== -->
+
+                <div class="section-title">
+                    Proveedor y documento
+                </div>
+
+
+                <div class="form-grid">
+
+
+                    <div class="field span-2">
+
+                        <label>
+                            Proveedor *
+                        </label>
+
+                        <select
+                            name="proveedor_id"
+                            required
+                        >
+
+                            <option value="">
+                                Seleccione proveedor...
+                            </option>
+
+                            {% for proveedor in proveedores %}
+
+                                <option value="{{ proveedor.id }}">
+
+                                    {{ proveedor.razon_social }}
+
+                                    {% if proveedor.identificacion %}
+
+                                        - {{ proveedor.identificacion }}
+
+                                    {% endif %}
+
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Sede
+                        </label>
+
+                        <select name="sede_id">
+
+                            <option value="">
+                                General
+                            </option>
+
+                            {% for sede in sedes %}
+
+                                <option value="{{ sede.id }}">
+                                    {{ sede.nombre }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Tipo documento
+                        </label>
+
+                        <select name="tipo_documento">
+
+                            <option value="FACTURA ELECTRONICA">
+                                Factura electrónica
+                            </option>
+
+                            <option value="FACTURA">
+                                Factura
+                            </option>
+
+                            <option value="CUENTA DE COBRO">
+                                Cuenta de cobro
+                            </option>
+
+                            <option value="DOCUMENTO EQUIVALENTE">
+                                Documento equivalente
+                            </option>
+
+                            <option value="CONTRATO">
+                                Contrato
+                            </option>
+
+                            <option value="OTRO">
+                                Otro
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Número documento *
+                        </label>
+
+                        <input
+                            type="text"
+                            name="numero_documento"
+                            required
+                            placeholder="Ej: FE-4587"
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Fecha documento *
+                        </label>
+
+                        <input
+                            type="date"
+                            name="fecha_documento"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Fecha vencimiento
+                        </label>
+
+                        <input
+                            type="date"
+                            name="fecha_vencimiento"
+                        >
+
+                    </div>
+
+
+                    <div class="field span-4">
+
+                        <label>
+                            Concepto *
+                        </label>
+
+                        <input
+                            type="text"
+                            name="concepto"
+                            required
+                            placeholder="Ej: Compra de materiales para obra"
+                        >
+
+                    </div>
+
+
+                    <div class="field span-4">
+
+                        <label>
+                            Descripción
+                        </label>
+
+                        <textarea
+                            name="descripcion"
+                            placeholder="Descripción detallada de la factura u obligación..."
+                        ></textarea>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- =============================================
+                     CLASIFICACIÓN
+                ============================================== -->
+
+                <div class="section-title">
+                    Clasificación contable y proyecto
+                </div>
+
+
+                <div class="form-grid">
+
+
+                    <div class="field">
+
+                        <label>
+                            Categoría
+                        </label>
+
+                        <input
+                            type="text"
+                            name="categoria"
+                            value="COMPRA"
+                            placeholder="Ej: Compra materiales"
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Subcategoría
+                        </label>
+
+                        <input
+                            type="text"
+                            name="subcategoria"
+                            placeholder="Ej: Ferretería"
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Proyecto
+                        </label>
+
+                        <input
+                            type="text"
+                            name="proyecto"
+                            placeholder="Ej: Edén Luxury"
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Centro de costo
+                        </label>
+
+                        <input
+                            type="text"
+                            name="centro_costo"
+                            placeholder="Ej: Casa 24 Tamarindo"
+                        >
+
+                    </div>
+
+
+                    <div class="field span-2">
+
+                        <label>
+                            Obra / Frente
+                        </label>
+
+                        <input
+                            type="text"
+                            name="obra"
+                            placeholder="Ej: Urbanismo / Casa / Vías"
+                        >
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- =============================================
+                     VALORES
+                ============================================== -->
+
+                <div class="section-title">
+                    Valores de la obligación
+                </div>
+
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label>Base gravable / Valor antes de IVA *</label>
+                        <input type="number" name="base_gravable" id="base_gravable" min="0" step="0.01" required value="0" oninput="calcularNeto()">
+                    </div>
+
+                    <div class="field">
+                        <label>Tratamiento IVA</label>
+                        <select name="tipo_iva" id="tipo_iva" onchange="actualizarTratamientoIVA(false)">
+                            <option value="NO_APLICA">No aplica</option>
+                            <option value="DESCONTABLE">IVA descontable</option>
+                            <option value="MAYOR_VALOR_COSTO">IVA mayor valor costo/gasto</option>
+                            <option value="GENERADO">IVA generado</option>
+                            <option value="EXENTO">Exento</option>
+                            <option value="EXCLUIDO">Excluido</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label>Tarifa IVA</label>
+                        <select id="tarifa_iva_selector" onchange="cambiarTarifaIVA(false)">
+                            <option value="0">0% — Exento / sin impuesto</option>
+                            <option value="2">2% — Tarifa especial</option>
+                            <option value="5">5% — Tarifa reducida</option>
+                            <option value="19">19% — Tarifa general</option>
+                            <option value="20">20% — Tarifa especial</option>
+                            <option value="35">35% — Tarifa especial</option>
+                            <option value="OTRA">Otra tarifa / personalizada</option>
+                        </select>
+                        <div id="tarifa_iva_personalizada_wrap" class="tarifa-personalizada">
+                            <input type="number" id="tarifa_iva_personalizada" min="0" step="0.01" placeholder="Escribe la tarifa %" oninput="sincronizarTarifaPersonalizada(false)">
+                        </div>
+                        <input type="hidden" name="tarifa_iva" id="tarifa_iva" value="0">
+                    </div>
+
+                    <div class="field">
+                        <label>Valor IVA</label>
+                        <input type="number" id="valor_iva" value="0" readonly>
+                    </div>
+
+                    <div class="field">
+                        <label>Total documento</label>
+                        <input type="number" name="valor_bruto" id="valor_bruto" value="0" readonly>
+                    </div>
+
+                    <div class="field">
+                        <label>Descuento</label>
+                        <input type="number" name="descuento" id="descuento" min="0" step="0.01" value="0" oninput="calcularNeto()">
+                    </div>
+
+                    <div class="field">
+                        <label>Retención</label>
+                        <input type="number" name="retencion" id="retencion" min="0" step="0.01" value="0" oninput="calcularNeto()">
+                    </div>
+
+                    <div class="field">
+                        <label>Otros descuentos</label>
+                        <input type="number" name="otros_descuentos" id="otros_descuentos" min="0" step="0.01" value="0" oninput="calcularNeto()">
+                    </div>
+                </div>
+
+
+                <!-- =============================================
+                     PREVISUALIZACIÓN
+                ============================================== -->
+
+                <div class="value-preview">
+
+
+                    <div class="preview-card bruto">
+
+                        <div class="preview-label">
+                            VALOR BRUTO
+                        </div>
+
+                        <div
+                            class="preview-value"
+                            id="preview_bruto"
+                        >
+                            $0
+                        </div>
+
+                    </div>
+
+
+                    <div class="preview-card descuentos">
+
+                        <div class="preview-label">
+                            TOTAL DESCUENTOS
+                        </div>
+
+                        <div
+                            class="preview-value"
+                            id="preview_descuentos"
+                        >
+                            $0
+                        </div>
+
+                    </div>
+
+
+                    <div class="preview-card neto">
+
+                        <div class="preview-label">
+                            NETO POR PAGAR
+                        </div>
+
+                        <div
+                            class="preview-value"
+                            id="preview_neto"
+                        >
+                            $0
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- =============================================
+                     OBSERVACIONES
+                ============================================== -->
+
+                <div class="section-title">
+                    Información adicional
+                </div>
+
+
+                <div class="form-grid">
+
+
+                    <div class="field span-4">
+
+                        <label>
+                            Observaciones
+                        </label>
+
+                        <textarea
+                            name="observaciones"
+                            placeholder="Información adicional sobre la obligación..."
+                        ></textarea>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- =============================================
+                     ACCIONES
+                ============================================== -->
+
+                <div class="modal-actions">
+
+
+                    <button
+                        type="button"
+                        class="btn btn-light"
+                        onclick="limpiarCuenta()"
+                    >
+                        Limpiar
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-light"
+                        onclick="cerrarNuevaCuenta()"
+                    >
+                        Cancelar
+                    </button>
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-gold"
+                    >
+                        Guardar cuenta por pagar
+                    </button>
+
+
+                </div>
+
+
+            </form>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+
+<!-- =========================================================
+     OVERLAY EDITAR CUENTA
+========================================================= -->
+
+<div
+    id="overlayEditarCuenta"
+    class="overlay"
+    onclick="cerrarEditarCuenta()"
+></div>
+
+
+<!-- =========================================================
+     MODAL EDITAR CUENTA POR PAGAR
+========================================================= -->
+
+<div
+    id="modalEditarCuenta"
+    class="modal-cxp"
+>
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <div class="modal-header-left">
+
+                <div class="modal-icon">
+                    ✎
+                </div>
+
+                <div>
+
+                    <h2>
+                        Editar cuenta por pagar
+                    </h2>
+
+                    <p>
+                        Corrige los datos de la obligación. El movimiento de compra se actualizará automáticamente.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                onclick="cerrarEditarCuenta()"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <form
+                method="POST"
+                id="formEditarCuenta"
+            >
+
+                <div class="section-title">
+                    Proveedor y documento
+                </div>
+
+                <div class="form-grid">
+
+                    <div class="field span-2">
+
+                        <label>
+                            Proveedor *
+                        </label>
+
+                        <select
+                            name="proveedor_id"
+                            id="edit_proveedor_id"
+                            required
+                        >
+
+                            <option value="">
+                                Seleccione proveedor...
+                            </option>
+
+                            {% for proveedor in proveedores %}
+
+                                <option value="{{ proveedor.id }}">
+                                    {{ proveedor.razon_social }}
+                                    {% if proveedor.identificacion %}
+                                        - {{ proveedor.identificacion }}
+                                    {% endif %}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Sede
+                        </label>
+
+                        <select
+                            name="sede_id"
+                            id="edit_sede_id"
+                        >
+
+                            <option value="">
+                                General
+                            </option>
+
+                            {% for sede in sedes %}
+
+                                <option value="{{ sede.id }}">
+                                    {{ sede.nombre }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Tipo documento
+                        </label>
+
+                        <select
+                            name="tipo_documento"
+                            id="edit_tipo_documento"
+                        >
+
+                            <option value="FACTURA ELECTRONICA">
+                                Factura electrónica
+                            </option>
+
+                            <option value="FACTURA">
+                                Factura
+                            </option>
+
+                            <option value="CUENTA DE COBRO">
+                                Cuenta de cobro
+                            </option>
+
+                            <option value="DOCUMENTO EQUIVALENTE">
+                                Documento equivalente
+                            </option>
+
+                            <option value="CONTRATO">
+                                Contrato
+                            </option>
+
+                            <option value="OTRO">
+                                Otro
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Número documento *
+                        </label>
+
+                        <input
+                            type="text"
+                            name="numero_documento"
+                            id="edit_numero_documento"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Fecha documento *
+                        </label>
+
+                        <input
+                            type="date"
+                            name="fecha_documento"
+                            id="edit_fecha_documento"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Fecha vencimiento
+                        </label>
+
+                        <input
+                            type="date"
+                            name="fecha_vencimiento"
+                            id="edit_fecha_vencimiento"
+                        >
+
+                    </div>
+
+
+                    <div class="field span-4">
+
+                        <label>
+                            Concepto *
+                        </label>
+
+                        <input
+                            type="text"
+                            name="concepto"
+                            id="edit_concepto"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="field span-4">
+
+                        <label>
+                            Descripción
+                        </label>
+
+                        <textarea
+                            name="descripcion"
+                            id="edit_descripcion"
+                        ></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-title">
+                    Clasificación contable y proyecto
+                </div>
+
+                <div class="form-grid">
+
+                    <div class="field">
+
+                        <label>
+                            Categoría
+                        </label>
+
+                        <input
+                            type="text"
+                            name="categoria"
+                            id="edit_categoria"
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Subcategoría
+                        </label>
+
+                        <input
+                            type="text"
+                            name="subcategoria"
+                            id="edit_subcategoria"
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Proyecto
+                        </label>
+
+                        <input
+                            type="text"
+                            name="proyecto"
+                            id="edit_proyecto"
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Centro de costo
+                        </label>
+
+                        <input
+                            type="text"
+                            name="centro_costo"
+                            id="edit_centro_costo"
+                        >
+
+                    </div>
+
+
+                    <div class="field span-2">
+
+                        <label>
+                            Obra / Frente
+                        </label>
+
+                        <input
+                            type="text"
+                            name="obra"
+                            id="edit_obra"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-title">
+                    Valores de la obligación
+                </div>
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label>Base gravable / Valor antes de IVA *</label>
+                        <input type="number" name="base_gravable" id="edit_base_gravable" min="0" step="0.01" required oninput="calcularNetoEditar()">
+                    </div>
+
+                    <div class="field">
+                        <label>Tratamiento IVA</label>
+                        <select name="tipo_iva" id="edit_tipo_iva" onchange="actualizarTratamientoIVA(true)">
+                            <option value="NO_APLICA">No aplica</option>
+                            <option value="DESCONTABLE">IVA descontable</option>
+                            <option value="MAYOR_VALOR_COSTO">IVA mayor valor costo/gasto</option>
+                            <option value="GENERADO">IVA generado</option>
+                            <option value="EXENTO">Exento</option>
+                            <option value="EXCLUIDO">Excluido</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label>Tarifa IVA</label>
+                        <select id="edit_tarifa_iva_selector" onchange="cambiarTarifaIVA(true)">
+                            <option value="0">0% — Exento / sin impuesto</option>
+                            <option value="2">2% — Tarifa especial</option>
+                            <option value="5">5% — Tarifa reducida</option>
+                            <option value="19">19% — Tarifa general</option>
+                            <option value="20">20% — Tarifa especial</option>
+                            <option value="35">35% — Tarifa especial</option>
+                            <option value="OTRA">Otra tarifa / personalizada</option>
+                        </select>
+                        <div id="edit_tarifa_iva_personalizada_wrap" class="tarifa-personalizada">
+                            <input type="number" id="edit_tarifa_iva_personalizada" min="0" step="0.01" placeholder="Escribe la tarifa %" oninput="sincronizarTarifaPersonalizada(true)">
+                        </div>
+                        <input type="hidden" name="tarifa_iva" id="edit_tarifa_iva" value="0">
+                    </div>
+
+                    <div class="field"><label>Valor IVA</label><input type="number" id="edit_valor_iva" readonly></div>
+                    <div class="field"><label>Total documento</label><input type="number" name="valor_bruto" id="edit_valor_bruto" readonly></div>
+                    <div class="field"><label>Descuento</label><input type="number" name="descuento" id="edit_descuento" min="0" step="0.01" oninput="calcularNetoEditar()"></div>
+                    <div class="field"><label>Retención</label><input type="number" name="retencion" id="edit_retencion" min="0" step="0.01" oninput="calcularNetoEditar()"></div>
+                    <div class="field"><label>Otros descuentos</label><input type="number" name="otros_descuentos" id="edit_otros_descuentos" min="0" step="0.01" oninput="calcularNetoEditar()"></div>
+                </div>
+
+
+                <div class="value-preview">
+
+                    <div class="preview-card bruto">
+
+                        <div class="preview-label">
+                            VALOR BRUTO
+                        </div>
+
+                        <div
+                            class="preview-value"
+                            id="edit_preview_bruto"
+                        >
+                            $0
+                        </div>
+
+                    </div>
+
+
+                    <div class="preview-card descuentos">
+
+                        <div class="preview-label">
+                            TOTAL DESCUENTOS
+                        </div>
+
+                        <div
+                            class="preview-value"
+                            id="edit_preview_descuentos"
+                        >
+                            $0
+                        </div>
+
+                    </div>
+
+
+                    <div class="preview-card neto">
+
+                        <div class="preview-label">
+                            NETO ACTUALIZADO
+                        </div>
+
+                        <div
+                            class="preview-value"
+                            id="edit_preview_neto"
+                        >
+                            $0
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-title">
+                    Información adicional
+                </div>
+
+                <div class="form-grid">
+
+                    <div class="field span-4">
+
+                        <label>
+                            Observaciones
+                        </label>
+
+                        <textarea
+                            name="observaciones"
+                            id="edit_observaciones"
+                        ></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-actions">
+
+                    <button
+                        type="button"
+                        class="btn btn-light"
+                        onclick="cerrarEditarCuenta()"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-gold"
+                    >
+                        Guardar cambios
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+
+    /* =====================================================
+       ABRIR MODAL
+    ===================================================== */
+
+    function abrirNuevaCuenta() {
+
+        const overlay =
+            document.getElementById(
+                "overlayCuenta"
+            );
+
+        const modal =
+            document.getElementById(
+                "modalCuenta"
+            );
+
+
+        if (overlay) {
+
+            overlay.classList.add(
+                "active"
+            );
+
+        }
+
+
+        if (modal) {
+
+            modal.classList.add(
+                "active"
+            );
+
+        }
+
+
+        document.body.classList.add(
+            "modal-open"
+        );
+
+    }
+
+
+    /* =====================================================
+       CERRAR MODAL
+    ===================================================== */
+
+    function cerrarNuevaCuenta() {
+
+        const overlay =
+            document.getElementById(
+                "overlayCuenta"
+            );
+
+        const modal =
+            document.getElementById(
+                "modalCuenta"
+            );
+
+
+        if (overlay) {
+
+            overlay.classList.remove(
+                "active"
+            );
+
+        }
+
+
+        if (modal) {
+
+            modal.classList.remove(
+                "active"
+            );
+
+        }
+
+
+        document.body.classList.remove(
+            "modal-open"
+        );
+
+    }
+
+
+    /* =====================================================
+       LIMPIAR FORMULARIO
+    ===================================================== */
+
+    function limpiarCuenta() {
+
+        const formulario =
+            document.getElementById(
+                "formCuentaPagar"
+            );
+
+
+        if (formulario) {
+
+            formulario.reset();
+
+        }
+
+
+        cargarTarifaIVA(0, false);
+        actualizarTratamientoIVA(false);
+
+    }
+
+
+    /* =====================================================
+       FORMATO MONEDA
+    ===================================================== */
+
+    function moneda(valor) {
+
+        const numero =
+            Number(valor || 0);
+
+
+        return new Intl.NumberFormat(
+            "es-CO",
+            {
+                style: "currency",
+                currency: "COP",
+                maximumFractionDigits: 0
+            }
+        ).format(numero);
+
+    }
+
+
+    /* =====================================================
+       IVA Y CÁLCULO DE NETO
+    ===================================================== */
+
+    function tratamientoSinIVA(tipo) {
+        return ["NO_APLICA", "EXENTO", "EXCLUIDO"].includes(tipo);
+    }
+
+    function idsTarifa(esEdicion) {
+        return esEdicion
+            ? {
+                tipo: "edit_tipo_iva",
+                selector: "edit_tarifa_iva_selector",
+                hidden: "edit_tarifa_iva",
+                wrap: "edit_tarifa_iva_personalizada_wrap",
+                personalizada: "edit_tarifa_iva_personalizada"
+            }
+            : {
+                tipo: "tipo_iva",
+                selector: "tarifa_iva_selector",
+                hidden: "tarifa_iva",
+                wrap: "tarifa_iva_personalizada_wrap",
+                personalizada: "tarifa_iva_personalizada"
+            };
+    }
+
+    function actualizarTratamientoIVA(esEdicion) {
+        const ids = idsTarifa(esEdicion);
+        const tipo = document.getElementById(ids.tipo)?.value || "NO_APLICA";
+        const selector = document.getElementById(ids.selector);
+        const hidden = document.getElementById(ids.hidden);
+        const wrap = document.getElementById(ids.wrap);
+        const personalizada = document.getElementById(ids.personalizada);
+
+        if (tratamientoSinIVA(tipo)) {
+            selector.value = "0";
+            selector.disabled = true;
+            hidden.value = "0";
+            wrap.classList.remove("active");
+            personalizada.value = "";
+        } else {
+            selector.disabled = false;
+            cambiarTarifaIVA(esEdicion, false);
+        }
+
+        esEdicion ? calcularNetoEditar() : calcularNeto();
+    }
+
+    function cambiarTarifaIVA(esEdicion, recalcular = true) {
+        const ids = idsTarifa(esEdicion);
+        const selector = document.getElementById(ids.selector);
+        const hidden = document.getElementById(ids.hidden);
+        const wrap = document.getElementById(ids.wrap);
+        const personalizada = document.getElementById(ids.personalizada);
+
+        if (selector.value === "OTRA") {
+            wrap.classList.add("active");
+            hidden.value = String(Number(personalizada.value || 0));
+        } else {
+            wrap.classList.remove("active");
+            hidden.value = selector.value || "0";
+        }
+
+        if (recalcular) {
+            esEdicion ? calcularNetoEditar() : calcularNeto();
+        }
+    }
+
+    function sincronizarTarifaPersonalizada(esEdicion) {
+        const ids = idsTarifa(esEdicion);
+        document.getElementById(ids.hidden).value =
+            String(Number(document.getElementById(ids.personalizada)?.value || 0));
+
+        esEdicion ? calcularNetoEditar() : calcularNeto();
+    }
+
+    function cargarTarifaIVA(valor, esEdicion) {
+        const ids = idsTarifa(esEdicion);
+        const selector = document.getElementById(ids.selector);
+        const hidden = document.getElementById(ids.hidden);
+        const wrap = document.getElementById(ids.wrap);
+        const personalizada = document.getElementById(ids.personalizada);
+        const numero = Number(valor || 0);
+        const estandar = ["0", "2", "5", "19", "20", "35"];
+        const texto = String(numero);
+
+        hidden.value = texto;
+
+        if (estandar.includes(texto)) {
+            selector.value = texto;
+            personalizada.value = "";
+            wrap.classList.remove("active");
+        } else {
+            selector.value = "OTRA";
+            personalizada.value = texto;
+            wrap.classList.add("active");
+        }
+    }
+
+    function calcularNeto() {
+        const base = Number(document.getElementById("base_gravable")?.value || 0);
+        const tipo = document.getElementById("tipo_iva")?.value || "NO_APLICA";
+        let tarifa = Number(document.getElementById("tarifa_iva")?.value || 0);
+
+        if (tratamientoSinIVA(tipo)) {
+            tarifa = 0;
+            document.getElementById("tarifa_iva").value = "0";
+        }
+
+        const iva = Math.round((base * tarifa / 100) * 100) / 100;
+        const bruto = Math.round((base + iva) * 100) / 100;
+
+        document.getElementById("valor_iva").value = iva.toFixed(2);
+        document.getElementById("valor_bruto").value = bruto.toFixed(2);
+
+        const descuento = Number(document.getElementById("descuento")?.value || 0);
+        const retencion = Number(document.getElementById("retencion")?.value || 0);
+        const otros = Number(document.getElementById("otros_descuentos")?.value || 0);
+        const totalDescuentos = descuento + retencion + otros;
+        const neto = Math.max(0, bruto - totalDescuentos);
+
+        document.getElementById("preview_bruto").textContent = moneda(bruto);
+        document.getElementById("preview_descuentos").textContent = moneda(totalDescuentos);
+        document.getElementById("preview_neto").textContent = moneda(neto);
+    }
+
+
+    /* =====================================================
+       CERRAR CON ESC
+    ===================================================== */
+
+    document.addEventListener(
+        "keydown",
+        function(evento) {
+
+            if (
+                evento.key === "Escape"
+            ) {
+
+                cerrarNuevaCuenta();
+                cerrarEditarCuenta();
+
+            }
+
+        }
+    );
+
+
+    /* =====================================================
+       EVITAR CIERRE DENTRO DEL MODAL
+    ===================================================== */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function() {
+
+            const modalBoxes =
+                document.querySelectorAll(
+                    ".modal-box"
+                );
+
+            modalBoxes.forEach(
+                function(modalBox) {
+
+                    modalBox.addEventListener(
+                        "click",
+                        function(evento) {
+                            evento.stopPropagation();
+                        }
+                    );
+
+                }
+            );
+
+            cargarTarifaIVA(0, false);
+            actualizarTratamientoIVA(false);
+
+        }
+    );
+
+
+    /* =====================================================
+       EDITAR CUENTA POR PAGAR
+    ===================================================== */
+
+    function abrirEditarCuenta(datos) {
+
+        const formulario =
+            document.getElementById(
+                "formEditarCuenta"
+            );
+
+        formulario.action =
+            "/crv/cuentas-por-pagar/"
+            + datos.id
+            + "/editar";
+
+        document.getElementById(
+            "edit_proveedor_id"
+        ).value =
+            String(datos.proveedor_id || "");
+
+        document.getElementById(
+            "edit_sede_id"
+        ).value =
+            datos.sede_id
+            ? String(datos.sede_id)
+            : "";
+
+        document.getElementById(
+            "edit_tipo_documento"
+        ).value =
+            datos.tipo_documento || "FACTURA";
+
+        document.getElementById(
+            "edit_numero_documento"
+        ).value =
+            datos.numero_documento || "";
+
+        document.getElementById(
+            "edit_fecha_documento"
+        ).value =
+            datos.fecha_documento || "";
+
+        document.getElementById(
+            "edit_fecha_vencimiento"
+        ).value =
+            datos.fecha_vencimiento || "";
+
+        document.getElementById(
+            "edit_concepto"
+        ).value =
+            datos.concepto || "";
+
+        document.getElementById(
+            "edit_descripcion"
+        ).value =
+            datos.descripcion || "";
+
+        document.getElementById(
+            "edit_categoria"
+        ).value =
+            datos.categoria || "";
+
+        document.getElementById(
+            "edit_subcategoria"
+        ).value =
+            datos.subcategoria || "";
+
+        document.getElementById(
+            "edit_proyecto"
+        ).value =
+            datos.proyecto || "";
+
+        document.getElementById(
+            "edit_centro_costo"
+        ).value =
+            datos.centro_costo || "";
+
+        document.getElementById(
+            "edit_obra"
+        ).value =
+            datos.obra || "";
+
+        document.getElementById("edit_base_gravable").value = datos.base_gravable || datos.valor_bruto || 0;
+        document.getElementById("edit_tipo_iva").value = datos.tipo_iva || "NO_APLICA";
+        cargarTarifaIVA(datos.tarifa_iva || 0, true);
+        actualizarTratamientoIVA(true);
+        document.getElementById("edit_valor_iva").value = datos.valor_iva || 0;
+        document.getElementById("edit_valor_bruto").value = datos.valor_bruto || 0;
+
+        document.getElementById(
+            "edit_descuento"
+        ).value =
+            datos.descuento || 0;
+
+        document.getElementById(
+            "edit_retencion"
+        ).value =
+            datos.retencion || 0;
+
+        document.getElementById(
+            "edit_otros_descuentos"
+        ).value =
+            datos.otros_descuentos || 0;
+
+        document.getElementById(
+            "edit_observaciones"
+        ).value =
+            datos.observaciones || "";
+
+        calcularNetoEditar();
+
+        document.getElementById(
+            "overlayEditarCuenta"
+        ).classList.add(
+            "active"
+        );
+
+        document.getElementById(
+            "modalEditarCuenta"
+        ).classList.add(
+            "active"
+        );
+
+        document.body.classList.add(
+            "modal-open"
+        );
+
+    }
+
+
+    function cerrarEditarCuenta() {
+
+        const overlay =
+            document.getElementById(
+                "overlayEditarCuenta"
+            );
+
+        const modal =
+            document.getElementById(
+                "modalEditarCuenta"
+            );
+
+        if (overlay) {
+            overlay.classList.remove("active");
+        }
+
+        if (modal) {
+            modal.classList.remove("active");
+        }
+
+        document.body.classList.remove(
+            "modal-open"
+        );
+
+    }
+
+
+    function calcularNetoEditar() {
+        const base = Number(document.getElementById("edit_base_gravable")?.value || 0);
+        const tipo = document.getElementById("edit_tipo_iva")?.value || "NO_APLICA";
+        let tarifa = Number(document.getElementById("edit_tarifa_iva")?.value || 0);
+
+        if (tratamientoSinIVA(tipo)) {
+            tarifa = 0;
+            document.getElementById("edit_tarifa_iva").value = "0";
+        }
+
+        const iva = Math.round((base * tarifa / 100) * 100) / 100;
+        const bruto = Math.round((base + iva) * 100) / 100;
+
+        document.getElementById("edit_valor_iva").value = iva.toFixed(2);
+        document.getElementById("edit_valor_bruto").value = bruto.toFixed(2);
+
+        const descuento = Number(document.getElementById("edit_descuento")?.value || 0);
+        const retencion = Number(document.getElementById("edit_retencion")?.value || 0);
+        const otros = Number(document.getElementById("edit_otros_descuentos")?.value || 0);
+        const totalDescuentos = descuento + retencion + otros;
+        const neto = Math.max(0, bruto - totalDescuentos);
+
+        document.getElementById("edit_preview_bruto").textContent = moneda(bruto);
+        document.getElementById("edit_preview_descuentos").textContent = moneda(totalDescuentos);
+        document.getElementById("edit_preview_neto").textContent = moneda(neto);
+    }
+
+
+</script>
+
+
+</body>
+
+</html>
