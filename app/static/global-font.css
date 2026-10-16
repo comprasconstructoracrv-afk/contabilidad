@@ -1,0 +1,45 @@
+body,
+body * {
+    font-family: Arial, sans-serif !important;
+}
+
+body {
+    font-size: 14px !important;
+    line-height: 1.5;
+}
+
+body :is(
+    p,
+    label,
+    input,
+    select,
+    textarea,
+    button,
+    a,
+    th,
+    td,
+    li,
+    span,
+    small,
+    summary,
+    legend
+) {
+    font-size: 14px !important;
+}
+
+body :is(
+    .muted,
+    .status,
+    .tag,
+    .badge,
+    .third-commercial,
+    .lote-meta,
+    .summary-label,
+    .summary-note,
+    .contact-muted,
+    [class*="hint"],
+    [class*="meta"],
+    [class*="note"]
+) {
+    font-size: 12px !important;
+}

@@ -1054,6 +1054,7 @@
         }
 
 </style>
+<link rel="stylesheet" href="{{ url_for('static', filename='global-font.css') }}">
 </head>
 
 
@@ -1757,6 +1758,35 @@
                                     Ver movimientos
                                 </a>
 
+                                {% set datos_tercero = {
+                                    "id": t.id,
+                                    "tipo_tercero": t.tipo_tercero or "TERCERO",
+                                    "tipo_documento": t.tipo_documento or "",
+                                    "identificacion": t.identificacion or "",
+                                    "razon_social": t.razon_social or "",
+                                    "nombre_comercial": t.nombre_comercial or "",
+                                    "direccion": t.direccion or "",
+                                    "ciudad": t.ciudad or "",
+                                    "departamento": t.departamento or "",
+                                    "telefono": t.telefono or "",
+                                    "celular": t.celular or "",
+                                    "email": t.email or "",
+                                    "contacto": t.contacto or "",
+                                    "banco": t.banco or "",
+                                    "tipo_cuenta": t.tipo_cuenta or "",
+                                    "numero_cuenta": t.numero_cuenta or "",
+                                    "titular_cuenta": t.titular_cuenta or "",
+                                    "observaciones": t.observaciones or ""
+                                } %}
+
+                                <button
+                                    type="button"
+                                    class="btn btn-navy btn-small"
+                                    data-tercero='{{ datos_tercero|tojson }}'
+                                    onclick="editarTercero(this)"
+                                >
+                                    Editar
+                                </button>
 
                                 <form
                                     method="POST"
@@ -1879,7 +1909,7 @@
 
                 <div>
 
-                    <h2>
+                    <h2 id="tituloModalTercero">
                         Registrar nuevo tercero
                     </h2>
 
@@ -2292,6 +2322,7 @@
                     <button
                         type="submit"
                         class="btn btn-gold"
+                        id="botonGuardarTercero"
                     >
                         Guardar tercero
                     </button>
@@ -2313,7 +2344,19 @@
     ===================================================== */
 
     function abrirFormulario() {
+        const formulario =
+            document.getElementById("formTercero");
 
+        formulario.reset();
+        formulario.action = "/crv/terceros";
+        document.getElementById("tituloModalTercero").textContent =
+            "Registrar nuevo tercero";
+        document.getElementById("botonGuardarTercero").textContent =
+            "Guardar tercero";
+        mostrarFormulario();
+    }
+
+    function mostrarFormulario() {
         const overlay =
             document.getElementById("overlay");
 
@@ -2330,6 +2373,30 @@
 
         document.body.classList.add("modal-open");
 
+    }
+
+    function editarTercero(boton) {
+        const formulario =
+            document.getElementById("formTercero");
+        const datos =
+            JSON.parse(boton.dataset.tercero);
+
+        formulario.reset();
+        formulario.action =
+            `/crv/terceros/editar/${encodeURIComponent(datos.id)}`;
+
+        Object.entries(datos).forEach(function([campo, valor]) {
+            const control = formulario.elements.namedItem(campo);
+            if (control) {
+                control.value = valor;
+            }
+        });
+
+        document.getElementById("tituloModalTercero").textContent =
+            "Editar tercero";
+        document.getElementById("botonGuardarTercero").textContent =
+            "Guardar cambios";
+        mostrarFormulario();
     }
 
 

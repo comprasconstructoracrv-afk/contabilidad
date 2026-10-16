@@ -3,281 +3,395 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CRV CONSTRUCTORA - Carga inteligente</title>
+<title>CRV CONSTRUCTORA - Carga Inteligente</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;color:#17283f}
-.page{min-height:100vh;padding:28px}
-.layout{max-width:1760px;margin:0 auto;display:grid;grid-template-columns:245px minmax(0,1fr);gap:20px;align-items:start}
-.sidebar{position:sticky;top:18px;background:#fff;border-radius:18px;padding:18px;box-shadow:0 12px 30px rgba(18,40,64,.08)}
-.badge{display:inline-flex;padding:7px 10px;border-radius:999px;background:#e8f7ee;color:#168446;font-size:11px;font-weight:900}
-.company{margin-top:10px;color:#17304f;font-size:18px;line-height:1.2;font-weight:900}
-.subtitle{margin:3px 0 15px;color:#cda52b;font-size:12px;font-weight:800}
-.menu{display:grid;gap:7px}
-.menu a{display:flex;align-items:center;gap:9px;min-height:40px;padding:8px 10px;border-radius:9px;background:#eef3f8;color:#17304f;text-decoration:none;font-size:11px;font-weight:800}
-.icon{width:25px;height:25px;display:inline-flex;align-items:center;justify-content:center;border-radius:7px;background:rgba(23,48,79,.08)}
-.menu a.active{background:#17304f;color:#fff}
-.menu a.gold{background:#d8b541;color:#fff}
-.menu a.danger{justify-content:center;margin-top:5px;background:#ef2b2d;color:#fff}
-.menu a.active .icon,.menu a.gold .icon,.menu a.danger .icon{background:rgba(255,255,255,.16)}
-.main{min-width:0}
-.shell{max-width:1320px;margin:0 auto}
-.header{text-align:center;margin-bottom:20px}
-.header img{width:90px;max-height:76px;object-fit:contain}
-.header h1{margin:5px 0 0;color:#17304f;font-size:28px;font-weight:900}
-.header p{margin:7px 0 0;color:#6d7f93;font-size:12px}
-.topbar,.section{background:#fff;border-radius:16px;box-shadow:0 10px 27px rgba(18,40,64,.07)}
-.topbar{padding:14px 16px;margin-bottom:17px;display:flex;justify-content:space-between;align-items:center;gap:10px}
-.section{padding:20px;margin-bottom:18px}
-.section h2{margin:0 0 8px;color:#17304f;font-size:17px}
-.muted{color:#74859a;font-size:11px;line-height:1.5}
-.btn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:9px 13px;border:0;border-radius:9px;text-decoration:none;cursor:pointer;font-size:11px;font-weight:900}
-.black{background:#111;color:#fff}.navy{background:#17304f;color:#fff}.gold{background:#d8b541;color:#fff}.light{background:#edf2f7;color:#17304f}.red{background:#ef2b2d;color:#fff}
-.upload-box{border:2px dashed #cfd9e4;border-radius:14px;padding:28px;text-align:center;background:#f9fbfd}
-.upload-box input{display:block;margin:14px auto 0;max-width:520px;width:100%}
-.notice{margin-top:12px;padding:11px 13px;background:#eef6ff;border-radius:10px;color:#315f90;font-size:10px;line-height:1.5}
-.table-wrap{overflow:auto;border:1px solid #e1e7ee;border-radius:12px}
-table{width:100%;border-collapse:collapse;min-width:1000px}
-th{background:#17304f;color:#fff;font-size:10px;padding:10px 8px;text-align:left}
-td{font-size:10px;padding:10px 8px;border-top:1px solid #e8edf2;vertical-align:top}
-tr:nth-child(even) td{background:#fafbfd}
-.status{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:9px;font-weight:900;background:#fff4c7;color:#806500}
-.status.ok{background:#e8f7ee;color:#168446}
-.status.warn{background:#fff0ef;color:#b42318}
-.status.info{background:#e9efff;color:#3452a4}
-.status.duplicate{background:#fff0ef;color:#b42318}
-.money{font-weight:900;white-space:nowrap}
-.edit-input{width:100%;min-width:105px;padding:7px 8px;border:1px solid #cfd9e4;border-radius:7px;background:#fff;color:#17283f;font-size:10px;outline:none}
-.edit-input:focus{border-color:#8b5cf6;box-shadow:0 0 0 2px rgba(139,92,246,.12)}
-.edit-input.money-input{min-width:115px;text-align:right}
-.edit-input.date-input{min-width:125px}
-.review-actions{display:flex;flex-direction:column;gap:6px;min-width:110px}
-.btn-save{background:#168446;color:#fff}
-.review-note{margin-top:5px;padding:6px 7px;border-radius:7px;background:#fff6dd;color:#7a5d00;font-size:9px;line-height:1.4}
-.lotes{display:grid;gap:10px}
-.lote-card{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px;border:1px solid #e1e7ee;border-radius:11px;background:#fbfcfd}
-.lote-title{font-size:11px;font-weight:900;color:#17304f}
-.lote-meta{font-size:9px;color:#74859a;margin-top:4px}
-.actions{display:flex;gap:8px;flex-wrap:wrap}
-.empty{padding:22px;text-align:center;color:#7c8da0;font-size:11px}
-.flash{padding:11px 13px;border-radius:10px;margin-bottom:12px;font-size:11px;font-weight:700}
-.flash.success{background:#e8f7ee;color:#168446}
-.flash.error{background:#fff0ef;color:#b42318}
-.flash.warning{background:#fff6dd;color:#8a6a00}
-@media(max-width:1050px){.layout{grid-template-columns:1fr}.sidebar{position:static}.menu{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:760px){.page{padding:12px}.menu{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}.lote-card{align-items:flex-start;flex-direction:column}}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#eef2f7,#dfe9f3);padding:40px 20px;color:#1f2937;line-height:1.5}
+  .page{min-height:100vh;padding:0}
+  .layout{max-width:1800px;margin:0 auto;display:grid;grid-template-columns:250px minmax(0,1fr);gap:24px;align-items:start}
+
+  /* Sidebar Nav */
+  .sidebar{position:sticky;top:20px;background:#fff;border-radius:18px;padding:20px;box-shadow:0 10px 30px rgba(18,40,64,.06);border:1px solid #e2e8f0}
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:999px;background:#e8f7ee;color:#168446;font-size:12px;font-weight:800}
+  .company{margin-top:12px;color:#17304f;font-size:19px;line-height:1.2;font-weight:900;letter-spacing:-0.3px}
+  .subtitle{margin:3px 0 18px;color:#d8b541;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px}
+  .menu{display:grid;gap:6px}
+  .menu a{display:flex;align-items:center;gap:10px;min-height:42px;padding:8px 12px;border-radius:10px;background:#f8fafc;color:#17304f;text-decoration:none;font-size:13px;font-weight:700;transition:all .15s ease}
+  .menu a:hover{background:#eef3f8;transform:translateX(2px)}
+  .icon{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(23,48,79,.08);font-size:13px}
+  .menu a.active{background:#17304f;color:#fff}
+  .menu a.gold{background:#d8b541;color:#fff}
+  .menu a.danger{margin-top:10px;background:#ef2b2d;color:#fff;justify-content:center}
+  .menu a.active .icon,.menu a.gold .icon,.menu a.danger .icon{background:rgba(255,255,255,.2)}
+
+  /* Main Container */
+  .main{min-width:0}
+  .shell{max-width:1450px;margin:0 auto}
+  .header{text-align:center;margin-bottom:24px}
+  .header img{width:95px;max-height:80px;object-fit:contain}
+  .header h1{margin:8px 0 0;color:#17304f;font-size:26px;font-weight:900;letter-spacing:-0.5px}
+  .header p{margin:6px 0 0;color:#526477;font-size:14px}
+
+  .topbar,.section{background:#fff;border-radius:18px;box-shadow:0 10px 25px rgba(18,40,64,.05);border:1px solid #e2e8f0}
+  .topbar{padding:14px 20px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .section{padding:24px;margin-bottom:22px}
+  .section h2{margin:0 0 6px;color:#17304f;font-size:19px;font-weight:800}
+  .muted{color:#526477;font-size:13px;line-height:1.55}
+
+  /* Buttons */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:9px 16px;border:0;border-radius:10px;text-decoration:none;cursor:pointer;font-size:13px;font-weight:800;transition:all .15s ease}
+  .btn:hover{opacity:.92;transform:translateY(-1px)}
+  .black{background:#0f172a;color:#fff}
+  .navy{background:#17304f;color:#fff}
+  .gold{background:#d8b541;color:#fff}
+  .green{background:#168446;color:#fff}
+  .light{background:#f1f5f9;color:#17304f;border:1px solid #cbd5e1}
+  .red{background:#ef2b2d;color:#fff}
+
+  /* Upload Area */
+  .upload-box{border:2px dashed #cbd5e1;border-radius:16px;padding:36px 20px;text-align:center;background:#f8fafc;transition:border-color .2s ease}
+  .upload-box:hover{border-color:#17304f;background:#f1f5f9}
+  .upload-box input[type="file"]{display:block;margin:16px auto 0;max-width:480px;width:100%;padding:10px;background:#fff;border:1px solid #cbd5e1;border-radius:10px;font-size:12px}
+  .notice{margin-top:14px;padding:12px 16px;background:#eff6ff;border-left:4px solid #3b82f6;border-radius:8px;color:#1e40af;font-size:12px;line-height:1.5}
+
+  /* Table & Form Grid */
+  .table-wrap{max-height:720px;overflow:auto;border:1px solid #e2e8f0;border-radius:14px;background:#fff}
+  .review-table{width:100%;border-collapse:separate;border-spacing:0;min-width:2395px}
+  .review-table th{position:sticky;top:0;z-index:10;background:#17304f;color:#fff;font-size:12px;font-weight:800;padding:14px 12px;text-align:left;text-transform:uppercase;letter-spacing:0.3px}
+  .review-table td{font-size:13px;padding:13px 10px;border-top:1px solid #e2e8f0;vertical-align:top;background:#fff}
+  tr:nth-child(even) td{background:#faf8fc}
+
+  /* Form Inputs inside Table */
+  .edit-input{width:100%;min-height:42px;padding:9px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0f172a;font-size:14px;font-weight:600;outline:none;transition:all .15s ease}
+  .edit-input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.15);background:#fff}
+  .edit-input.money-input{text-align:right;font-family:monospace;font-size:14px;min-width:130px}
+  .edit-input.date-input{min-width:145px}
+
+  /* Status Badges */
+  .status{display:inline-flex;padding:5px 9px;border-radius:999px;font-size:10px;font-weight:800;background:#fef3c7;color:#92400e;white-space:nowrap}
+  .status.ok{background:#dcfce7;color:#166534}
+  .status.warn,.status.duplicate{background:#fee2e2;color:#991b1b}
+  .status.info{background:#dbeafe;color:#1e40af}
+
+  /* Actions & Lotes Cards */
+  .history-panel{background:#fff;border:1px solid #e2e8f0;border-radius:18px;box-shadow:0 10px 25px rgba(18,40,64,.05);overflow:hidden}
+  .history-toggle{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;color:#17304f;cursor:pointer;list-style:none}
+  .history-toggle::-webkit-details-marker{display:none}
+  .history-title{font-size:19px;font-weight:800}
+  .history-meta{display:block;margin-top:3px;color:#526477;font-size:13px;font-weight:400}
+  .history-count{flex:0 0 auto;padding:7px 12px;border-radius:999px;background:#edf3fa;color:#17304f;font-size:13px;font-weight:700}
+  .history-count::after{content:" · Mostrar"}
+  .history-panel[open] .history-count::after{content:" · Ocultar"}
+  .history-content{padding:0 24px 24px;border-top:1px solid #e8edf2}
+  .lotes{display:grid;gap:12px;padding-top:16px}
+  .lote-card{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:16px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;transition:all .15s ease}
+  .lote-card:hover{border-color:#cbd5e1;background:#fff}
+  .lote-title{font-size:13px;font-weight:900;color:#17304f}
+  .lote-meta{font-size:13px;color:#526477;margin-top:4px}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .archive-documents{display:grid;gap:6px;min-width:0}
+  .archive-link{display:block;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#17304f;font-size:13px;font-weight:700}
+  .empty{padding:28px;text-align:center;color:#526477;font-size:13px}
+
+  /* Flash Alerts */
+  .flash{padding:12px 16px;border-radius:12px;margin-bottom:16px;font-size:12px;font-weight:800;display:flex;align-items:center;gap:8px}
+  .flash.success{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+  .flash.error{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+  .flash.warning{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+
+  @media(max-width:1080px){.layout{grid-template-columns:1fr}.sidebar{position:static}.menu{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @media(max-width:768px){body{padding:20px 12px}.menu{grid-template-columns:1fr}.topbar{flex-direction:column;align-items:flex-start}.lote-card{flex-direction:column;align-items:flex-start}.history-toggle,.history-content{padding-left:16px;padding-right:16px}.history-toggle{align-items:flex-start}.history-count{font-size:12px}}
 </style>
+<link rel="stylesheet" href="{{ url_for('static', filename='global-font.css') }}">
 </head>
 <body>
+
 <div class="page"><div class="layout">
 
+<!-- SIDEBAR NAVEGACIÓN -->
 <aside class="sidebar">
-<span class="badge">● Empresa activa</span>
-<div class="company">CRV<br>CONSTRUCTORA</div>
-<div class="subtitle">Módulo Contable</div>
-<nav class="menu">
-<a href="/empresas"><span class="icon">🏢</span>Cambiar empresa</a>
-<a href="/crv/movimientos/nuevo"><span class="icon">＋</span>Registrar movimiento</a>
-<a href="/crv/carga-inteligente" class="gold"><span class="icon">✨</span>Carga inteligente</a>
-<a href="/crv/movimientos"><span class="icon">📋</span>Movimientos</a>
-<a href="/crv/terceros"><span class="icon">👤</span>Terceros</a>
-<a href="/crv/cuentas-por-pagar"><span class="icon">🧾</span>Cuentas por pagar</a>
-<a href="/crv/cuentas-por-cobrar"><span class="icon">💰</span>Cuentas por cobrar</a>
-<a href="/crv/bancos-caja"><span class="icon">🏦</span>Bancos y caja</a>
-<a href="/crv/conciliacion-bancaria"><span class="icon">⚖️</span>Conciliación bancaria</a>
-<a href="/crv/proyectos"><span class="icon">🏗️</span>Proyectos / obras</a>
-<a href="/crv/reportes-contador"><span class="icon">📊</span>Reportes contador</a>
-<a href="/crv/cierre-mensual"><span class="icon">📅</span>Cierre mensual</a>
-<a href="/crv/exportaciones"><span class="icon">⬇️</span>Importar / Exportar</a>
-<a href="/logout" class="danger"><span class="icon">⏻</span>Cerrar sesión</a>
-</nav>
+  <span class="badge">● Empresa activa</span>
+  <div class="company">CRV<br>CONSTRUCTORA</div>
+  <div class="subtitle">Módulo Contable</div>
+  <nav class="menu">
+    <a href="/empresas"><span class="icon">🏢</span>Cambiar empresa</a>
+    <a href="/crv/movimientos/nuevo"><span class="icon">＋</span>Registrar movimiento</a>
+    <a href="/crv/carga-inteligente" class="gold"><span class="icon">✨</span>Carga inteligente</a>
+    <a href="/crv/movimientos"><span class="icon">📋</span>Movimientos</a>
+    <a href="/crv/terceros"><span class="icon">👤</span>Terceros</a>
+    <a href="/crv/cuentas-por-pagar"><span class="icon">🧾</span>Cuentas por pagar</a>
+    <a href="/crv/cuentas-por-cobrar"><span class="icon">💰</span>Cuentas por cobrar</a>
+    <a href="/crv/bancos-caja"><span class="icon">🏦</span>Bancos y caja</a>
+    <a href="/crv/conciliacion-bancaria"><span class="icon">⚖️</span>Conciliación bancaria</a>
+    <a href="/crv/proyectos"><span class="icon">🏗️</span>Proyectos / obras</a>
+    <a href="/crv/reportes-contador"><span class="icon">📊</span>Reportes contador</a>
+    <a href="/crv/cierre-mensual"><span class="icon">📅</span>Cierre mensual</a>
+    <a href="/crv/exportaciones"><span class="icon">⬇️</span>Importar / Exportar</a>
+    <a href="/logout" class="danger"><span class="icon">⏻</span>Cerrar sesión</a>
+  </nav>
 </aside>
 
+<!-- CONTENIDO PRINCIPAL -->
 <main class="main"><div class="shell">
-<header class="header">
-<img src="{{ url_for('static', filename='logo_crv.png') }}" alt="CRV">
-<h1>Carga inteligente de facturas</h1>
-<p>Sube una o varias facturas para preparar su revisión antes del registro contable</p>
-</header>
+  <header class="header">
+    <img src="{{ url_for('static', filename='logo_crv.png') }}" alt="CRV">
+    <h1>CARGA INTELIGENTE DE FACTURAS</h1>
+    <p>Sube y revisa automáticamente tus facturas antes de asentarlas en la contabilidad general</p>
+  </header>
 
-<div class="topbar">
-<div><a href="/crv/movimientos" class="btn black">← Volver</a> <span class="badge">● {{ empresa_nombre }}</span></div>
-<div><a href="/crv/movimientos/nuevo" class="btn light">Registro manual</a></div>
-</div>
+  <div class="topbar">
+    <div>
+      <a href="/crv/movimientos" class="btn black">← Volver a Movimientos</a>
+      <span class="badge" style="margin-left:8px">● {{ empresa_nombre }}</span>
+    </div>
+    <div>
+      <a href="/crv/movimientos/nuevo" class="btn light">Registro manual</a>
+    </div>
+  </div>
 
-{% with mensajes = get_flashed_messages(with_categories=true) %}
-{% if mensajes %}
-{% for categoria, mensaje in mensajes %}
-<div class="flash {{ categoria }}">{{ mensaje }}</div>
-{% endfor %}
-{% endif %}
-{% endwith %}
+  <!-- MENSAJES FLASH -->
+  {% with mensajes = get_flashed_messages(with_categories=true) %}
+    {% if mensajes %}
+      {% for categoria, mensaje in mensajes %}
+        <div class="flash {{ categoria }}">{{ mensaje }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
 
-<section class="section">
-<h2>1. Subir documentos</h2>
-<p class="muted">Puedes cargar varias facturas a la vez. En este primer paso solo se almacenan como pendientes: no se crean terceros, movimientos, cuentas por pagar ni consecutivos.</p>
+  <!-- SECCIÓN 1: SUBIR ARCHIVOS -->
+  <section class="section">
+    <h2>1. Cargar Documentos al Lote</h2>
+    <p class="muted">Puedes seleccionar y subir varios archivos (PDF, JPG, PNG). Los PDF con texto seleccionable se leen automáticamente; las imágenes y facturas escaneadas requieren revisión manual.</p>
 
-<form method="POST" enctype="multipart/form-data">
-<div class="upload-box">
-<div style="font-size:32px">📄</div>
-<strong style="display:block;margin-top:6px;color:#17304f">Selecciona tus facturas</strong>
-<span class="muted">PDF, PNG, JPG, JPEG o WEBP · máximo 25 MB por archivo</span>
-<input type="file" name="documentos" accept=".pdf,.png,.jpg,.jpeg,.webp" multiple required>
-<div style="margin-top:14px">
-<button type="submit" class="btn gold">Cargar documentos</button>
-</div>
-</div>
-</form>
+    <form method="POST" enctype="multipart/form-data">
+      <div class="upload-box">
+        <div style="font-size:36px;margin-bottom:6px">📁</div>
+        <strong style="font-size:15px;color:#17304f">Haz clic para buscar o arrastra tus facturas aquí</strong>
+        <span class="muted" style="display:block;margin-top:4px">Formatos permitidos: PDF, PNG, JPG, JPEG, WEBP (Hasta 25 MB por archivo)</span>
+        <input type="file" name="documentos" accept=".pdf,.png,.jpg,.jpeg,.webp" multiple required>
+        <div style="margin-top:18px">
+          <button type="submit" class="btn gold">⚡ Crear Lote y Subir Documentos</button>
+        </div>
+      </div>
+    </form>
 
-<div class="notice">
-<b>Seguridad contable:</b> cargar un archivo no registra nada en contabilidad. La creación de terceros, movimientos y consecutivos se hará únicamente después de la revisión y aprobación.
-</div>
-</section>
+    <div class="notice">
+      <b>🔒 Seguridad Contable:</b> La lectura y el guardado de la revisión no crean registros contables. Los terceros, las cuentas por pagar y sus movimientos vinculados solo se crean al pulsar “Aprobar y registrar facturas”.
+    </div>
+  </section>
 
-{% if lote %}
-<section class="section">
-<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
-<div>
-<h2>2. Lote actual</h2>
-<div class="muted">
-Lote {{ lote.lote_id }} · {{ lote.fecha_creacion }} · {{ lote.archivos|length }} documento(s)
-</div>
-</div>
-<div class="actions">
-<form method="POST" action="/crv/carga-inteligente/{{ lote.lote_id }}/procesar">
-<button type="submit" class="btn navy">🔎 Leer facturas</button>
-</form>
-<form method="POST" action="/crv/carga-inteligente/{{ lote.lote_id }}/eliminar" onsubmit="return confirm('¿Eliminar este lote pendiente?');">
-<button type="submit" class="btn red">Eliminar lote</button>
-</form>
-</div>
-</div>
+  <!-- SECCIÓN 2: LOTE ACTUAL Y EDICIÓN MASIVA -->
+  {% if lote %}
+  <section class="section">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
+      <div>
+        <h2>2. Lote en Revisión: <span style="color:#3b82f6">#{{ lote.lote_id }}</span></h2>
+        <div class="muted">
+          Creado: {{ lote.fecha_creacion }} · Contenido: <b>{{ lote.archivos|length }} documento(s)</b>
+        </div>
+      </div>
+      <div class="actions">
+        <!-- Formulario para ejecutar lectura autónoma -->
+        <form method="POST" action="/crv/carga-inteligente/{{ lote.lote_id }}/procesar">
+          <button type="submit" class="btn navy">🔎 Leer Facturas (Autónomo)</button>
+        </form>
+        <!-- Formulario para eliminar lote completo -->
+        <form method="POST" action="/crv/carga-inteligente/{{ lote.lote_id }}/eliminar" onsubmit="return confirm('¿Eliminar todo este lote pendiente?');">
+          <button type="submit" class="btn red">Eliminar Lote</button>
+        </form>
+      </div>
+    </div>
 
-<div class="table-wrap" style="margin-top:14px">
-<table>
-<thead>
-<tr>
-<th>Archivo</th>
-<th>Estado</th>
-<th>Proveedor</th>
-<th>NIT / ID</th>
-<th>Factura</th>
-<th>Fecha</th>
-<th>Base</th>
-<th>Tarifa</th>
-<th>IVA</th>
-<th>Total</th>
-<th>Tercero</th>
-<th>Duplicado</th>
-<th>Acción</th>
-</tr>
-</thead>
-<tbody>
-{% for item in lote.archivos %}
-<tr>
-<td>
-<strong>{{ item.nombre_original }}</strong><br>
-<span class="muted">{{ (item.tamano_bytes / 1024)|round(1) }} KB</span>
-</td>
-<td>
-{% if item.estado == 'LISTO_PARA_APROBAR' %}
-<span class="status ok">LISTO PARA APROBAR</span>
-{% elif item.estado == 'DATOS_EXTRAIDOS' %}
-<span class="status ok">DATOS EXTRAÍDOS</span>
-{% elif item.estado == 'POSIBLE_DUPLICADO' %}
-<span class="status duplicate">POSIBLE DUPLICADO</span>
-{% elif item.estado == 'REVISION_REQUERIDA' %}
-<span class="status info">REVISIÓN REQUERIDA</span>
-{% else %}
-<span class="status">{{ item.estado }}</span>
-{% endif %}
-{% if item.observaciones %}
-<div class="muted" style="margin-top:5px;max-width:230px">{{ item.observaciones }}</div>
-{% endif %}
-</td>
-<td>
-<form id="revision-{{ item.archivo_id }}" method="POST" action="/crv/carga-inteligente/{{ lote.lote_id }}/archivo/{{ item.archivo_id }}/revisar"></form>
-<input class="edit-input" form="revision-{{ item.archivo_id }}" type="text" name="proveedor" value="{{ item.proveedor or '' }}" placeholder="Proveedor">
-</td>
-<td>
-<input class="edit-input" form="revision-{{ item.archivo_id }}" type="text" name="identificacion" value="{{ item.identificacion or '' }}" placeholder="NIT / ID">
-</td>
-<td>
-<input class="edit-input" form="revision-{{ item.archivo_id }}" type="text" name="numero_documento" value="{{ item.numero_documento or '' }}" placeholder="Factura">
-</td>
-<td>
-<input class="edit-input date-input" form="revision-{{ item.archivo_id }}" type="date" name="fecha_documento" value="{{ item.fecha_documento or '' }}">
-</td>
-<td>
-<input class="edit-input money-input" form="revision-{{ item.archivo_id }}" type="text" inputmode="decimal" name="base_gravable" value="{{ item.base_gravable if item.base_gravable is not none else '' }}" placeholder="Base">
-</td>
-<td>
-<input class="edit-input money-input" form="revision-{{ item.archivo_id }}" type="text" inputmode="decimal" name="tarifa_iva" value="{{ item.tarifa_iva if item.tarifa_iva is not none else '' }}" placeholder="% IVA">
-</td>
-<td>
-<input class="edit-input money-input" form="revision-{{ item.archivo_id }}" type="text" inputmode="decimal" name="valor_iva" value="{{ item.valor_iva if item.valor_iva is not none else '' }}" placeholder="IVA">
-</td>
-<td>
-<input class="edit-input money-input" form="revision-{{ item.archivo_id }}" type="text" inputmode="decimal" name="total_documento" value="{{ item.total_documento if item.total_documento is not none else '' }}" placeholder="Total">
-</td>
-<td>
-{% if item.tercero_existente %}
-<span class="status ok">EXISTENTE</span>
-{% elif item.identificacion %}
-<span class="status info">NUEVO</span>
-{% else %}
-<span class="status">PENDIENTE</span>
-{% endif %}
-</td>
-<td>
-{% if item.duplicado %}
-<span class="status duplicate">SÍ</span>
-{% else %}
-<span class="status ok">NO</span>
-{% endif %}
-</td>
-<td>
-<div class="review-actions">
-<button form="revision-{{ item.archivo_id }}" type="submit" class="btn btn-save">Guardar revisión</button>
-<form method="POST" action="/crv/carga-inteligente/{{ lote.lote_id }}/archivo/{{ item.archivo_id }}/eliminar" onsubmit="return confirm('¿Quitar este documento del lote?');">
-<button type="submit" class="btn light">Quitar</button>
-</form>
-</div>
-</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
-</div>
+    <!-- FORMULARIO DE GUARDADO MASIVO (Sincronizado con el backend) -->
+    <form method="POST" action="/crv/carga-inteligente/{{ lote.lote_id }}/guardar-masivo">
+      <p class="muted" style="margin:0 0 10px">La tabla tiene desplazamiento horizontal: usa la barra inferior para consultar las columnas que quedan a la derecha.</p>
+      <div class="table-wrap">
+        <table class="review-table">
+          <thead>
+            <tr>
+              <th style="width:190px">Archivo</th>
+              <th style="width:200px">Estado</th>
+              <th style="width:240px">Proveedor</th>
+              <th style="width:120px">Tipo ID</th>
+              <th style="width:170px">NIT / Cédula</th>
+              <th style="width:160px">N° Factura</th>
+              <th style="width:155px">Fecha Doc.</th>
+              <th style="width:150px">Base ($)</th>
+              <th style="width:120px">Tarifa IVA</th>
+              <th style="width:150px">IVA ($)</th>
+              <th style="width:200px">Tratamiento IVA</th>
+              <th style="width:150px">Total ($)</th>
+              <th style="width:110px">Tercero</th>
+              <th style="width:90px">Duplicado</th>
+              <th style="width:90px;text-align:center">Quitar</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in lote.archivos %}
+            <tr>
+              <td>
+                <strong style="color:#17304f;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px" title="{{ item.nombre_original }}">
+                  {{ item.nombre_original }}
+                </strong>
+                <span class="muted" style="font-size:12px">{{ (item.tamano_bytes / 1024)|round(1) }} KB</span>
+              </td>
+              <td>
+                {% if item.estado == 'LISTO_PARA_APROBAR' or item.estado == 'REGISTRADO' %}
+                  <span class="status ok">✔ LISTO</span>
+                {% elif item.estado == 'POSIBLE_DUPLICADO' %}
+                  <span class="status duplicate">⚠ DUPLICADO</span>
+                {% elif item.estado == 'DATOS_EXTRAIDOS' %}
+                  <span class="status info">DATOS LEÍDOS · REVISAR</span>
+                {% elif item.estado == 'REVISION_REQUERIDA' %}
+                  <span class="status info">📝 REVISAR</span>
+                {% else %}
+                  <span class="status">{{ item.estado }}</span>
+                {% endif %}
+                {% if item.observaciones %}
+                  <div class="muted" style="margin-top:6px;font-size:12px;line-height:1.4;color:#ef4444">{{ item.observaciones }}</div>
+                {% endif %}
+              </td>
 
-<div class="notice">
-<b>Cómo funciona:</b> pulsa <b>🔎 Leer facturas</b> para obtener una propuesta automática. Después revisa y corrige directamente en la tabla <b>Proveedor, NIT, Factura, Fecha, Base, Tarifa, IVA y Total</b> y pulsa <b>Guardar revisión</b>. El sistema volverá a comprobar tercero, duplicados y consistencia matemática. Esta etapa todavía <b>no registra movimientos, no crea terceros y no consume consecutivos</b>.
-</div>
-</section>
-{% endif %}
+              <!-- CAMPOS EDITABLES CON IDS MÁSIVAS -->
+              <td>
+                <input class="edit-input" type="text" name="proveedor_{{ item.archivo_id }}" value="{{ item.proveedor or '' }}" placeholder="Razón Social" {{ 'disabled' if item.cuenta_pagar_id else '' }}>
+              </td>
+              <td>
+                <select class="edit-input" name="tipo_documento_tercero_{{ item.archivo_id }}" {{ 'disabled' if item.cuenta_pagar_id else '' }}>
+                  <option value="">Tipo ID</option>
+                  <option value="NIT" {{ 'selected' if item.tipo_documento_tercero == 'NIT' else '' }}>NIT</option>
+                  <option value="CEDULA" {{ 'selected' if item.tipo_documento_tercero == 'CEDULA' else '' }}>Cédula</option>
+                </select>
+              </td>
+              <td>
+                <input class="edit-input" type="text" name="identificacion_{{ item.archivo_id }}" value="{{ item.identificacion or '' }}" placeholder="NIT o cédula" {{ 'disabled' if item.cuenta_pagar_id else '' }}>
+              </td>
+              <td>
+                <input class="edit-input" type="text" name="numero_documento_{{ item.archivo_id }}" value="{{ item.numero_documento or '' }}" placeholder="N° Factura" {{ 'disabled' if item.cuenta_pagar_id else '' }}>
+              </td>
+              <td>
+                <input class="edit-input date-input" type="date" name="fecha_documento_{{ item.archivo_id }}" value="{{ item.fecha_documento or '' }}" {{ 'disabled' if item.cuenta_pagar_id else '' }}>
+              </td>
+              <td>
+                <input class="edit-input money-input" type="text" inputmode="decimal" name="base_gravable_{{ item.archivo_id }}" value="{{ item.base_gravable if item.base_gravable is not none else '' }}" placeholder="0.00" {{ 'disabled' if item.cuenta_pagar_id else '' }}>
+              </td>
+              <td>
+                <input class="edit-input" type="number" min="0" max="100" step="0.01" inputmode="decimal" name="tarifa_iva_{{ item.archivo_id }}" value="{{ item.tarifa_iva if item.tarifa_iva is not none else '' }}" placeholder="%" {{ 'disabled' if item.cuenta_pagar_id else '' }}>
+              </td>
+              <td>
+                <input class="edit-input money-input" type="text" inputmode="decimal" name="valor_iva_{{ item.archivo_id }}" value="{{ item.valor_iva if item.valor_iva is not none else '' }}" placeholder="0.00" {{ 'disabled' if item.cuenta_pagar_id else '' }}>
+              </td>
+              <td>
+                <select class="edit-input" name="tipo_iva_{{ item.archivo_id }}" {{ 'disabled' if item.cuenta_pagar_id else '' }}>
+                  <option value="">Selecciona IVA</option>
+                  <option value="DESCONTABLE" {{ 'selected' if item.tipo_iva == 'DESCONTABLE' else '' }}>Descontable</option>
+                  <option value="MAYOR_VALOR_COSTO" {{ 'selected' if item.tipo_iva == 'MAYOR_VALOR_COSTO' else '' }}>Mayor costo/gasto</option>
+                  <option value="NO_APLICA" {{ 'selected' if item.tipo_iva == 'NO_APLICA' else '' }}>No aplica</option>
+                  <option value="EXENTO" {{ 'selected' if item.tipo_iva == 'EXENTO' else '' }}>Exento</option>
+                  <option value="EXCLUIDO" {{ 'selected' if item.tipo_iva == 'EXCLUIDO' else '' }}>Excluido</option>
+                </select>
+              </td>
+              <td>
+                <input class="edit-input money-input" type="text" inputmode="decimal" name="total_documento_{{ item.archivo_id }}" value="{{ item.total_documento if item.total_documento is not none else '' }}" placeholder="0.00" {{ 'disabled' if item.cuenta_pagar_id else '' }}>
+              </td>
 
-<section class="section">
-<h2>Lotes recientes</h2>
-{% if lotes %}
-<div class="lotes">
-{% for item in lotes %}
-<div class="lote-card">
-<div>
-<div class="lote-title">{{ item.lote_id }}</div>
-<div class="lote-meta">{{ item.fecha_creacion }} · {{ item.archivos|length }} documento(s) · {{ item.estado }}</div>
-</div>
-<div class="actions">
-<a href="/crv/carga-inteligente?lote={{ item.lote_id }}" class="btn navy">Abrir lote</a>
-</div>
-</div>
-{% endfor %}
-</div>
-{% else %}
-<div class="empty">Todavía no hay lotes cargados.</div>
-{% endif %}
-</section>
+              <!-- INDICADORES DE TERCERO Y DUPLICADOS -->
+              <td>
+                {% if item.tercero_existente %}
+                  <span class="status ok">EXISTE</span>
+                {% elif item.identificacion %}
+                  <span class="status info">NUEVO</span>
+                {% else %}
+                  <span class="status">PEND.</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if item.duplicado %}
+                  <span class="status duplicate">SÍ</span>
+                {% else %}
+                  <span class="status ok">NO</span>
+                {% endif %}
+              </td>
+              <td style="text-align:center">
+                <button type="submit" formaction="/crv/carga-inteligente/{{ lote.lote_id }}/archivo/{{ item.archivo_id }}/eliminar" class="btn light" style="min-height:30px;padding:4px 8px;font-size:10px" onclick="return confirm('¿Quitar este archivo?');">
+                  🗑
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- BOTÓN DE GUARDADO MASIVO -->
+      <div style="margin-top:16px;display:flex;justify-content:flex-end">
+        <button type="submit" class="btn green" style="font-size:14px;padding:12px 24px">
+          💾 Guardar Cambios en el Lote
+        </button>
+        {% if lote.estado == 'PENDIENTE_REVISION' %}
+        <button type="submit" formaction="/crv/carga-inteligente/{{ lote.lote_id }}/aprobar" class="btn navy" style="font-size:14px;padding:12px 24px;margin-left:10px" onclick="return confirm('Se crearán los terceros que falten, las cuentas por pagar y sus movimientos vinculados. ¿Aprobaste los datos y el tratamiento del IVA?');">
+          ✅ Aprobar y registrar facturas
+        </button>
+        {% endif %}
+      </div>
+    </form>
+
+    <div class="notice">
+      <b>💡 Instrucciones:</b> Verifica los datos extraídos y corrige los campos necesarios. Para facturas con IVA, selecciona si es descontable o mayor valor del costo/gasto. “Guardar Cambios” solo conserva la revisión; “Aprobar y registrar facturas” crea el tercero si hace falta, la cuenta por pagar y su movimiento de compra vinculado.
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- SECCIÓN 3: HISTORIAL DE LOTES -->
+  <details class="history-panel">
+    <summary class="history-toggle">
+      <span>
+        <span class="history-title">Lotes Recientes de la Empresa</span>
+        <span class="history-meta">Historial plegable para mantener despejada la pantalla.</span>
+      </span>
+      <span class="history-count">{{ lotes|length }} lote(s)</span>
+    </summary>
+    <div class="history-content">
+      {% if lotes %}
+        <div class="lotes">
+          {% for item in lotes %}
+          <div class="lote-card">
+            <div>
+              <div class="lote-title">Lote ID: {{ item.lote_id }}</div>
+              <div class="lote-meta">Creado el {{ item.fecha_creacion }} · {{ item.archivos|length }} documento(s) · Estado: <b>{{ item.estado }}</b></div>
+            </div>
+            <div class="actions">
+              <a href="/crv/carga-inteligente?lote={{ item.lote_id }}" class="btn navy">Abrir y Revisar</a>
+              {% if item.estado == 'PENDIENTE_REVISION' %}
+              <form method="POST" action="/crv/carga-inteligente/{{ item.lote_id }}/eliminar" onsubmit="return confirm('¿Eliminar permanentemente este lote pendiente y los archivos que contiene? Esta acción no se puede deshacer.');">
+                <button type="submit" class="btn red">Eliminar lote</button>
+              </form>
+              {% else %}
+              <div class="archive-documents">
+                <span class="muted">Conservado para auditoría · Documentos originales:</span>
+                {% for archivo in item.archivos %}
+                  {% if archivo.archivo_id %}
+                  <a class="archive-link" href="/crv/carga-inteligente/{{ item.lote_id }}/archivo/{{ archivo.archivo_id }}/ver" target="_blank" rel="noopener noreferrer" title="{{ archivo.nombre_original }}">
+                    Ver: {{ archivo.nombre_original }}
+                  </a>
+                  {% endif %}
+                {% else %}
+                  <span class="muted">No hay documentos adjuntos en este lote.</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty">No hay lotes guardados previamente.</div>
+      {% endif %}
+    </div>
+  </details>
 
 </div></main>
 </div></div>
+
 </body>
 </html>
