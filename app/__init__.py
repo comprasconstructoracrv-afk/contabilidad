@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask
 from app.extensions import db
 
@@ -41,8 +43,14 @@ from app.migraciones_crv import migrar_iva_crv
 def create_app():
     app = Flask(__name__)
 
-    app.config["SECRET_KEY"] = "clave_secreta_123"
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///contabilidad.db"
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "clave_secreta_123")
+
+    database_url = os.getenv("DATABASE_URL") or os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite:///contabilidad.db")
+    
+    if database_url and database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
