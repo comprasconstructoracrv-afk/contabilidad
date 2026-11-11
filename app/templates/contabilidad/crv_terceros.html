@@ -1212,6 +1212,8 @@
         proveedores=0,
         clientes=0,
         empleados=0,
+        empleados_obra=0,
+        pasantes=0,
         contratistas=0,
         entidades=0,
         tercero=0,
@@ -1231,6 +1233,14 @@
 
         {% if t.tipo_tercero == "EMPLEADO" %}
             {% set ns.empleados = ns.empleados + 1 %}
+        {% endif %}
+
+        {% if t.tipo_tercero == "EMPLEADO_OBRA" %}
+            {% set ns.empleados_obra = ns.empleados_obra + 1 %}
+        {% endif %}
+
+        {% if t.tipo_tercero == "PASANTE" %}
+            {% set ns.pasantes = ns.pasantes + 1 %}
         {% endif %}
 
         {% if t.tipo_tercero == "CONTRATISTA" %}
@@ -1327,6 +1337,54 @@
 
                 <div class="summary-note">
                     Empleados registrados
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="summary-card">
+
+            <div class="summary-icon proveedor">
+                🏗️
+            </div>
+
+            <div>
+
+                <div class="summary-label">
+                    Empleados de Obra
+                </div>
+
+                <div class="summary-value">
+                    {{ ns.empleados_obra }}
+                </div>
+
+                <div class="summary-note">
+                    Empleados de obra registrados
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="summary-card">
+
+            <div class="summary-icon proveedor">
+                👨‍💻
+            </div>
+
+            <div>
+
+                <div class="summary-label">
+                    Pasantes
+                </div>
+
+                <div class="summary-value">
+                    {{ ns.pasantes }}
+                </div>
+
+                <div class="summary-note">
+                    Pasantes registrados
                 </div>
 
             </div>
@@ -1510,6 +1568,14 @@
                     Empleados
                 </option>
 
+                <option value="EMPLEADO_OBRA">
+                    Empleados de obra
+                </option>
+
+                <option value="PASANTE">
+                    Pasantes
+                </option>
+
                 <option value="CONTRATISTA">
                     Contratistas
                 </option>
@@ -1597,6 +1663,18 @@
                                     EMPLEADO
                                 </span>
 
+                            {% elif t.tipo_tercero == "EMPLEADO_OBRA" %}
+
+                                <span class="tag tag-empleado">
+                                    EMPLEADO OBRA
+                                </span>
+
+                            {% elif t.tipo_tercero == "PASANTE" %}
+
+                                <span class="tag tag-empleado">
+                                    PASANTE
+                                </span>
+
                             {% elif t.tipo_tercero == "CONTRATISTA" %}
 
                                 <span class="tag tag-contratista">
@@ -1643,6 +1721,18 @@
                                 {% elif t.tipo_tercero == "EMPLEADO" %}
 
                                     <div class="avatar avatar-empleado">
+                                        {{ inicial }}
+                                    </div>
+
+                                {% elif t.tipo_tercero == "EMPLEADO_OBRA" %}
+
+                                    <div class="avatar avatar-empleado_obra">
+                                        {{ inicial }}
+                                    </div>
+
+                                {% elif t.tipo_tercero == "PASANTE" %}
+
+                                    <div class="avatar avatar-pasante">
                                         {{ inicial }}
                                     </div>
 
@@ -2065,6 +2155,14 @@
 
                             <option value="EMPLEADO">
                                 Empleado
+                            </option>
+
+                            <option value="EMPLEADO_OBRA">
+                                Empleado de obra
+                            </option>
+
+                            <option value="PASANTE">
+                                Pasante
                             </option>
 
                             <option value="CONTRATISTA">

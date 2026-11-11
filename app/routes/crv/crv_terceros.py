@@ -288,6 +288,10 @@ def importar_terceros_excel():
         "PROVEEDORES": "PROVEEDOR",
         "EMPLEADO": "EMPLEADO",
         "EMPLEADOS": "EMPLEADO",
+        "EMPLEADO_OBRA": "EMPLEADO_OBRA",
+        "EMPLEADOS_OBRA": "EMPLEADO_OBRA",
+        "PASANTE": "PASANTE",
+        "PASANTES": "PASANTE",
         "CONTRATISTA": "CONTRATISTA",
         "CONTRATISTAS": "CONTRATISTA"
     }
