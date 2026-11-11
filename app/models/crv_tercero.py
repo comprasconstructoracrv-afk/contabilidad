@@ -1,4 +1,5 @@
 from datetime import datetime
+from sqlalchemy import Sequence
 
 from app.extensions import db
 
@@ -6,7 +7,7 @@ from app.extensions import db
 class CRVTercero(db.Model):
     __tablename__ = "crv_tercero"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, Sequence("crv_tercero_id_seq"), primary_key=True, autoincrement=True)
 
     # ============================================================
     # EMPRESA
