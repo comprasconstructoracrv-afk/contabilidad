@@ -256,7 +256,6 @@ def cambiar_estado_tercero(tercero_id):
 import pandas as pd
 from datetime import datetime
 
-# Asegúrate de importar datetime y pandas si no están en tu archivo
 @crv_bp.route("/terceros/importar-excel", methods=["POST"])
 def importar_terceros_excel():
     bloqueo = proteger_crv()
@@ -266,15 +265,38 @@ def importar_terceros_excel():
     empresa_id = session.get("empresa_id")
     archivo = request.files.get("archivo_excel")
 
+    if not empresa_id:
+        flash("Debes tener una empresa activa en la sesión.", "error")
+        return redirect("/crv/terceros")
+
     if not archivo or not archivo.filename.endswith((".xlsx", ".xls")):
         flash("Por favor selecciona un archivo de Excel válido (.xlsx o .xls).", "error")
         return redirect("/crv/terceros")
 
+    # Función auxiliar para limpiar celdas (afuera del bucle)
+    def _clean(val, default=""):
+        if pd.isna(val) or val is None:
+            return default
+        text = str(val).strip()
+        return text if text.lower() != "nan" else default
+
+    # Mapeo flexible para tipos de tercero
+    mapa_tipos_tercero = {
+        "CLIENTE": "CLIENTE",
+        "CLIENTES": "CLIENTE",
+        "PROVEEDOR": "PROVEEDOR",
+        "PROVEEDORES": "PROVEEDOR",
+        "EMPLEADO": "EMPLEADO",
+        "EMPLEADOS": "EMPLEADO",
+        "CONTRATISTA": "CONTRATISTA",
+        "CONTRATISTAS": "CONTRATISTA"
+    }
+
     try:
-        # Cargar Excel forzando texto para no perder ceros a la izquierda
+        # Cargar Excel forzando string para no perder ceros a la izquierda
         df = pd.read_excel(archivo, dtype=str)
 
-        # Normalizar encabezados (quitar espacios y a mayúsculas)
+        # Normalizar encabezados (quitar espacios invisibles y pasar a mayúsculas)
         df.columns = [str(col).strip().upper() for col in df.columns]
 
         # Validar columnas mínimas indispensables
@@ -282,12 +304,6 @@ def importar_terceros_excel():
         if not columnas_obligatorias.issubset(df.columns):
             flash("El archivo Excel debe contener al menos las columnas IDENTIFICACION y RAZON_SOCIAL.", "error")
             return redirect("/crv/terceros")
-
-        def _clean(val, default=""):
-            if pd.isna(val) or val is None:
-                return default
-            text = str(val).strip()
-            return text if text.lower() != "nan" else default
 
         creados = 0
         actualizados = 0
@@ -302,8 +318,13 @@ def importar_terceros_excel():
                 omitidos += 1
                 continue
 
-            tipo_tercero = _clean(fila.get("TIPO_TERCERO"), "TERCERO").upper()
-            tipo_documento = _clean(fila.get("TIPO_DOCUMENTO"))
+            # Limpieza y normalización de tipo tercero y tipo documento
+            tipo_raw = _clean(fila.get("TIPO_TERCERO"), "CLIENTE").upper()
+            tipo_tercero = mapa_tipos_tercero.get(tipo_raw, "CLIENTE")
+            
+            tipo_doc_raw = _clean(fila.get("TIPO_DOCUMENTO"), "CC").upper()
+            tipo_documento = tipo_doc_raw if tipo_doc_raw else ("CC" if tipo_tercero == "EMPLEADO" else "NIT")
+
             nombre_comercial = _clean(fila.get("NOMBRE_COMERCIAL"))
             direccion = _clean(fila.get("DIRECCION"))
             ciudad = _clean(fila.get("CIUDAD"))
@@ -318,14 +339,13 @@ def importar_terceros_excel():
             titular_cuenta = _clean(fila.get("TITULAR_CUENTA"))
             observaciones = _clean(fila.get("OBSERVACIONES"))
 
-            # Verificar si ya existe el tercero por identificación y empresa (Evitar Duplicados)
+            # Verificar si ya existe el tercero por identificación y empresa
             tercero_existente = CRVTercero.query.filter_by(
                 empresa_id=empresa_id,
                 identificacion=identificacion
             ).first()
 
             if tercero_existente:
-                # Si ya existe, actualizamos la información con los nuevos datos del Excel
                 tercero_existente.tipo_tercero = tipo_tercero
                 tercero_existente.tipo_documento = tipo_documento
                 tercero_existente.razon_social = razon_social
@@ -345,7 +365,6 @@ def importar_terceros_excel():
                 tercero_existente.fecha_actualizacion = datetime.utcnow()
                 actualizados += 1
             else:
-                # Si no existe, lo creamos desde cero
                 nuevo_tercero = CRVTercero(
                     empresa_id=empresa_id,
                     tipo_tercero=tipo_tercero,
@@ -374,13 +393,14 @@ def importar_terceros_excel():
 
         db.session.commit()
 
-        msg = f"Carga completada: {creados} terceros nuevos creados, {actualizados} actualizados."
+        msg = f"Carga completada exitosamente: {creados} terceros creados, {actualizados} actualizados."
         if omitidos > 0:
-            msg += f" ({omitidos} filas omitidas por faltar identificación o razón social)."
+            msg += f" ({omitidos} filas omitidas por no tener identificación o razón social)."
         flash(msg, "success")
 
     except Exception as e:
         db.session.rollback()
+        print(f"[ERROR EN RAILWAY IMPORTACIÓN TERCEROS]: {str(e)}")
         flash(f"Ocurrió un error al procesar el archivo Excel: {str(e)}", "error")
 
     return redirect("/crv/terceros")
