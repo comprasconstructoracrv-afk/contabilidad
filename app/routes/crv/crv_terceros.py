@@ -253,6 +253,169 @@ def cambiar_estado_tercero(tercero_id):
         "/crv/terceros"
     )
 
+import pandas as pd
+from datetime import datetime
+
+# Asegúrate de importar datetime y pandas si no están en tu archivo
+@crv_bp.route("/terceros/importar-excel", methods=["POST"])
+def importar_terceros_excel():
+    bloqueo = proteger_crv()
+    if bloqueo:
+        return bloqueo
+
+    empresa_id = session.get("empresa_id")
+    archivo = request.files.get("archivo_excel")
+
+    if not archivo or not archivo.filename.endswith((".xlsx", ".xls")):
+        flash("Por favor selecciona un archivo de Excel válido (.xlsx o .xls).", "error")
+        return redirect("/crv/terceros")
+
+    try:
+        # Cargar Excel forzando texto para no perder ceros a la izquierda
+        df = pd.read_excel(archivo, dtype=str)
+
+        # Normalizar encabezados (quitar espacios y a mayúsculas)
+        df.columns = [str(col).strip().upper() for col in df.columns]
+
+        # Validar columnas mínimas indispensables
+        columnas_obligatorias = {"IDENTIFICACION", "RAZON_SOCIAL"}
+        if not columnas_obligatorias.issubset(df.columns):
+            flash("El archivo Excel debe contener al menos las columnas IDENTIFICACION y RAZON_SOCIAL.", "error")
+            return redirect("/crv/terceros")
+
+        def _clean(val, default=""):
+            if pd.isna(val) or val is None:
+                return default
+            text = str(val).strip()
+            return text if text.lower() != "nan" else default
+
+        creados = 0
+        actualizados = 0
+        omitidos = 0
+
+        for _, fila in df.iterrows():
+            identificacion = _clean(fila.get("IDENTIFICACION"))
+            razon_social = _clean(fila.get("RAZON_SOCIAL"))
+
+            # Omitir filas sin datos clave
+            if not identificacion or not razon_social:
+                omitidos += 1
+                continue
+
+            tipo_tercero = _clean(fila.get("TIPO_TERCERO"), "TERCERO").upper()
+            tipo_documento = _clean(fila.get("TIPO_DOCUMENTO"))
+            nombre_comercial = _clean(fila.get("NOMBRE_COMERCIAL"))
+            direccion = _clean(fila.get("DIRECCION"))
+            ciudad = _clean(fila.get("CIUDAD"))
+            departamento = _clean(fila.get("DEPARTAMENTO"))
+            telefono = _clean(fila.get("TELEFONO"))
+            celular = _clean(fila.get("CELULAR"))
+            email = _clean(fila.get("EMAIL"))
+            contacto = _clean(fila.get("CONTACTO"))
+            banco = _clean(fila.get("BANCO"))
+            tipo_cuenta = _clean(fila.get("TIPO_CUENTA"))
+            numero_cuenta = _clean(fila.get("NUMERO_CUENTA"))
+            titular_cuenta = _clean(fila.get("TITULAR_CUENTA"))
+            observaciones = _clean(fila.get("OBSERVACIONES"))
+
+            # Verificar si ya existe el tercero por identificación y empresa (Evitar Duplicados)
+            tercero_existente = CRVTercero.query.filter_by(
+                empresa_id=empresa_id,
+                identificacion=identificacion
+            ).first()
+
+            if tercero_existente:
+                # Si ya existe, actualizamos la información con los nuevos datos del Excel
+                tercero_existente.tipo_tercero = tipo_tercero
+                tercero_existente.tipo_documento = tipo_documento
+                tercero_existente.razon_social = razon_social
+                tercero_existente.nombre_comercial = nombre_comercial
+                tercero_existente.direccion = direccion
+                tercero_existente.ciudad = ciudad
+                tercero_existente.departamento = departamento
+                tercero_existente.telefono = telefono
+                tercero_existente.celular = celular
+                tercero_existente.email = email
+                tercero_existente.contacto = contacto
+                tercero_existente.banco = banco
+                tercero_existente.tipo_cuenta = tipo_cuenta
+                tercero_existente.numero_cuenta = numero_cuenta
+                tercero_existente.titular_cuenta = titular_cuenta
+                tercero_existente.observaciones = observaciones
+                tercero_existente.fecha_actualizacion = datetime.utcnow()
+                actualizados += 1
+            else:
+                # Si no existe, lo creamos desde cero
+                nuevo_tercero = CRVTercero(
+                    empresa_id=empresa_id,
+                    tipo_tercero=tipo_tercero,
+                    tipo_documento=tipo_documento,
+                    identificacion=identificacion,
+                    razon_social=razon_social,
+                    nombre_comercial=nombre_comercial,
+                    direccion=direccion,
+                    ciudad=ciudad,
+                    departamento=departamento,
+                    telefono=telefono,
+                    celular=celular,
+                    email=email,
+                    contacto=contacto,
+                    banco=banco,
+                    tipo_cuenta=tipo_cuenta,
+                    numero_cuenta=numero_cuenta,
+                    titular_cuenta=titular_cuenta,
+                    observaciones=observaciones,
+                    activo=True,
+                    fecha_creacion=datetime.utcnow(),
+                    fecha_actualizacion=datetime.utcnow()
+                )
+                db.session.add(nuevo_tercero)
+                creados += 1
+
+        db.session.commit()
+
+        msg = f"Carga completada: {creados} terceros nuevos creados, {actualizados} actualizados."
+        if omitidos > 0:
+            msg += f" ({omitidos} filas omitidas por faltar identificación o razón social)."
+        flash(msg, "success")
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Ocurrió un error al procesar el archivo Excel: {str(e)}", "error")
+
+    return redirect("/crv/terceros")
+
+@crv_bp.route("/terceros/eliminar/<int:tercero_id>", methods=["POST"])
+def eliminar_tercero(tercero_id):
+    bloqueo = proteger_crv()
+    if bloqueo:
+        return bloqueo
+
+    empresa_id = session.get("empresa_id")
+    tercero = CRVTercero.query.get_or_404(tercero_id)
+
+    if tercero.empresa_id != empresa_id:
+        flash("No tienes permiso para realizar esta acción.", "error")
+        return redirect("/crv/terceros")
+
+    # Verificar si el tercero ya tiene movimientos contables asociados
+    if tercero.movimientos and len(tercero.movimientos) > 0:
+        flash(
+            "No se puede eliminar el tercero porque ya posee movimientos contables asociados. Te sugerimos cambiar su estado a Inactivo.",
+            "error"
+        )
+        return redirect("/crv/terceros")
+
+    try:
+        db.session.delete(tercero)
+        db.session.commit()
+        flash("Tercero eliminado permanentemente.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error al eliminar el tercero: {str(e)}", "error")
+
+    return redirect("/crv/terceros")
+
 @crv_bp.route(
     "/terceros/editar/<int:tercero_id>",
     methods=["POST"]
@@ -460,4 +623,4 @@ def editar_tercero(tercero_id):
         "/crv/terceros"
     )
 
-__all__ = ['terceros', 'cambiar_estado_tercero', 'editar_tercero']
+__all__ = ['terceros', 'cambiar_estado_tercero', 'editar_tercero', 'importar_terceros_excel', 'eliminar_tercero']

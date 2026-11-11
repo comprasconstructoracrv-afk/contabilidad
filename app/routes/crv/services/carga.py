@@ -904,9 +904,12 @@ def _analizar_factura_carga(empresa_id, ruta_archivo, nombre_original):
         "numero_documento": "",
         "fecha_documento": "",
         "base_gravable": None,
+        "descuento": 0.0,
+        "otros descuentos": 0.0,
         "tarifa_iva": None,
         "tipo_iva": "",
         "valor_iva": None,
+        "retencion": 0.0,
         "total_documento": None,
         "estado": "REVISION_REQUERIDA",
         "observaciones": "",
@@ -927,32 +930,66 @@ def _analizar_factura_carga(empresa_id, ruta_archivo, nombre_original):
     texto = _limpiar_texto_factura(texto)
     identificacion = _extraer_nit_factura(texto)
     proveedor = _extraer_proveedor_factura(texto, identificacion)
+
+    #Extraer valores monetarios principales de la factura/movimientos
     base = _extraer_base_factura(texto)
     tarifa = _extraer_tarifa_iva_factura(texto)
     iva = _extraer_valor_iva_factura(texto)
     total = _extraer_total_factura(texto)
 
-    if base is None and total is not None and iva is not None and total >= iva:
-        base = round(total - iva, 2)
-    if iva is None and base is not None and total is not None:
-        diferencia = round(total - base, 2)
-        tarifa_inferida = round(diferencia / base * 100, 2) if base else 0
-        if diferencia >= 0 and (
-            diferencia == 0
-            or any(abs(tarifa_inferida - tarifa_valida) <= 0.5 for tarifa_valida in (5, 19))
-        ):
-            iva = diferencia
-            tarifa = tarifa_inferida
+    # 1. Búsqueda de Descuento ($)
+    descuento = 0.0
+    match_desc = re.search(
+        r'(?:DESCUENTOS?|DESCUENTO\s*COMERCIAL|VALOR\s*DESCUENTO)\s*[:\$]?\s*\$?\s*([0-9\.,]+)', 
+        texto, 
+        re.IGNORECASE
+    )
+    if match_desc:
+        descuento = _limpiar_monto_colombiano(match_desc.group(1))
+
+    # 2. Búsqueda de Otros Descuentos ($)
+    otros_descuentos = 0.0
+    match_otros_desc = re.search(
+        r'(?:OTROS?\s*DESCUENTOS?|DESCUENTO\s*FINANCIERO|OTRO\s*DESC)\s*[:\$]?\s*\$?\s*([0-9\.,]+)', 
+        texto, 
+        re.IGNORECASE
+    )
+    if match_otros_desc:
+        otros_descuentos = _limpiar_monto_colombiano(match_otros_desc.group(1))
+
+    # 3. Búsqueda de Retenciones ($) (RET ICA, RET FUENTE, RET IVA)
+    retencion = 0.0
+    match_ret = re.search(
+        r'(?:RETENCION(?:ES)?|RET\s*I\.?C\.?A|RET\s*FUENTE|RETEFUENTES?)\s*[:\$]?\s*\$?\s*([0-9\.,]+)', 
+        texto, 
+        re.IGNORECASE
+    )
+    if match_ret:
+        retencion = _limpiar_monto_colombiano(match_ret.group(1))
+
+    # --------------------------------------------------------------------
+    # Ajustes y Consistencia Contable
+    # --------------------------------------------------------------------
+    total_deducciones = descuento + otros_descuentos
+
+    # Si falta la Base pero se tienen Total, IVA y Deducciones:
+    if base is None and total is not None and iva is not None:
+        base = round(total - iva + total_deducciones + retencion, 2)
+
+    # Inferir tarifa de IVA si aplica
     if iva is not None and tarifa is None and base and iva > 0:
         tarifa_inferida = round(iva / base * 100, 2)
         tarifa = next(
             (valor for valor in (5.0, 19.0) if abs(tarifa_inferida - valor) <= 0.5),
             None,
         )
+
     if iva == 0 and tarifa is None:
         tarifa = 0.0
+
+    # Calcular Total si no vino extraído: Base - Descuentos + IVA - Retenciones
     if total is None and base is not None and iva is not None:
-        total = round(base + iva, 2)
+        total = round((base - total_deducciones) + iva - retencion, 2)
 
     resultado.update({
         "proveedor": proveedor,
@@ -961,6 +998,8 @@ def _analizar_factura_carga(empresa_id, ruta_archivo, nombre_original):
         "numero_documento": _extraer_numero_factura(texto),
         "fecha_documento": _extraer_fecha_factura(texto, nombre_original),
         "base_gravable": base,
+        "descuento": descuento,
+        "otros_descuentos": otros_descuentos,
         "tarifa_iva": tarifa,
         "tipo_iva": (
             ""
@@ -968,6 +1007,7 @@ def _analizar_factura_carga(empresa_id, ruta_archivo, nombre_original):
             else "NO_APLICA"
         ),
         "valor_iva": iva,
+        "retencion": retencion,
         "total_documento": total,
     })
     estado, faltantes, alertas = _estado_revision_carga(resultado)
@@ -977,6 +1017,7 @@ def _analizar_factura_carga(empresa_id, ruta_archivo, nombre_original):
         observaciones.append("Revisar: " + ", ".join(faltantes) + ".")
     observaciones.extend(alertas)
     resultado["observaciones"] = " ".join(observaciones)
+    
     return resultado
 
 def _marcador_origen_factura(lote_id, archivo_id):

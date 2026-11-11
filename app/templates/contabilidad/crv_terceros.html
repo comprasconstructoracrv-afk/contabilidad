@@ -1084,10 +1084,6 @@
                     <span class="crv-fixed-icon">👤</span>
                     <span>Terceros</span>
                 </a>
-<a href="/crv/terceros?buscar=">
-                    <span class="crv-fixed-icon">👥</span>
-                    <span>Proveedores / Clientes</span>
-                </a>
 <a href="/crv/cuentas-por-pagar">
                     <span class="crv-fixed-icon">🧾</span>
                     <span>Cuentas por pagar</span>
@@ -1099,6 +1095,10 @@
 <a href="/crv/bancos-caja">
                     <span class="crv-fixed-icon">🏦</span>
                     <span>Bancos y caja</span>
+                </a>
+<a href="/crv/conciliacion-bancaria">
+                    <span class="crv-fixed-icon">⚖️</span>
+                    <span>Conciliación bancaria</span>
                 </a>
 <a href="#">
                     <span class="crv-fixed-icon">🏗️</span>
@@ -1198,14 +1198,6 @@
             >
                 📋 Movimientos
             </a>
-
-            <button
-                type="button"
-                class="btn btn-gold"
-                onclick="abrirFormulario()"
-            >
-                + Nuevo tercero
-            </button>
 
         </div>
 
@@ -1384,14 +1376,15 @@
 
             </div>
 
+            <div class="topbar-right">
+                <button type="button" class="btn btn-gold" onclick="abrirModalExcel()">
+                    📊 Cargar Excel
+                </button>
 
-            <button
-                type="button"
-                class="btn btn-gold"
-                onclick="abrirFormulario()"
-            >
-                + Registrar tercero
-            </button>
+                <button type="button" class="btn btn-gold" onclick="abrirFormulario()">
+                    ＋ Nuevo tercero
+                </button>
+            </div>
 
         </div>
 
@@ -1814,6 +1807,23 @@
                                     {% endif %}
 
                                 </form>
+
+                                <!-- NUEVO: Botón Eliminar con Confirmación -->
+                                <form
+                                    method="POST"
+                                    action="/crv/terceros/eliminar/{{ t.id }}"
+                                    style="display: inline;"
+                                    onsubmit="return confirm('¿Estás seguro de eliminar a {{ t.razon_social }}? Si tiene movimientos registrados no se podrá borrar.');"
+                                >
+                                    <button
+                                        type="submit"
+                                        class="btn btn-danger btn-small"
+                                        title="Eliminar registro"
+                                    >
+                                        Eliminar
+                                    </button>
+                                </form>
+                                
 
                             </div>
 
@@ -2527,7 +2537,59 @@
         }
     );
 
+    /* =====================================================
+       CARGA DE EXCEL PARA TERCEROS POR MEDIO DE FORMATO EXCEL
+    ===================================================== */
+
+    function abrirModalExcel() {
+        document.getElementById('overlayExcel').classList.add('active');
+        document.getElementById('modalExcel').classList.add('active');
+        document.body.classList.add('modal-open');
+    }
+
+    function cerrarModalExcel() {
+        document.getElementById('overlayExcel').classList.remove('active');
+        document.getElementById('modalExcel').classList.remove('active');
+        document.body.classList.remove('modal-open');
+    }
+
 </script>
+
+<!-- Modal de Carga Masiva desde Excel -->
+<div class="overlay" id="overlayExcel" onclick="cerrarModalExcel()"></div>
+
+<div class="modal-tercero" id="modalExcel">
+    <div class="modal-box" style="max-width: 580px;">
+        <div class="modal-header">
+            <div class="modal-header-left">
+                <div class="modal-icon">📊</div>
+                <div>
+                    <h2>Importar Terceros desde Excel</h2>
+                    <p>Sube el archivo Excel diligenciado con la información masiva.</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close" onclick="cerrarModalExcel()">×</button>
+        </div>
+
+        <form action="/crv/terceros/importar-excel" method="POST" enctype="multipart/form-data">
+            <div class="modal-body">
+                <div class="info-footer" style="margin-top: 0; margin-bottom: 18px;">
+                    💡 <strong>Nota sobre duplicados:</strong> Si el número de Identificación ya existe en el sistema para esta empresa, se actualizarán sus datos automáticamente en lugar de duplicarse.
+                </div>
+
+                <div class="field">
+                    <label for="archivo_excel">Seleccionar archivo Excel (.xlsx / .xls):</label>
+                    <input type="file" id="archivo_excel" name="archivo_excel" accept=".xlsx, .xls" required>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="padding: 15px 25px; background: white;">
+                <button type="button" class="btn btn-light" onclick="cerrarModalExcel()">Cancelar</button>
+                <button type="submit" class="btn btn-navy">Iniciar Carga</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 
 </body>

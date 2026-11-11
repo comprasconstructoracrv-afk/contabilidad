@@ -153,6 +153,18 @@ def _actualizar_revision_masiva(empresa_id, manifest):
             request.form.get(f"total_documento_{archivo_id}"),
             None,
         )
+        descuento = convertir_numero(
+            request.form.get(f"descuento_{archivo_id}"),
+            None,
+        )
+        otros_descuentos = convertir_numero(
+            request.form.get(f"otros_descuentos_{archivo_id}"),
+            None,
+        )
+        retencion = convertir_numero(
+            request.form.get(f"retencion_{archivo_id}"),
+            None,
+        )
         tipo_iva = request.form.get(
             f"tipo_iva_{archivo_id}",
             "",
@@ -182,6 +194,9 @@ def _actualizar_revision_masiva(empresa_id, manifest):
             "tarifa_iva": tarifa,
             "tipo_iva": tipo_iva,
             "valor_iva": iva,
+            "descuento": descuento,
+            "otros_descuentos": otros_descuentos,
+            "retencion": retencion,
             "total_documento": total,
             "tercero_existente": bool(tercero),
             "tercero_id": tercero.id if tercero else None,
