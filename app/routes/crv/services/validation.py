@@ -354,6 +354,9 @@ def crear_o_actualizar_tercero_desde_formulario(
             identificacion
         )
 
+    cuenta_destino= formulario.get("cuenta_destino", "").strip()
+    beneficiario = formulario.get("beneficiario", "").strip()
+
     if tercero is None:
 
         tercero = CRVTercero(
@@ -417,7 +420,10 @@ def crear_o_actualizar_tercero_desde_formulario(
             contacto=formulario.get(
                 "tercero_contacto",
                 ""
-            ).strip()
+            ).strip(),
+
+            numero_cuenta=cuenta_destino,
+            titular_cuenta=beneficiario
         )
 
         db.session.add(tercero)
@@ -459,8 +465,14 @@ def crear_o_actualizar_tercero_desde_formulario(
                     tercero,
                     atributo,
                     valor
-                )
-
+                )    
+   
+        if cuenta_destino and not tercero.numero_cuenta:
+            tercero.numero_cuenta = cuenta_destino
+  
+        if beneficiario and not tercero.titular_cuenta:
+            tercero.titular_cuenta = beneficiario 
+   
     return tercero
 
 def _tipo_comprobante_movimiento(movimiento):

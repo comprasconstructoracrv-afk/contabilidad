@@ -1212,6 +1212,9 @@
         proveedores=0,
         clientes=0,
         empleados=0,
+        contratistas=0,
+        entidades=0,
+        tercero=0,
         activos=0
     ) %}
 
@@ -1228,6 +1231,18 @@
 
         {% if t.tipo_tercero == "EMPLEADO" %}
             {% set ns.empleados = ns.empleados + 1 %}
+        {% endif %}
+
+        {% if t.tipo_tercero == "CONTRATISTA" %}
+            {% set ns.contratistas = ns.contratistas + 1 %}
+        {% endif %}
+
+        {% if t.tipo_tercero == "ENTIDAD" %}
+            {% set ns.entidades = ns.entidades + 1 %}
+        {% endif %}
+
+        {% if t.tipo_tercero == "TERCERO" %}
+            {% set ns.tercero = ns.tercero + 1 %}
         {% endif %}
 
         {% if t.activo %}
@@ -1318,17 +1333,89 @@
 
         </div>
 
-
         <div class="summary-card">
 
-            <div class="summary-icon todos">
-                👤
+            <div class="summary-icon empleado">
+                🦺
             </div>
 
             <div>
 
                 <div class="summary-label">
-                    Terceros activos
+                    Contratistas
+                </div>
+
+                <div class="summary-value">
+                    {{ ns.contratistas }}
+                </div>
+
+                <div class="summary-note">
+                    Contratistas registrados
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="summary-card">
+
+            <div class="summary-icon empleado">
+                🏦
+            </div>
+
+            <div>
+
+                <div class="summary-label">
+                    Entidades
+                </div>
+
+                <div class="summary-value">
+                    {{ ns.entidades }}
+                </div>
+
+                <div class="summary-note">
+                    Entidades registradas
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="summary-card">
+
+            <div class="summary-icon empleado">
+                🤝
+            </div>
+
+            <div>
+
+                <div class="summary-label">
+                    Otros Terceros
+                </div>
+
+                <div class="summary-value">
+                    {{ ns.tercero }}
+                </div>
+
+                <div class="summary-note">
+                    Otros terceros registrados
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon todos">
+                📋
+            </div>
+
+            <div>
+
+                <div class="summary-label">
+                    Total de Terceros activos
                 </div>
 
                 <div class="summary-value">
@@ -1429,6 +1516,10 @@
 
                 <option value="ENTIDAD">
                     Entidades
+                </option>
+
+                <option value="TERCERO">
+                    Otros Terceros
                 </option>
 
             </select>
@@ -1680,39 +1771,32 @@
 
 
                         <!-- BANCO -->
-
                         <td>
-
-                            {% if t.banco %}
-
-                                <strong>
-                                    {{ t.banco }}
-                                </strong>
-
-                                {% if t.numero_cuenta %}
-
-                                    <div class="third-commercial">
-
-                                        {{ t.tipo_cuenta or '' }}
-
-                                        {% if t.tipo_cuenta %}
-                                            ·
-                                        {% endif %}
-
-                                        {{ t.numero_cuenta }}
-
-                                    </div>
-
+                            {% if t.banco or t.numero_cuenta or t.tipo_cuenta %}
+                                {% if t.banco %}
+                                    <strong>{{ t.banco }}</strong>
                                 {% endif %}
 
-                            {% else %}
+                                {% if t.numero_cuenta or t.tipo_cuenta %}
+                                    <div class="third-commercial">
+                                        {% if t.tipo_cuenta %}
+                                            {{ t.tipo_cuenta }}
+                                        {% endif %}
 
+                                        {% if t.tipo_cuenta and t.numero_cuenta %}
+                                            -
+                                        {% endif %}
+
+                                        {% if t.numero_cuenta %}
+                                            {{ t.numero_cuenta }}
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% else %}
                                 <span class="contact-muted">
                                     Sin información bancaria
                                 </span>
-
                             {% endif %}
-
                         </td>
 
 

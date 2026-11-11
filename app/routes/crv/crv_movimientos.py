@@ -476,7 +476,6 @@ def nuevo_movimiento():
 
         modo="nuevo"
     )
-
 @crv_bp.route(
     "/movimientos/editar/<int:movimiento_id>",
     methods=["GET", "POST"]
@@ -531,6 +530,18 @@ def editar_movimiento(movimiento_id):
     ).order_by(
         CRVTercero.razon_social.asc()
     ).all()
+
+    # -------------------------------------------------------------------------
+    # 1. BÚSQUEDA DEL TERCERO ACTUALIZADO DESDE LA BD
+    # -------------------------------------------------------------------------
+    tercero_actual = None
+    if movimiento.tercero_id:
+        tercero_actual = CRVTercero.query.get(movimiento.tercero_id)
+    elif movimiento.tercero_identificacion:
+        tercero_actual = CRVTercero.query.filter_by(
+            empresa_id=empresa_id,
+            identificacion=movimiento.tercero_identificacion
+        ).first()
 
     if request.method == "POST":
 
@@ -592,29 +603,27 @@ def editar_movimiento(movimiento_id):
             else None
         )
 
+        # -------------------------------------------------------------------------
+        # 2. SE AGREGA LA ASIGNACIÓN DE TIPO Y DOCUMENTO DEL TERCERO EN EL MOVIMIENTO
+        # -------------------------------------------------------------------------
         if tercero_obj:
-
             movimiento.tercero_id = tercero_obj.id
-
             movimiento.tercero_nombre = tercero_obj.razon_social
-
             movimiento.tercero_identificacion = tercero_obj.identificacion
-
             movimiento.tercero_direccion = tercero_obj.direccion
-
             movimiento.tercero_email = tercero_obj.email
-
             movimiento.tercero_telefono = (
                 tercero_obj.celular
                 or tercero_obj.telefono
             )
-
             movimiento.tercero_contacto = tercero_obj.contacto
-
-        movimiento.tipo_documento = request.form.get(
-            "tipo_documento",
-            ""
-        ).strip()
+            
+            # ASIGNACIONES CLAVE AGREGADAS:
+            movimiento.tipo_tercero = tercero_obj.tipo_tercero
+            movimiento.tipo_documento = tercero_obj.tipo_documento
+        else:
+            movimiento.tipo_tercero = request.form.get("tipo_tercero", "TERCERO").strip()
+            movimiento.tipo_documento = request.form.get("tipo_documento_tercero", "NIT").strip()
 
         movimiento.numero_documento = request.form.get(
             "numero_documento",
@@ -740,6 +749,8 @@ def editar_movimiento(movimiento_id):
         terceros=terceros,
 
         movimiento=movimiento,
+
+        tercero_actual=tercero_actual,  # Pasa los datos vigentes del tercero a la vista
 
         modo="editar"
     )
