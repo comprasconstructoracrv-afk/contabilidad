@@ -433,7 +433,7 @@
                                     <label>Tipo tercero</label>
                                     <select name="tipo_tercero" id="tipo_tercero">
                                         {% set tipo_sel = (tercero_actual.tipo_tercero if tercero_actual and tercero_actual.tipo_tercero else (movimiento.tipo_tercero if movimiento and movimiento.tipo_tercero else 'PROVEEDOR')) %}
-                                        {% for x in ['PROVEEDOR','CLIENTE','EMPLEADO','CONTRATISTA','TERCERO'] %}
+                                        {% for x in ['PROVEEDOR','CLIENTE','EMPLEADO','EMPLEADO OBRA', 'PASANTE','CONTRATISTA','TERCERO'] %}
                                         <option value="{{ x }}" {% if tipo_sel == x %}selected{% endif %}>{{ x }}</option>
                                         {% endfor %}
                                     </select>
