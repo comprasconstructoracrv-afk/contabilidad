@@ -1053,6 +1053,20 @@
             .crv-fixed-menu{grid-template-columns:1fr;}
         }
 
+
+
+        .summary-card.clickable {
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            border: 1px solid transparent;
+        }
+
+        .summary-card.clickable:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 30px rgba(18, 40, 64, .12);
+            border-color: #d8b541;
+        }
+
 </style>
 <link rel="stylesheet" href="{{ url_for('static', filename='global-font.css') }}">
 </head>
@@ -1211,6 +1225,7 @@
     {% set ns = namespace(
         proveedores=0,
         clientes=0,
+        clientes_ecobike=0,
         empleados=0,
         empleados_obra=0,
         pasantes=0,
@@ -1229,6 +1244,10 @@
 
         {% if t.tipo_tercero == "CLIENTE" %}
             {% set ns.clientes = ns.clientes + 1 %}
+        {% endif %}
+
+        {% if t.tipo_tercero == "CLIENTE_ECOBIKE" %}
+            {% set ns.clientes_ecobike = ns.clientes_ecobike + 1 %}
         {% endif %}
 
         {% if t.tipo_tercero == "EMPLEADO" %}
@@ -1268,226 +1287,95 @@
 
     <div class="summary-grid">
 
-
-        <div class="summary-card">
-
-            <div class="summary-icon proveedor">
-                👥
-            </div>
-
+        <div class="summary-card clickable" onclick="abrirModalPorTipo('PROVEEDOR', 'Proveedores')">
+            <div class="summary-icon proveedor">👥</div>
             <div>
-
-                <div class="summary-label">
-                    Proveedores
-                </div>
-
-                <div class="summary-value">
-                    {{ ns.proveedores }}
-                </div>
-
-                <div class="summary-note">
-                    Proveedores registrados
-                </div>
-
+                <div class="summary-label">Proveedores</div>
+                <div class="summary-value">{{ ns.proveedores }}</div>
+                <div class="summary-note">Clic para ver listado</div>
             </div>
-
         </div>
 
-
-        <div class="summary-card">
-
-            <div class="summary-icon cliente">
-                👥
-            </div>
-
+        <div class="summary-card clickable" onclick="abrirModalPorTipo('CLIENTE', 'Clientes CRV')">
+            <div class="summary-icon cliente">👥</div>
             <div>
-
-                <div class="summary-label">
-                    Clientes
-                </div>
-
-                <div class="summary-value">
-                    {{ ns.clientes }}
-                </div>
-
-                <div class="summary-note">
-                    Clientes registrados
-                </div>
-
+                <div class="summary-label">Clientes CRV</div>
+                <div class="summary-value">{{ ns.clientes }}</div>
+                <div class="summary-note">Clic para ver listado</div>
             </div>
-
         </div>
 
-
-        <div class="summary-card">
-
-            <div class="summary-icon empleado">
-                👷
-            </div>
-
+        <div class="summary-card clickable" onclick="abrirModalPorTipo('CLIENTE_ECOBIKE', 'Clientes ECOBIKE')">
+            <div class="summary-icon cliente">👥</div>
             <div>
-
-                <div class="summary-label">
-                    Empleados
-                </div>
-
-                <div class="summary-value">
-                    {{ ns.empleados }}
-                </div>
-
-                <div class="summary-note">
-                    Empleados registrados
-                </div>
-
+                <div class="summary-label">Clientes ECOBIKE</div>
+                <div class="summary-value">{{ ns.clientes_ecobike }}</div>
+                <div class="summary-note">Clic para ver listado</div>
             </div>
-
         </div>
 
-        <div class="summary-card">
-
-            <div class="summary-icon proveedor">
-                🏗️
-            </div>
-
+        <div class="summary-card clickable" onclick="abrirModalPorTipo('EMPLEADO', 'Empleados')">
+            <div class="summary-icon empleado">👷</div>
             <div>
-
-                <div class="summary-label">
-                    Empleados de Obra
-                </div>
-
-                <div class="summary-value">
-                    {{ ns.empleados_obra }}
-                </div>
-
-                <div class="summary-note">
-                    Empleados de obra registrados
-                </div>
-
+                <div class="summary-label">Empleados</div>
+                <div class="summary-value">{{ ns.empleados }}</div>
+                <div class="summary-note">Clic para ver listado</div>
             </div>
-
         </div>
 
-        <div class="summary-card">
-
-            <div class="summary-icon proveedor">
-                👨‍💻
-            </div>
-
+        <div class="summary-card clickable" onclick="abrirModalPorTipo('EMPLEADO_OBRA', 'Empleados de Obra')">
+            <div class="summary-icon proveedor">🏗️</div>
             <div>
-
-                <div class="summary-label">
-                    Pasantes
-                </div>
-
-                <div class="summary-value">
-                    {{ ns.pasantes }}
-                </div>
-
-                <div class="summary-note">
-                    Pasantes registrados
-                </div>
-
+                <div class="summary-label">Empleados de Obra</div>
+                <div class="summary-value">{{ ns.empleados_obra }}</div>
+                <div class="summary-note">Clic para ver listado</div>
             </div>
-
         </div>
 
-        <div class="summary-card">
-
-            <div class="summary-icon empleado">
-                🦺
-            </div>
-
+        <div class="summary-card clickable" onclick="abrirModalPorTipo('PASANTE', 'Pasantes')">
+            <div class="summary-icon proveedor">👨‍💻</div>
             <div>
-
-                <div class="summary-label">
-                    Contratistas
-                </div>
-
-                <div class="summary-value">
-                    {{ ns.contratistas }}
-                </div>
-
-                <div class="summary-note">
-                    Contratistas registrados
-                </div>
-
+                <div class="summary-label">Pasantes</div>
+                <div class="summary-value">{{ ns.pasantes }}</div>
+                <div class="summary-note">Clic para ver listado</div>
             </div>
-
         </div>
 
-        <div class="summary-card">
-
-            <div class="summary-icon empleado">
-                🏦
-            </div>
-
+        <div class="summary-card clickable" onclick="abrirModalPorTipo('CONTRATISTA', 'Contratistas')">
+            <div class="summary-icon empleado">🦺</div>
             <div>
-
-                <div class="summary-label">
-                    Entidades
-                </div>
-
-                <div class="summary-value">
-                    {{ ns.entidades }}
-                </div>
-
-                <div class="summary-note">
-                    Entidades registradas
-                </div>
-
+                <div class="summary-label">Contratistas</div>
+                <div class="summary-value">{{ ns.contratistas }}</div>
+                <div class="summary-note">Clic para ver listado</div>
             </div>
-
         </div>
 
-        <div class="summary-card">
-
-            <div class="summary-icon empleado">
-                🤝
-            </div>
-
+        <div class="summary-card clickable" onclick="abrirModalPorTipo('ENTIDAD', 'Entidades')">
+            <div class="summary-icon empleado">🏦</div>
             <div>
-
-                <div class="summary-label">
-                    Otros Terceros
-                </div>
-
-                <div class="summary-value">
-                    {{ ns.tercero }}
-                </div>
-
-                <div class="summary-note">
-                    Otros terceros registrados
-                </div>
-
+                <div class="summary-label">Entidades</div>
+                <div class="summary-value">{{ ns.entidades }}</div>
+                <div class="summary-note">Clic para ver listado</div>
             </div>
-
         </div>
 
-
-        <div class="summary-card">
-
-            <div class="summary-icon todos">
-                📋
-            </div>
-
+        <div class="summary-card clickable" onclick="abrirModalPorTipo('TERCERO', 'Otros Terceros')">
+            <div class="summary-icon empleado">🤝</div>
             <div>
-
-                <div class="summary-label">
-                    Total de Terceros activos
-                </div>
-
-                <div class="summary-value">
-                    {{ ns.activos }}
-                </div>
-
-                <div class="summary-note">
-                    Total activos
-                </div>
-
+                <div class="summary-label">Otros Terceros</div>
+                <div class="summary-value">{{ ns.tercero }}</div>
+                <div class="summary-note">Clic para ver listado</div>
             </div>
-
         </div>
 
+        <div class="summary-card clickable" onclick="abrirModalPorTipo('ACTIVOS', 'Total de Terceros Activos')">
+            <div class="summary-icon todos">📋</div>
+            <div>
+                <div class="summary-label">Total de Terceros activos</div>
+                <div class="summary-value">{{ ns.activos }}</div>
+                <div class="summary-note">Clic para ver activos</div>
+            </div>
+        </div>
 
     </div>
 
@@ -1561,7 +1449,11 @@
                 </option>
 
                 <option value="CLIENTE">
-                    Clientes
+                    Clientes CRV
+                </option>
+
+                <option value="CLIENTE_ECOBIKE">
+                    Clientes ECOBIKE
                 </option>
 
                 <option value="EMPLEADO">
@@ -1654,7 +1546,13 @@
                             {% elif t.tipo_tercero == "CLIENTE" %}
 
                                 <span class="tag tag-cliente">
-                                    CLIENTE
+                                    CLIENTE CRV
+                                </span>
+
+                            {% elif t.tipo_tercero == "CLIENTE_ECOBIKE" %}
+
+                                <span class="tag tag-cliente">
+                                    CLIENTE ECOBIKE
                                 </span>
 
                             {% elif t.tipo_tercero == "EMPLEADO" %}
@@ -1713,6 +1611,12 @@
                                     </div>
 
                                 {% elif t.tipo_tercero == "CLIENTE" %}
+
+                                    <div class="avatar avatar-cliente">
+                                        {{ inicial }}
+                                    </div>
+
+                                {% elif t.tipo_tercero == "CLIENTE_ECOBIKE" %}
 
                                     <div class="avatar avatar-cliente">
                                         {{ inicial }}
@@ -2150,7 +2054,11 @@
                             </option>
 
                             <option value="CLIENTE">
-                                Cliente
+                                Cliente CRV
+                            </option>
+
+                            <option value="CLIENTE_ECOBIKE">
+                                Cliente ECOBIKE
                             </option>
 
                             <option value="EMPLEADO">
@@ -2735,6 +2643,81 @@
         document.body.classList.remove('modal-open');
     }
 
+    /* =====================================================
+       MODAL DE LISTADO POR TIPO AL CLICAR EN TARJETAS
+    ===================================================== */
+
+    function abrirModalPorTipo(tipoSeleccionado, tituloCategoria) {
+        const tablaPrincipal = document.getElementById("tablaTerceros");
+        const cuerpoModal = document.getElementById("cuerpoTablaModalTipo");
+        const tituloEl = document.getElementById("tituloModalDetalleTipo");
+        const subtituloEl = document.getElementById("subtituloModalDetalleTipo");
+
+        if (!cuerpoModal) return;
+
+        tituloEl.textContent = tituloCategoria;
+        cuerpoModal.innerHTML = "";
+
+        let contador = 0;
+
+        if (tablaPrincipal) {
+            const filas = tablaPrincipal.querySelectorAll("tbody tr");
+
+            filas.forEach(function(fila) {
+                const tipoFila = fila.dataset.tipo || "";
+                const celdas = fila.querySelectorAll("td");
+
+                // Celda 6 es Estado (ACTIVO / INACTIVO)
+                const textoEstado = celdas[6] ? celdas[6].textContent.trim() : "";
+
+                const coincide = (tipoSeleccionado === "ACTIVOS")
+                    ? (textoEstado === "ACTIVO")
+                    : (tipoFila === tipoSeleccionado);
+
+                if (coincide && celdas.length >= 7) {
+                    contador++;
+                    const nuevaFila = document.createElement("tr");
+                    // Copiamos exactamente el HTML de las columnas: Nombre(1), ID(2), Contacto(3), Ciudad(4), Banco(5), Estado(6)
+                    nuevaFila.innerHTML = `
+                        <td>${celdas[1].innerHTML}</td>
+                        <td>${celdas[2].innerHTML}</td>
+                        <td>${celdas[3].innerHTML}</td>
+                        <td>${celdas[4].innerHTML}</td>
+                        <td>${celdas[5].innerHTML}</td>
+                        <td>${celdas[6].innerHTML}</td>
+                    `;
+                    cuerpoModal.appendChild(nuevaFila);
+                }
+            });
+        }
+
+        subtituloEl.textContent = contador === 1
+            ? "1 registro encontrado"
+            : `${contador} registros encontrados`;
+
+        if (contador === 0) {
+            cuerpoModal.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 30px; color: #7b8b9d;">
+                        No hay terceros registrados en la categoría <strong>${tituloCategoria}</strong>.
+                    </td>
+                </tr>
+            `;
+        }
+
+        document.getElementById("overlayDetalleTipo").classList.add("active");
+        document.getElementById("modalDetalleTipo").classList.add("active");
+        document.body.classList.add("modal-open");
+    }
+
+    function cerrarModalDetalleTipo() {
+        const overlay = document.getElementById("overlayDetalleTipo");
+        const modal = document.getElementById("modalDetalleTipo");
+        if (overlay) overlay.classList.remove("active");
+        if (modal) modal.classList.remove("active");
+        document.body.classList.remove("modal-open");
+    }
+
 </script>
 
 <!-- Modal de Carga Masiva desde Excel -->
@@ -2770,6 +2753,50 @@
                 <button type="submit" class="btn btn-navy">Iniciar Carga</button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- =========================================================
+     MODAL DETALLE DE TERCEROS POR TIPO
+========================================================= -->
+<div class="overlay" id="overlayDetalleTipo" onclick="cerrarModalDetalleTipo()"></div>
+
+<div class="modal-tercero" id="modalDetalleTipo">
+    <div class="modal-box" style="max-width: 1050px;">
+        <div class="modal-header">
+            <div class="modal-header-left">
+                <div class="modal-icon">👥</div>
+                <div>
+                    <h2 id="tituloModalDetalleTipo">Listado por Tipo</h2>
+                    <p id="subtituloModalDetalleTipo">Registros encontrados en esta categoría</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close" onclick="cerrarModalDetalleTipo()">×</button>
+        </div>
+
+        <div class="modal-body" style="padding: 16px 20px;">
+            <div class="table-wrap" style="padding: 0;">
+                <table style="min-width: 820px;">
+                    <thead>
+                        <tr>
+                            <th>Nombre / Razón social</th>
+                            <th>Identificación</th>
+                            <th>Contacto</th>
+                            <th>Ciudad</th>
+                            <th>Banco / Cuenta</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTablaModalTipo">
+                        <!-- Se llena automáticamente con JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="modal-actions" style="padding: 14px 22px; margin-top: 0; background: white;">
+            <button type="button" class="btn btn-navy" onclick="cerrarModalDetalleTipo()">Cerrar</button>
+        </div>
     </div>
 </div>
 

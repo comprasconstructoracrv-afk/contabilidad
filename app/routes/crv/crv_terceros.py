@@ -284,6 +284,8 @@ def importar_terceros_excel():
     mapa_tipos_tercero = {
         "CLIENTE": "CLIENTE",
         "CLIENTES": "CLIENTE",
+        "CLIENTE_ECOBIKE": "CLIENTE_ECOBIKE",
+        "CLIENTES_ECOBIKE": "CLIENTE_ECOBIKE",
         "PROVEEDOR": "PROVEEDOR",
         "PROVEEDORES": "PROVEEDOR",
         "EMPLEADO": "EMPLEADO",
