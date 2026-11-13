@@ -619,19 +619,19 @@
                                             value="{{ x }}" {% if movimiento and movimiento.forma_pago==x %}selected{%
                                             endif %}>{{ x }}</option>{% endfor %}
                                     </select></div>
-                                <div class="field"><label>Cuenta / Caja origen</label><input name="cuenta"
+                                <div class="field"><label>Cuenta CRV</label><input name="cuenta"
                                         value="{{ movimiento.cuenta if movimiento else '' }}"
                                         placeholder="Ej: 71800002023"></div>
 
                                 <div class="field">
-                                    <label>Cuenta destino</label>
+                                    <label>Cuenta tercero</label>
                                     <input name="cuenta_destino" id="cuenta_destino" 
                                         value="{{ (tercero_actual.numero_cuenta if tercero_actual and tercero_actual.numero_cuenta else (movimiento.cuenta_destino if movimiento else ''))|e }}">
                                 </div>
 
                                 <!-- BENEFICIARIO -->
                                 <div class="field">
-                                    <label>Beneficiario</label>
+                                    <label>Nombre Tercero</label>
                                     <input name="beneficiario" id="beneficiario" 
                                         value="{{ (tercero_actual.titular_cuenta or tercero_actual.razon_social if tercero_actual else (movimiento.beneficiario if movimiento else ''))|e }}">
                                 </div>
