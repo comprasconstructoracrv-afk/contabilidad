@@ -547,6 +547,168 @@
             color: #fff;
         }
 
+        /* =====================================================
+        MODAL CENTRAL
+        ===================================================== */
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+
+            background: rgba(13, 29, 48, .52);
+
+            backdrop-filter: blur(3px);
+
+            opacity: 0;
+            visibility: hidden;
+
+            transition: .18s ease;
+
+            z-index: 9998;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+
+        .modal-tercero {
+            position: fixed;
+            inset: 0;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 25px;
+
+            opacity: 0;
+            visibility: hidden;
+
+            transform: scale(.98);
+
+            transition: .18s ease;
+
+            z-index: 9999;
+
+            pointer-events: none;
+        }
+
+
+        .modal-tercero.active {
+            opacity: 1;
+            visibility: visible;
+
+            transform: scale(1);
+
+            pointer-events: auto;
+        }
+
+
+        .modal-box {
+            width: 100%;
+            max-width: 1180px;
+
+            max-height: 92vh;
+
+            background: white;
+
+            border-radius: 20px;
+
+            box-shadow:
+                0 30px 80px rgba(10, 28, 48, .28);
+
+            display: flex;
+            flex-direction: column;
+
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 18px 22px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 15px;
+
+            border-bottom: 1px solid #e6ebf0;
+
+            background: #ffffff;
+        }
+
+
+        .modal-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+
+        .modal-icon {
+            width: 42px;
+            height: 42px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 11px;
+
+            background: #17304f;
+            color: white;
+
+            font-size: 25px;
+        }
+
+
+        .modal-header h2 {
+            margin: 0;
+
+            font-size: 20px;
+
+            color: #17304f;
+        }
+
+
+        .modal-header p {
+            margin: 4px 0 0;
+
+            font-size: 11px;
+
+            color: #78899c;
+        }
+
+
+        .modal-close {
+            width: 38px;
+            height: 38px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background: #edf2f7;
+
+            color: #17304f;
+
+            font-size: 20px;
+
+            cursor: pointer;
+        }
+
+
+        .modal-body {
+            overflow-y: auto;
+
+            padding: 22px 25px 25px;
+
+            background: #fbfcfd;
+        }
+
+
         .crv-main { min-width: 0; }
 
         @media (max-width: 1050px) {
@@ -977,12 +1139,9 @@
 
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
 
-                <a
-                    href="/crv/movimientos/nuevo"
-                    class="btn btn-gold"
-                >
+                <button type="button" class="btn btn-gold" onclick="abrirModalExcelMovimientos()">
                     📊 Cargar Excel
-                </a>
+                </button>
 
                 <a
                     href="/crv/movimientos/nuevo"
@@ -1247,6 +1406,56 @@
 </div>
 
 </div>
+
+<!-- Modal de Carga Masiva de Movimientos desde Excel -->
+<div class="overlay" id="overlayExcelMov" onclick="cerrarModalExcelMovimientos()"></div>
+
+<div class="modal-tercero" id="modalExcelMov">
+    <div class="modal-box" style="max-width: 600px;">
+        <div class="modal-header">
+            <div class="modal-header-left">
+                <div class="modal-icon">📊</div>
+                <div>
+                    <h2>Importar Movimientos desde Excel</h2>
+                    <p>Sube la plantilla con los movimientos contables a registrar.</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close" onclick="cerrarModalExcelMovimientos()">×</button>
+        </div>
+
+        <form action="/crv/movimientos/importar-excel" method="POST" enctype="multipart/form-data">
+            <div class="modal-body">
+                <div style="background: #eaf3ff; color: #275a95; padding: 12px 14px; border-radius: 10px; font-size: 12px; margin-bottom: 16px;">
+                    💡 <strong>Cálculo automático y Terceros:</strong><br>
+                    • El sistema buscará al tercero por <strong>TERCERO_IDENTIFICACION</strong> y asociará su nombre y datos.<br>
+                    • Si solo pones <strong>TOTAL_DOCUMENTO</strong> y <strong>VALOR_IVA</strong>, el sistema calculará automáticamente la <strong>Base Gravable</strong> y la <strong>Tarifa IVA (%)</strong>.
+                </div>
+
+                <div class="field">
+                    <label for="archivo_excel_mov">Seleccionar archivo Excel (.xlsx / .xls):</label>
+                    <input type="file" id="archivo_excel_mov" name="archivo_excel" accept=".xlsx, .xls" required>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="padding: 15px 25px; background: white;">
+                <button type="button" class="btn btn-light" onclick="cerrarModalExcelMovimientos()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Iniciar Carga</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrirModalExcelMovimientos() {
+        document.getElementById('overlayExcelMov').classList.add('active');
+        document.getElementById('modalExcelMov').classList.add('active');
+    }
+
+    function cerrarModalExcelMovimientos() {
+        document.getElementById('overlayExcelMov').classList.remove('active');
+        document.getElementById('modalExcelMov').classList.remove('active');
+    }
+</script>
 
 </body>
 </html>
