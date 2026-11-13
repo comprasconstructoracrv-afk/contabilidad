@@ -619,10 +619,17 @@
                                             value="{{ x }}" {% if movimiento and movimiento.forma_pago==x %}selected{%
                                             endif %}>{{ x }}</option>{% endfor %}
                                     </select></div>
-                                <div class="field"><label>Cuenta CRV</label><input name="cuenta"
-                                        value="{{ movimiento.cuenta if movimiento else '' }}"
-                                        placeholder="Ej: 71800002023"></div>
-
+                                <div class="field"><label>Cuenta CRV</label><select name="cuenta" id="cuenta" required>
+                                        <option value="71800002023" {% if not movimiento or movimiento.cuenta == '71800002023' %}selected{% endif %}>
+                                            71800002023 - Constructora
+                                        </option>
+                                        <!-- Pars una nueva cuenta en caso de existir, solo agregar la siguiente instuccion:
+                                        <option value="99999999999" {% if movimiento and movimiento.cuenta == '99999999999' %}selected{% endif %}>
+                                            99999999999 - Accionista
+                                        </option>
+                                        -->
+                                    </select>
+                                </div>
                                 <div class="field">
                                     <label>Cuenta tercero</label>
                                     <input name="cuenta_destino" id="cuenta_destino" 
