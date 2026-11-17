@@ -383,6 +383,121 @@
             margin: 0;
         }
 
+        .modal-resultado-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(3px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 16px;
+        }
+
+        .modal-resultado-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 620px;
+            border-radius: 18px;
+            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.25);
+            overflow: hidden;
+            animation: modalFadeIn 0.2s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .modal-resultado-header {
+            padding: 18px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .modal-resultado-header.exito {
+            background: #ecfdf5;
+            color: #065f46;
+        }
+
+        .modal-resultado-header.parcial {
+            background: #fffbeb;
+            color: #92400e;
+        }
+
+        .modal-resultado-body {
+            padding: 20px 22px;
+        }
+
+        .resumen-badges {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .badge-stat {
+            flex: 1;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .badge-stat.ok {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+
+        .badge-stat.err {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .lista-errores-excel {
+            max-height: 260px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 14px;
+            background: #f8fafc;
+            display: grid;
+            gap: 8px;
+        }
+
+        .item-error-excel {
+            font-size: 12.5px;
+            color: #334155;
+            padding: 8px 10px;
+            background: #ffffff;
+            border-left: 3px solid #ef4444;
+            border-radius: 6px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+
+        .modal-resultado-footer {
+            padding: 14px 22px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-cerrar-resultado {
+            background: #0f172a;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        
         .empty {
             text-align: center;
             padding: 50px 20px;
@@ -1456,6 +1571,65 @@
         document.getElementById('modalExcelMov').classList.remove('active');
     }
 </script>
+
+
+{% if reporte_excel %}
+    <div id="modalResultadoExcel" class="modal-resultado-overlay">
+        <div class="modal-resultado-card">
+            <div class="modal-resultado-header {{ 'parcial' if reporte_excel.errores else 'exito' }}">
+                <h3 style="margin: 0; font-size: 16px; font-weight: 800;">
+                    {% if reporte_excel.errores %}
+                        ⚠️ Resultado de la carga masiva (con novedades)
+                    {% else %}
+                        ✅ Carga masiva completada con éxito
+                    {% endif %}
+                </h3>
+                <button type="button" onclick="cerrarModalResultadoExcel()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: inherit;">&times;</button>
+            </div>
+
+            <div class="modal-resultado-body">
+                <div class="resumen-badges">
+                    <div class="badge-stat ok">
+                        ✔ Registros cargados: <span style="font-size: 16px;">{{ reporte_excel.creados }}</span>
+                    </div>
+                    {% if reporte_excel.errores %}
+                    <div class="badge-stat err">
+                        ✖ No cargados: <span style="font-size: 16px;">{{ reporte_excel.errores|length }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if reporte_excel.errores %}
+                    <p style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #475569;">
+                        Detalle de filas que no se ingresaron (duplicadas o con error):
+                    </p>
+                    <div class="lista-errores-excel">
+                        {% for err in reporte_excel.errores %}
+                            <div class="item-error-excel">{{ err }}</div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p style="margin: 0; font-size: 13.5px; color: #334155;">
+                        Todos los movimientos del archivo Excel fueron validados y guardados correctamente en el sistema.
+                    </p>
+                {% endif %}
+            </div>
+
+            <div class="modal-resultado-footer">
+                <button type="button" class="btn-cerrar-resultado" onclick="cerrarModalResultadoExcel()">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function cerrarModalResultadoExcel() {
+            const modal = document.getElementById("modalResultadoExcel");
+            if (modal) modal.remove();
+        }
+    </script>
+    {% endif %}
 
 </body>
 </html>
