@@ -379,6 +379,53 @@
             white-space: nowrap;
         }
 
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .nomina-split {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin: 4px 0;
+        }
+
+        .nomina-split-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .nomina-split-tag {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+
+        .nomina-split-amount {
+            font-size: 19px;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+
+        @media (max-width: 960px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .actions form {
             margin: 0;
         }
@@ -886,7 +933,7 @@
                 <span>Cuentas por pagar</span>
             </a>
 
-            <a href="#">
+            <a href="/crv/cuentas-por-cobrar">
                 <span class="crv-menu-icon">💰</span>
                 <span>Cuentas por cobrar</span>
             </a>
@@ -901,7 +948,7 @@
                 <span>Conciliación bancaria</span>
             </a>
 
-            <a href="#">
+            <a href="/crv/proyectos">
                 <span class="crv-menu-icon">🏗️</span>
                 <span>Proyectos / obras</span>
             </a>
@@ -1029,55 +1076,51 @@
     <div class="summary-grid">
 
         <div class="summary-card ingresos">
-
-            <div class="summary-label">
-                INGRESOS CONSULTADOS
-            </div>
-
-            <div class="summary-value">
-                ${{ "{:,.0f}".format(ns.ingresos) }}
-            </div>
-
+            <div class="summary-label">INGRESOS CONSULTADOS</div>
+            <div class="summary-value">${{ "{:,.0f}".format(totales.ingresos) }}</div>
+            <div class="summary-note">Facturación e ingresos recibidos</div>
         </div>
 
         <div class="summary-card compras">
-
-            <div class="summary-label">
-                COMPRAS CONSULTADAS
-            </div>
-
-            <div class="summary-value">
-                ${{ "{:,.0f}".format(ns.compras) }}
-            </div>
-
+            <div class="summary-label">COMPRAS CONSULTADAS</div>
+            <div class="summary-value">${{ "{:,.0f}".format(totales.compras) }}</div>
+            <div class="summary-note">Materiales, insumos y proveedores</div>
         </div>
 
         <div class="summary-card gastos">
+            <div class="summary-label">GASTOS OPERATIVOS</div>
+            <div class="summary-value">${{ "{:,.0f}".format(totales.gastos_operativos) }}</div>
+            <div class="summary-note">Servicios, arriendos y gastos generales</div>
+        </div>
 
-            <div class="summary-label">
-                GASTOS CONSULTADOS
+        <!-- FILA 2 -->
+        <div class="summary-card nomina">
+            <div class="summary-label">NÓMINA EMPLEADOS</div>
+            <div class="nomina-split">
+                <div class="nomina-split-row">
+                    <span class="nomina-split-tag">OBRA:</span>
+                    <span class="nomina-split-amount">${{ "{:,.0f}".format(totales.nomina_obra) }}</span>
+                </div>
+                <div class="nomina-split-row">
+                    <span class="nomina-split-tag">CRV:</span>
+                    <span class="nomina-split-amount">${{ "{:,.0f}".format(totales.nomina_afiliados) }}</span>
+                </div>
             </div>
-
-            <div class="summary-value">
-                ${{ "{:,.0f}".format(ns.gastos) }}
-            </div>
-
             <div class="summary-note">
-                Incluye gasto general, nómina, anticipos y otros egresos
+                Total nómina: <strong>${{ "{:,.0f}".format(totales.nomina_total) }}</strong>
             </div>
+        </div>
 
+        <div class="summary-card anticipos">
+            <div class="summary-label">ANTICIPOS Y PRÉSTAMOS</div>
+            <div class="summary-value">${{ "{:,.0f}".format(totales.anticipos) }}</div>
+            <div class="summary-note">Cartera por descontar a empleados</div>
         </div>
 
         <div class="summary-card total">
-
-            <div class="summary-label">
-                REGISTROS EN CONSULTA
-            </div>
-
-            <div class="summary-value">
-                {{ movimientos|length }}
-            </div>
-
+            <div class="summary-label">REGISTROS EN CONSULTA</div>
+            <div class="summary-value">{{ movimientos|length }}</div>
+            <div class="summary-note">Total de movimientos filtrados</div>
         </div>
 
     </div>

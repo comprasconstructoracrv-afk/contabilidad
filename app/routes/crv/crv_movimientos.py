@@ -71,10 +71,48 @@ def movimientos():
         )
 
     if tipo:
-
-        query = query.filter(
-            CRVMovimiento.tipo == tipo
+        tipo_limpio = (
+            tipo.strip()
+            .upper()
+            .replace("_", " ")
+            .replace("Á", "A")
+            .replace("É", "E")
+            .replace("Í", "I")
+            .replace("Ó", "O")
+            .replace("Ú", "U")
         )
+
+        col_normalizada = db.func.upper(db.func.trim(CRVMovimiento.tipo))
+        for origen, destino in (
+            ("_", " "),
+            ("\n", " "),
+            ("\r", " "),
+            ("\t", " "),
+            ("  ", " "),
+            ("Á", "A"),
+            ("É", "E"),
+            ("Í", "I"),
+            ("Ó", "O"),
+            ("Ú", "U"),
+        ):
+            col_normalizada = db.func.replace(col_normalizada, origen, destino)
+
+        if tipo_limpio == "NOMINA OBRA":
+            query = query.filter(
+                db.and_(
+                    col_normalizada.like("%NOMINA%"),
+                    col_normalizada.like("%OBRA%"),
+                )
+            )
+        elif tipo_limpio == "NOMINA AFILIADOS":
+            query = query.filter(
+                db.and_(
+                    col_normalizada.like("%NOMINA%"),
+                    ~col_normalizada.like("%OBRA%"),
+                )
+            )
+        else:
+            query = query.filter(col_normalizada == tipo_limpio)
 
     if tercero:
 
@@ -116,6 +154,39 @@ def movimientos():
         Sede.nombre.asc()
     ).all()
 
+    # Calculo de indicadores de movimientos por tipo y categoría
+    totales = {
+        "ingresos": 0.0,
+        "compras": 0.0,
+        "gastos_operativos": 0.0,
+        "nomina_obra": 0.0,
+        "nomina_afiliados": 0.0,
+        "anticipos": 0.0,
+    }
+
+    for m in registros:
+        val = float(m.valor or 0)
+        t = (m.tipo or "").strip().upper()
+        cat = (m.categoria or "").strip().upper()
+        sub = (m.subcategoria or "").strip().upper()
+        texto_clasificacion = f"{t} {cat} {sub}"
+
+        if t == "INGRESO":
+            totales["ingresos"] += val
+        elif t == "COMPRA":
+            totales["compras"] += val
+        elif any(p in texto_clasificacion for p in ("ANTICIPO", "PRESTAMO", "PRÉSTAMO")):
+            totales["anticipos"] += val
+        elif any(p in texto_clasificacion for p in ("NOMINA", "NÓMINA", "SEGURIDAD SOCIAL", "SALARIO")):
+            if "OBRA" in texto_clasificacion:
+                totales["nomina_obra"] += val
+            else:
+                totales["nomina_afiliados"] += val
+        else:
+            totales["gastos_operativos"] += val
+
+    totales["nomina_total"] = totales["nomina_obra"] + totales["nomina_afiliados"]
+
     reporte_excel = session.pop("reporte_importacion_excel", None)
 
     return render_template(
@@ -128,7 +199,8 @@ def movimientos():
         sede_actual=sede_id,
         tipo_actual=tipo,
         tercero_actual=tercero,
-        reporte_excel=reporte_excel
+        reporte_excel=reporte_excel,
+        totales=totales
     )
 
 @crv_bp.route(
