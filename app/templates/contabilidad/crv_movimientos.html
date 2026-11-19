@@ -282,6 +282,53 @@
         .table-wrap {
             overflow-x: auto;
             padding: 0 16px 16px;
+            scrollbar-width: none;  
+            -ms-overflow-style: none;
+        }
+
+        .table-wrap::-webkit-scrollbar {
+            display: none;     
+        }
+
+        .crv-floating-scrollbar {
+            position: fixed;
+            bottom: 18px;
+            height: 18px;
+            overflow-x: scroll;
+            overflow-y: hidden;
+            background: #e2e8f0;
+            border-top: 1px solid #cbd5e1;
+            border-radius: 10px;
+            z-index: 9500;
+            box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.12);
+            display: none; 
+        }
+
+        .crv-floating-scrollbar::-webkit-scrollbar {
+            height: 14px;
+        }
+
+        .crv-floating-scrollbar::-webkit-scrollbar-track {
+            background: #e2e8f0;
+        }
+
+        .crv-floating-scrollbar::-webkit-scrollbar-thumb {
+            background: #17304f;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            cursor: grab;
+        }
+
+        .crv-floating-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #0f172a;
+        }
+
+        .crv-floating-scrollbar::-webkit-scrollbar-thumb:active {
+            cursor: grabbing;
+        }
+
+        .table-card {
+            margin-bottom: 32px;
         }
 
         table {
@@ -1620,6 +1667,75 @@
         document.getElementById('modalExcelMov').classList.remove('active');
     }
 </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const wraps = document.querySelectorAll(".table-wrap");
+    
+        wraps.forEach(function (wrap) {
+            const table = wrap.querySelector("table");
+            if (!table) return;
+    
+            // Crea la barra flotante automáticamente
+            const bar = document.createElement("div");
+            bar.className = "crv-floating-scrollbar";
+    
+            const inner = document.createElement("div");
+            inner.style.height = "1px";
+            bar.appendChild(inner);
+            document.body.appendChild(bar);
+    
+            let syncing = false;
+    
+            function updateBar() {
+                const rect = wrap.getBoundingClientRect();
+                const needsScroll = table.scrollWidth > wrap.clientWidth + 2;
+                const isVisibleOnScreen = rect.top < window.innerHeight && rect.bottom > 80;
+    
+                if (needsScroll && isVisibleOnScreen) {
+                    bar.style.display = "block";
+                    bar.style.left = rect.left + "px";
+                    bar.style.width = rect.width + "px";
+                    inner.style.width = table.scrollWidth + "px";
+                    bar.scrollLeft = wrap.scrollLeft;
+                } else {
+                    bar.style.display = "none";
+                }
+            }
+    
+            bar.addEventListener("scroll", function () {
+                if (syncing) return;
+                syncing = true;
+                wrap.scrollLeft = bar.scrollLeft;
+                syncing = false;
+            });
+    
+            wrap.addEventListener("scroll", function () {
+                if (syncing) return;
+                syncing = true;
+                bar.scrollLeft = wrap.scrollLeft;
+                syncing = false;
+            });
+    
+            wrap.addEventListener("wheel", function (e) {
+                if (e.shiftKey && e.deltaY !== 0) {
+                    e.preventDefault();
+                    wrap.scrollLeft += e.deltaY;
+                }
+            }, { passive: false });
+    
+            window.addEventListener("resize", updateBar);
+            window.addEventListener("scroll", updateBar, { passive: true });
+            
+            if (window.ResizeObserver) {
+                new ResizeObserver(updateBar).observe(wrap);
+                new ResizeObserver(updateBar).observe(table);
+            }
+    
+            updateBar();
+        });
+    });
+    </script>
 
 
 {% if reporte_excel %}
