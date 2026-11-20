@@ -352,312 +352,343 @@
 
 <body>
     <div class="page">
-            <main class="main">
-                <div class="shell">
-                    <header class="header"><img src="{{ url_for('static', filename='logo_crv.png') }}" alt="CRV">
-                        <h1>CRV CONSTRUCTORA - {{ 'Editar movimiento' if modo == 'editar' else 'Registrar movimiento' }}
-                        </h1>
-                        <p>Registro contable con control de tercero, proyecto, IVA, pagos y trazabilidad bancaria</p>
-                    </header>
-                    <div class="topbar">
-                        <div><a href="/crv/movimientos" class="btn black">← Volver</a> <span class="badge">● {{
-                                empresa_nombre }}</span></div>
-                    </div>
-                    <form method="POST">
-                        <section class="section">
-                            <h2>Información del movimiento</h2>
-                            <div class="grid">
-                                <div class="field"><label>Fecha contable *</label><input type="date" name="fecha"
-                                        required
-                                        value="{{ movimiento.fecha.isoformat() if movimiento and movimiento.fecha else '' }}">
-                                </div>
-                                <div class="field"><label>Tipo *</label><select name="tipo" id="tipo" required
-                                        onchange="ajustarIVAporTipo()">
-                                        <option value="">Seleccione...</option>{% for x in
-                                        ['INGRESO','COMPRA','GASTO','NOMINA AFILIADOS','NOMINA
-                                        OBRA','ANTICIPO','PRESTAMO EMPLEADO','TRANSFERENCIA','OTRO'] %}<option
-                                            value="{{ x }}" {% if movimiento and movimiento.tipo==x %}selected{% endif
-                                            %}>{{ x }}</option>{% endfor %}
-                                    </select></div>
-                                <div class="field"><label>Sede</label><select name="sede_id">
-                                        <option value="">General</option>{% for s in sedes %}<option value="{{ s.id }}"
-                                            {% if movimiento and movimiento.sede_id==s.id %}selected{% endif %}>{{
-                                            s.nombre }}</option>{% endfor %}
-                                    </select></div>
-                                <div class="field"><label>Categoría *</label><input name="categoria" required
-                                        value="{{ movimiento.categoria if movimiento else '' }}"></div>
-                                <div class="field"><label>Subcategoría</label><input name="subcategoria"
-                                        value="{{ movimiento.subcategoria if movimiento else '' }}"></div>
-                                <div class="field"><label>Proyecto</label><input name="proyecto"
-                                        value="{{ movimiento.proyecto if movimiento else '' }}"></div>
-                                <div class="field"><label>Centro de costo</label><input name="centro_costo"
-                                        value="{{ movimiento.centro_costo if movimiento else '' }}"></div>
-                                <div class="field"><label>Obra</label><input name="obra"
-                                        value="{{ movimiento.obra if movimiento else '' }}"></div>
-                                <div class="field span3"><label>Concepto *</label><input name="concepto" required
-                                        value="{{ movimiento.concepto if movimiento else '' }}"></div>
-                                <div class="field span3"><label>Descripción</label><textarea
-                                        name="descripcion">{{ movimiento.descripcion if movimiento else '' }}</textarea>
-                                </div>
-                            </div>
-                        </section>
-
-                        <section class="section">
-                            <h2>Tercero</h2>
-                            <div class="grid">
-
-                                <!-- Buscador / Datalist de terceros -->
-                                <div class="field span3">
-                                    <label>Buscar tercero registrado</label>
-                                    <input type="text" id="tercero_buscador" list="lista_terceros" placeholder="Escriba NIT o Nombre..." onchange="cargarTerceroDatalist(this)" style="background:#fff;">
-                                    <datalist id="lista_terceros">
-                                        {% for t in terceros %}
-                                        <option value="{{ t.razon_social }} - {{ t.identificacion }}"
-                                                data-nombre="{{ t.razon_social|e }}"
-                                                data-id="{{ t.identificacion|e }}" 
-                                                data-dir="{{ (t.direccion or '')|e }}"
-                                                data-email="{{ (t.email or '')|e }}"
-                                                data-cel="{{ (t.celular or t.telefono or '')|e }}"
-                                                data-contacto="{{ (t.contacto or '')|e }}"
-                                                data-tipo="{{ (t.tipo_tercero or 'TERCERO')|e }}"
-                                                data-doc="{{ (t.tipo_documento or '')|e }}"
-                                                data-cuenta="{{ (t.numero_cuenta or '')|e }}"
-                                                data-titular="{{ (t.titular_cuenta or '')|e }}">
-                                        </option>
-                                        {% endfor %}
-                                    </datalist>
-                                </div>
-
-                                <!-- TIPO TERCERO -->
-                                <div class="field">
-                                    <label>Tipo tercero</label>
-                                    <select name="tipo_tercero" id="tipo_tercero">
-                                        {% set tipo_sel = (tercero_actual.tipo_tercero if tercero_actual and tercero_actual.tipo_tercero else (movimiento.tipo_tercero if movimiento and movimiento.tipo_tercero else 'PROVEEDOR')) %}
-                                        {% for x in ['PROVEEDOR','CLIENTE', 'CLIENTE_ECOBIKE','EMPLEADO','EMPLEADO OBRA', 'PASANTE','CONTRATISTA','TERCERO'] %}
-                                        <option value="{{ x }}" {% if tipo_sel == x %}selected{% endif %}>{{ x }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-
-                                <!-- TIPO DOCUMENTO -->
-                                <div class="field">
-                                    <label>Tipo documento</label>
-                                    <select name="tipo_documento_tercero" id="tipo_documento_tercero">
-                                        {% set doc_sel = (tercero_actual.tipo_documento if tercero_actual and tercero_actual.tipo_documento else (movimiento.tipo_documento if movimiento and movimiento.tipo_documento else 'NIT')) %}
-                                        {% for x in ['NIT','CC','CE','PASAPORTE','OTRO'] %}
-                                        <option value="{{ x }}" {% if doc_sel == x %}selected{% endif %}>{{ x }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-
-                                <!-- IDENTIFICACIÓN / NIT -->
-                                <div class="field">
-                                    <label>NIT / Identificación</label>
-                                    <input name="tercero_identificacion" id="tercero_identificacion" 
-                                        value="{{ (tercero_actual.identificacion if tercero_actual else (movimiento.tercero_identificacion if movimiento else ''))|e }}">
-                                </div>
-
-                                <!-- NOMBRE / RAZÓN SOCIAL -->
-                                <div class="field span2">
-                                    <label>Nombre / Razón social</label>
-                                    <input name="tercero_nombre" id="tercero_nombre" 
-                                        value="{{ (tercero_actual.razon_social if tercero_actual else (movimiento.tercero_nombre if movimiento else ''))|e }}">
-                                </div>
-
-                                <!-- CONTACTO -->
-                                <div class="field">
-                                    <label>Contacto</label>
-                                    <input name="tercero_contacto" id="tercero_contacto" 
-                                        value="{{ (tercero_actual.contacto if tercero_actual else (movimiento.tercero_contacto if movimiento else ''))|e }}">
-                                </div>
-
-                                <!-- DIRECCIÓN -->
-                                <div class="field">
-                                    <label>Dirección</label>
-                                    <input name="tercero_direccion" id="tercero_direccion" 
-                                        value="{{ (tercero_actual.direccion if tercero_actual else (movimiento.tercero_direccion if movimiento else ''))|e }}">
-                                </div>
-
-                                <!-- CORREO -->
-                                <div class="field">
-                                    <label>Correo</label>
-                                    <input name="tercero_email" id="tercero_email" 
-                                        value="{{ (tercero_actual.email if tercero_actual else (movimiento.tercero_email if movimiento else ''))|e }}">
-                                </div>
-
-                                <!-- CELULAR -->
-                                <div class="field">
-                                    <label>Celular</label>
-                                    <input name="tercero_celular" id="tercero_celular" 
-                                        value="{{ (tercero_actual.celular or tercero_actual.telefono if tercero_actual else (movimiento.tercero_telefono if movimiento else ''))|e }}">
-                                </div>
-
-                            </div>
-                        </section>
-
-                        <section class="section">
-                            <h2>Documento y vencimiento</h2>
-                            <div class="grid">
-                                <div class="field"><label>Tipo de documento</label><select name="tipo_documento">
-                                        <option value="">Seleccione</option>{% for x in ['FACTURA
-                                        ELECTRONICA','FACTURA','CUENTA DE COBRO','DOCUMENTO
-                                        SOPORTE','CONTRATO','RECIBO','OTRO'] %}<option value="{{ x }}" {% if movimiento
-                                            and movimiento.tipo_documento==x %}selected{% endif %}>{{ x }}</option>{%
-                                        endfor %}
-                                    </select></div>
-                                <div class="field"><label>Número documento / factura</label><input
-                                        name="numero_documento"
-                                        value="{{ movimiento.numero_documento if movimiento else '' }}"></div>
-                                <div class="field"><label>Número soporte</label><input name="numero_soporte"
-                                        value="{{ movimiento.numero_soporte if movimiento else '' }}"></div>
-                                <div class="field"><label>Fecha documento</label><input type="date"
-                                        name="fecha_documento"
-                                        value="{{ movimiento.fecha_documento.isoformat() if movimiento and movimiento.fecha_documento else '' }}">
-                                </div>
-                                <div class="field"><label>Fecha vencimiento</label><input type="date"
-                                        name="fecha_vencimiento"
-                                        value="{{ movimiento.fecha_vencimiento.isoformat() if movimiento and movimiento.fecha_vencimiento else '' }}">
-                                </div>
-                            </div>
-                        </section>
-
-                        <section class="section">
-                            <h2>Valores e IVA</h2>
-                            <div class="grid">
-                                <div class="field"><label>Base gravable / Valor antes de IVA *</label><input
-                                        type="number" min="0" step="0.01" name="base_gravable" id="base_gravable"
-                                        required value="{{ movimiento.base_gravable if movimiento else 0 }}"
-                                        oninput="calcularTotales()"><small>Valor del bien o servicio antes del
-                                        IVA.</small></div>
-                                <div class="field">
-                                    <label>Tratamiento del IVA *</label>
-                                    <select name="tipo_iva" id="tipo_iva" onchange="ajustarTratamientoIVA()">
-                                        <option value="NO_APLICA" {% if not movimiento or
-                                            movimiento.tipo_iva=='NO_APLICA' %}selected{% endif %}>No aplica</option>
-                                        <option value="EXCLUIDO" {% if movimiento and movimiento.tipo_iva=='EXCLUIDO'
-                                            %}selected{% endif %}>Excluido de IVA</option>
-                                        <option value="EXENTO" {% if movimiento and movimiento.tipo_iva=='EXENTO'
-                                            %}selected{% endif %}>Exento de IVA (0%)</option>
-                                        <option value="GENERADO" {% if movimiento and movimiento.tipo_iva=='GENERADO'
-                                            %}selected{% endif %}>IVA generado (ventas/ingresos)</option>
-                                        <option value="DESCONTABLE" {% if movimiento and
-                                            movimiento.tipo_iva=='DESCONTABLE' %}selected{% endif %}>IVA descontable
-                                            (compras/gastos)</option>
-                                        <option value="MAYOR_VALOR_COSTO" {% if movimiento and
-                                            movimiento.tipo_iva=='MAYOR_VALOR_COSTO' %}selected{% endif %}>IVA mayor
-                                            valor del costo/gasto</option>
-                                    </select>
-                                    <small>Exento y excluido no son lo mismo. El contador debe definir el tratamiento
-                                        fiscal correcto.</small>
-                                </div>
-
-                                <div class="field">
-                                    <label>Tarifa IVA %</label>
-
-                                    <input type="hidden" name="tarifa_iva" id="tarifa_iva"
-                                        value="{{ movimiento.tarifa_iva if movimiento else 0 }}">
-
-                                    <select id="tarifa_iva_selector" onchange="cambiarTarifaIVA()">
-                                        <option value="0">0% — Exento / sin impuesto</option>
-                                        <option value="2">2% — Tarifa especial</option>
-                                        <option value="5">5% — Tarifa reducida</option>
-                                        <option value="19">19% — Tarifa general</option>
-                                        <option value="20">20% — Tarifa especial</option>
-                                        <option value="35">35% — Tarifa especial</option>
-                                        <option value="OTRA">Otra tarifa / personalizada</option>
-                                    </select>
-
-                                    <input type="number" id="tarifa_iva_personalizada" min="0" max="100" step="0.01"
-                                        placeholder="Digite la tarifa, ej. 7.50" style="display:none;margin-top:8px;"
-                                        oninput="aplicarTarifaPersonalizada()">
-
-                                    <small>
-                                        Las tarifas especiales deben usarse únicamente cuando la operación esté
-                                        expresamente autorizada por la norma aplicable.
-                                    </small>
-                                </div>
-                                <div class="field"><label>Valor IVA</label><input type="number" id="valor_iva"
-                                        value="{{ movimiento.valor_iva if movimiento else 0 }}" readonly></div>
-                                <div class="field"><label>Total documento</label><input type="number" name="valor"
-                                        id="valor" value="{{ movimiento.valor if movimiento else 0 }}" readonly></div>
-                                <div class="field"><label>Descuento</label><input type="number" name="descuento"
-                                        id="descuento" step="0.01"
-                                        value="{{ movimiento.descuento if movimiento else 0 }}"
-                                        oninput="calcularTotales()"></div>
-                                <div class="field"><label>Retención</label><input type="number" name="retencion"
-                                        id="retencion" step="0.01"
-                                        value="{{ movimiento.retencion if movimiento else 0 }}"
-                                        oninput="calcularTotales()"></div>
-                                <div class="field"><label>Otros descuentos</label><input type="number"
-                                        name="otros_descuentos" id="otros_descuentos" step="0.01"
-                                        value="{{ movimiento.otros_descuentos if movimiento else 0 }}"
-                                        oninput="calcularTotales()"></div>
-                                <div class="field"><label>Valor neto a pagar / recibir</label><input type="number"
-                                        id="valor_neto_preview" value="{{ movimiento.valor_neto if movimiento else 0 }}"
-                                        readonly></div>
-                            </div>
-                            <div class="totals">
-                                <div class="row"><span>Base gravable</span><strong id="preview_base">$0</strong></div>
-                                <div class="row"><span>IVA</span><strong id="preview_iva">$0</strong></div>
-                                <div class="row"><span>Total documento</span><strong id="preview_total">$0</strong>
-                                </div>
-                                <div class="row"><span>Descuentos / retenciones</span><strong
-                                        id="preview_desc">$0</strong></div>
-                                <div class="row"><span>Valor neto</span><strong id="preview_neto">$0</strong></div>
-                            </div>
-                            <div class="tax-note">ℹ️ Para Bancos y caja se utiliza el valor efectivamente pagado o
-                                recibido. La base gravable y el IVA quedan separados para los reportes tributarios del
-                                contador.</div>
-                        </section>
-
-                        <section class="section">
-                            <h2>Pago, cuenta y beneficiario</h2>
-                            <div class="grid two">
-                                <div class="field"><label>Forma de pago</label><select name="forma_pago">
-                                        <option value="">Seleccione</option>{% for x in
-                                        ['EFECTIVO','TRANSFERENCIA','PSE','CHEQUE','TARJETA','CREDITO','OTRO'] %}<option
-                                            value="{{ x }}" {% if movimiento and movimiento.forma_pago==x %}selected{%
-                                            endif %}>{{ x }}</option>{% endfor %}
-                                    </select></div>
-                                <div class="field"><label>Cuenta CRV</label><select name="cuenta" id="cuenta" required>
-                                        <option value="71800002023" {% if not movimiento or movimiento.cuenta == '71800002023' %}selected{% endif %}>
-                                            71800002023
-                                        </option>
-                                        <!-- Pars una nueva cuenta en caso de existir, solo agregar la siguiente instuccion:
-                                        <option value="99999999999" {% if movimiento and movimiento.cuenta == '99999999999' %}selected{% endif %}>
-                                            99999999999
-                                        </option>
-                                        -->
-                                    </select>
-                                </div>
-                                <div class="field">
-                                    <label>Cuenta tercero</label>
-                                    <input name="cuenta_destino" id="cuenta_destino" 
-                                        value="{{ (tercero_actual.numero_cuenta if tercero_actual and tercero_actual.numero_cuenta else (movimiento.cuenta_destino if movimiento else ''))|e }}">
-                                </div>
-
-                                <!-- BENEFICIARIO -->
-                                <div class="field">
-                                    <label>Nombre Tercero</label>
-                                    <input name="beneficiario" id="beneficiario" 
-                                        value="{{ (tercero_actual.titular_cuenta or tercero_actual.razon_social if tercero_actual else (movimiento.beneficiario if movimiento else ''))|e }}">
-                                </div>
-
-                                <div class="field"><label>Referencia pago</label><input name="referencia_pago"
-                                        value="{{ movimiento.referencia_pago if movimiento else '' }}"></div>
-                                <div class="field span2"><label>Observaciones</label><textarea
-                                        name="observaciones">{{ movimiento.observaciones if movimiento else '' }}</textarea>
-                                </div>
-                            </div>
-                        </section>
-                        <div class="actions"><a href="/crv/movimientos" class="btn light">Cancelar</a><button
-                                type="submit" class="btn gold">{{ 'Guardar cambios' if modo == 'editar' else 'Guardar
-                                movimiento' }}</button></div>
-                    </form>
+        <main class="main">
+            <div class="shell">
+                <header class="header"><img src="{{ url_for('static', filename='logo_crv.png') }}" alt="CRV">
+                    <h1>CRV CONSTRUCTORA - {{ 'Editar movimiento' if modo == 'editar' else 'Registrar movimiento' }}
+                    </h1>
+                    <p>Registro contable con control de tercero, proyecto, IVA, pagos y trazabilidad bancaria</p>
+                </header>
+                <div class="topbar">
+                    <div><a href="/crv/movimientos" class="btn black"> Volver</a> <span class="badge"> {{
+                            empresa_nombre }}</span></div>
                 </div>
-            </main>
-        </div>
+                <form method="POST" onsubmit="prepararEnvioFormulario()">
+                    <section class="section">
+                        <h2>Información del movimiento</h2>
+                        <div class="grid">
+                            <div class="field"><label>Fecha contable *</label><input type="date" name="fecha"
+                                    required
+                                    value="{{ movimiento.fecha.isoformat() if movimiento and movimiento.fecha else '' }}">
+                            </div>
+                            <div class="field"><label>Tipo *</label><select name="tipo" id="tipo" required
+                                    onchange="ajustarIVAporTipo()">
+                                    <option value="">Seleccione...</option>{% for x in
+                                    ['INGRESO','COMPRA','GASTO','NOMINA AFILIADOS','NOMINA
+                                    OBRA','ANTICIPO','PRESTAMO EMPLEADO','TRANSFERENCIA','OTRO'] %}<option
+                                        value="{{ x }}" {% if movimiento and movimiento.tipo==x %}selected{% endif
+                                        %}>{{ x }}</option>{% endfor %}
+                                </select></div>
+                            <div class="field"><label>Sede</label><select name="sede_id">
+                                    <option value="">General</option>{% for s in sedes %}<option value="{{ s.id }}"
+                                        {% if movimiento and movimiento.sede_id==s.id %}selected{% endif %}>{{
+                                        s.nombre }}</option>{% endfor %}
+                                </select></div>
+                            <div class="field"><label>Categoría *</label><input name="categoria" required
+                                    value="{{ movimiento.categoria if movimiento else '' }}"></div>
+                            <div class="field"><label>Subcategoría</label><input name="subcategoria"
+                                    value="{{ movimiento.subcategoria if movimiento else '' }}"></div>
+                            <div class="field"><label>Proyecto</label><input name="proyecto"
+                                    value="{{ movimiento.proyecto if movimiento else '' }}"></div>
+                            <div class="field"><label>Centro de costo</label><input name="centro_costo"
+                                    value="{{ movimiento.centro_costo if movimiento else '' }}"></div>
+                            <div class="field"><label>Obra</label><input name="obra"
+                                    value="{{ movimiento.obra if movimiento else '' }}"></div>
+                            <div class="field span3"><label>Concepto *</label><input name="concepto" required
+                                    value="{{ movimiento.concepto if movimiento else '' }}"></div>
+                            <div class="field span3"><label>Descripción</label><textarea
+                                    name="descripcion">{{ movimiento.descripcion if movimiento else '' }}</textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="section">
+                        <h2>Tercero</h2>
+                        <div class="grid">
+
+                            <!-- Buscador / Datalist de terceros -->
+                            <div class="field span3">
+                                <label>Buscar tercero registrado</label>
+                                <input type="text" id="tercero_buscador" list="lista_terceros" placeholder="Escriba NIT o Nombre..." onchange="cargarTerceroDatalist(this)" style="background:#fff;">
+                                <datalist id="lista_terceros">
+                                    {% for t in terceros %}
+                                    <option value="{{ t.razon_social }} - {{ t.identificacion }}"
+                                            data-nombre="{{ t.razon_social|e }}"
+                                            data-id="{{ t.identificacion|e }}" 
+                                            data-dir="{{ (t.direccion or '')|e }}"
+                                            data-email="{{ (t.email or '')|e }}"
+                                            data-cel="{{ (t.celular or t.telefono or '')|e }}"
+                                            data-contacto="{{ (t.contacto or '')|e }}"
+                                            data-tipo="{{ (t.tipo_tercero or 'TERCERO')|e }}"
+                                            data-doc="{{ (t.tipo_documento or '')|e }}"
+                                            data-cuenta="{{ (t.numero_cuenta or '')|e }}"
+                                            data-titular="{{ (t.titular_cuenta or '')|e }}">
+                                    </option>
+                                    {% endfor %}
+                                </datalist>
+                            </div>
+
+                            <!-- TIPO TERCERO -->
+                            <div class="field">
+                                <label>Tipo tercero</label>
+                                <select name="tipo_tercero" id="tipo_tercero" onchange="alternarVistaValoresPorTercero()">
+                                    {% set tipo_sel = (tercero_actual.tipo_tercero if tercero_actual and tercero_actual.tipo_tercero else (movimiento.tipo_tercero if movimiento and movimiento.tipo_tercero else 'PROVEEDOR')) %}
+                                    {% for x in ['PROVEEDOR','CLIENTE', 'CLIENTE_ECOBIKE','EMPLEADO','EMPLEADO OBRA', 'PASANTE','CONTRATISTA','TERCERO'] %}
+                                    <option value="{{ x }}" {% if tipo_sel == x %}selected{% endif %}>{{ x }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- TIPO DOCUMENTO -->
+                            <div class="field">
+                                <label>Tipo documento</label>
+                                <select name="tipo_documento_tercero" id="tipo_documento_tercero">
+                                    {% set doc_sel = (tercero_actual.tipo_documento if tercero_actual and tercero_actual.tipo_documento else (movimiento.tipo_documento if movimiento and movimiento.tipo_documento else 'NIT')) %}
+                                    {% for x in ['NIT','CC','CE','PASAPORTE','OTRO'] %}
+                                    <option value="{{ x }}" {% if doc_sel == x %}selected{% endif %}>{{ x }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- IDENTIFICACIÓN / NIT -->
+                            <div class="field">
+                                <label>NIT / Identificación</label>
+                                <input name="tercero_identificacion" id="tercero_identificacion" 
+                                    value="{{ (tercero_actual.identificacion if tercero_actual else (movimiento.tercero_identificacion if movimiento else ''))|e }}">
+                            </div>
+
+                            <!-- NOMBRE / RAZÓN SOCIAL -->
+                            <div class="field span2">
+                                <label>Nombre / Razón social</label>
+                                <input name="tercero_nombre" id="tercero_nombre" 
+                                    value="{{ (tercero_actual.razon_social if tercero_actual else (movimiento.tercero_nombre if movimiento else ''))|e }}">
+                            </div>
+
+                            <!-- CONTACTO -->
+                            <div class="field">
+                                <label>Contacto</label>
+                                <input name="tercero_contacto" id="tercero_contacto" 
+                                    value="{{ (tercero_actual.contacto if tercero_actual else (movimiento.tercero_contacto if movimiento else ''))|e }}">
+                            </div>
+
+                            <!-- DIRECCIÓN -->
+                            <div class="field">
+                                <label>Dirección</label>
+                                <input name="tercero_direccion" id="tercero_direccion" 
+                                    value="{{ (tercero_actual.direccion if tercero_actual else (movimiento.tercero_direccion if movimiento else ''))|e }}">
+                            </div>
+
+                            <!-- CORREO -->
+                            <div class="field">
+                                <label>Correo</label>
+                                <input name="tercero_email" id="tercero_email" 
+                                    value="{{ (tercero_actual.email if tercero_actual else (movimiento.tercero_email if movimiento else ''))|e }}">
+                            </div>
+
+                            <!-- CELULAR -->
+                            <div class="field">
+                                <label>Celular</label>
+                                <input name="tercero_celular" id="tercero_celular" 
+                                    value="{{ (tercero_actual.celular or tercero_actual.telefono if tercero_actual else (movimiento.tercero_telefono if movimiento else ''))|e }}">
+                            </div>
+
+                        </div>
+                    </section>
+
+                    <section class="section">
+                        <h2>Documento y vencimiento</h2>
+                        <div class="grid">
+                            <div class="field"><label>Tipo de documento</label><select name="tipo_documento">
+                                    <option value="">Seleccione</option>{% for x in ['FACTURA
+                                    ELECTRONICA','FACTURA','CUENTA DE COBRO','DOCUMENTO
+                                    SOPORTE','CONTRATO','RECIBO','OTRO'] %}<option value="{{ x }}" {% if movimiento
+                                        and movimiento.tipo_documento==x %}selected{% endif %}>{{ x }}</option>{%
+                                    endfor %}
+                                </select></div>
+                            <div class="field"><label>Número documento / factura</label><input
+                                    name="numero_documento"
+                                    value="{{ movimiento.numero_documento if movimiento else '' }}"></div>
+                            <div class="field"><label>Número soporte</label><input name="numero_soporte"
+                                    value="{{ movimiento.numero_soporte if movimiento else '' }}"></div>
+                            <div class="field"><label>Fecha documento</label><input type="date"
+                                    name="fecha_documento"
+                                    value="{{ movimiento.fecha_documento.isoformat() if movimiento and movimiento.fecha_documento else '' }}">
+                            </div>
+                            <div class="field"><label>Fecha vencimiento</label><input type="date"
+                                    name="fecha_vencimiento"
+                                    value="{{ movimiento.fecha_vencimiento.isoformat() if movimiento and movimiento.fecha_vencimiento else '' }}">
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECCIÓN ESTÁNDAR: VALORES E IVA (Proveedores, Empleados, Terceros) -->
+                    <section class="section" id="seccion_valores_iva">
+                        <h2>Valores e IVA</h2>
+                        <div class="grid">
+                            <div class="field"><label>Base gravable / Valor antes de IVA *</label><input
+                                    type="number" min="0" step="0.01" name="base_gravable" id="base_gravable"
+                                    required value="{{ movimiento.base_gravable if movimiento else 0 }}"
+                                    oninput="calcularTotales()"><small>Valor del bien o servicio antes del
+                                    IVA.</small></div>
+                            <div class="field">
+                                <label>Tratamiento del IVA *</label>
+                                <select name="tipo_iva" id="tipo_iva" onchange="ajustarTratamientoIVA()">
+                                    <option value="NO_APLICA" {% if not movimiento or
+                                        movimiento.tipo_iva=='NO_APLICA' %}selected{% endif %}>No aplica</option>
+                                    <option value="EXCLUIDO" {% if movimiento and movimiento.tipo_iva=='EXCLUIDO'
+                                        %}selected{% endif %}>Excluido de IVA</option>
+                                    <option value="EXENTO" {% if movimiento and movimiento.tipo_iva=='EXENTO'
+                                        %}selected{% endif %}>Exento de IVA (0%)</option>
+                                    <option value="GENERADO" {% if movimiento and movimiento.tipo_iva=='GENERADO'
+                                        %}selected{% endif %}>IVA generado (ventas/ingresos)</option>
+                                    <option value="DESCONTABLE" {% if movimiento and
+                                        movimiento.tipo_iva=='DESCONTABLE' %}selected{% endif %}>IVA descontable
+                                        (compras/gastos)</option>
+                                    <option value="MAYOR_VALOR_COSTO" {% if movimiento and
+                                        movimiento.tipo_iva=='MAYOR_VALOR_COSTO' %}selected{% endif %}>IVA mayor
+                                        valor del costo/gasto</option>
+                                </select>
+                                <small>Exento y excluido no son lo mismo. El contador debe definir el tratamiento
+                                    fiscal correcto.</small>
+                            </div>
+
+                            <div class="field">
+                                <label>Tarifa IVA %</label>
+
+                                <input type="hidden" name="tarifa_iva" id="tarifa_iva"
+                                    value="{{ movimiento.tarifa_iva if movimiento else 0 }}">
+
+                                <select id="tarifa_iva_selector" onchange="cambiarTarifaIVA()">
+                                    <option value="0">0% — Exento / sin impuesto</option>
+                                    <option value="2">2% — Tarifa especial</option>
+                                    <option value="5">5% — Tarifa reducida</option>
+                                    <option value="19">19% — Tarifa general</option>
+                                    <option value="20">20% — Tarifa especial</option>
+                                    <option value="35">35% — Tarifa especial</option>
+                                    <option value="OTRA">Otra tarifa / personalizada</option>
+                                </select>
+
+                                <input type="number" id="tarifa_iva_personalizada" min="0" max="100" step="0.01"
+                                    placeholder="Digite la tarifa, ej. 7.50" style="display:none;margin-top:8px;"
+                                    oninput="aplicarTarifaPersonalizada()">
+
+                                <small>
+                                    Las tarifas especiales deben usarse únicamente cuando la operación esté
+                                    expresamente autorizada por la norma aplicable.
+                                </small>
+                            </div>
+                            <div class="field"><label>Valor IVA</label><input type="number" id="valor_iva"
+                                    value="{{ movimiento.valor_iva if movimiento else 0 }}" readonly></div>
+                            <div class="field"><label>Total documento</label><input type="number" name="valor"
+                                    id="valor" value="{{ movimiento.valor if movimiento else 0 }}" readonly></div>
+                            <div class="field"><label>Descuento</label><input type="number" name="descuento"
+                                    id="descuento" step="0.01"
+                                    value="{{ movimiento.descuento if movimiento else 0 }}"
+                                    oninput="calcularTotales()"></div>
+                            <div class="field"><label>Retención</label><input type="number" name="retencion"
+                                    id="retencion" step="0.01"
+                                    value="{{ movimiento.retencion if movimiento else 0 }}"
+                                    oninput="calcularTotales()"></div>
+                            <div class="field"><label>Otros descuentos</label><input type="number"
+                                    name="otros_descuentos" id="otros_descuentos" step="0.01"
+                                    value="{{ movimiento.otros_descuentos if movimiento else 0 }}"
+                                    oninput="calcularTotales()"></div>
+                            <div class="field"><label>Valor neto a pagar / recibir</label><input type="number"
+                                    id="valor_neto_preview" value="{{ movimiento.valor_neto if movimiento else 0 }}"
+                                    readonly></div>
+                        </div>
+                        <div class="totals">
+                            <div class="row"><span>Base gravable</span><strong id="preview_base">$0</strong></div>
+                            <div class="row"><span>IVA</span><strong id="preview_iva">$0</strong></div>
+                            <div class="row"><span>Total documento</span><strong id="preview_total">$0</strong>
+                            </div>
+                            <div class="row"><span>Descuentos / retenciones</span><strong
+                                    id="preview_desc">$0</strong></div>
+                            <div class="row"><span>Valor neto</span><strong id="preview_neto">$0</strong></div>
+                        </div>
+                        <div class="tax-note"> Para Bancos y caja se utiliza el valor efectivamente pagado o
+                            recibido. La base gravable y el IVA quedan separados para los reportes tributarios del
+                            contador.</div>
+                    </section>
+
+                    <!-- SECCIÓN CLIENTE / CRÉDITO: CAPITAL, INTERESES Y MORA (Solo CLIENTE / CLIENTE_ECOBIKE) -->
+                    <section class="section" id="seccion_valores_cliente" style="display:none;">
+                        <h2>Valores del Crédito / Cliente (Capital, Intereses y Mora)</h2>
+                        <div class="grid">
+                            <div class="field">
+                                <label>Base Gravable (Capital)</label>
+                                <input type="number" min="0" step="0.01" id="cliente_capital"
+                                    value="{{ movimiento.base_gravable if movimiento else 0 }}"
+                                    oninput="sincronizarValoresCliente()">
+                                <small>Valor de capital que se guardará en Base Gravable y Total Documento.</small>
+                            </div>
+                            <div class="field">
+                                <label>Intereses</label>
+                                <input type="number" min="0" step="0.01" name="valor_intereses" id="valor_intereses"
+                                    value="{{ movimiento.valor_intereses or 0 if movimiento else 0 }}"
+                                    oninput="sincronizarValoresCliente()">
+                                <small>Opcional. Se guarda para consulta histórica en Cuentas por Cobrar.</small>
+                            </div>
+                            <div class="field">
+                                <label>Mora</label>
+                                <input type="number" min="0" step="0.01" name="valor_mora" id="valor_mora"
+                                    value="{{ movimiento.valor_mora or 0 if movimiento else 0 }}"
+                                    oninput="sincronizarValoresCliente()">
+                                <small>Opcional. Se guarda para consulta histórica en Cuentas por Cobrar.</small>
+                            </div>
+                        </div>
+                        <div class="totals">
+                            <div class="row"><span>Base Gravable / Total Documento (Capital)</span><strong id="preview_cli_capital">$0</strong></div>
+                            <div class="row"><span>Intereses (Histórico)</span><strong id="preview_cli_intereses">$0</strong></div>
+                            <div class="row"><span>Mora (Histórico)</span><strong id="preview_cli_mora">$0</strong></div>
+                            <div class="row"><span>Total general (Capital + Intereses + Mora)</span><strong id="preview_cli_total">$0</strong></div>
+                        </div>
+                        <div class="tax-note">En la tabla de Movimientos se guardará únicamente el valor de Capital en Base Gravable y Total Documento. Los intereses y mora quedan almacenados en el historial para Cuentas por Cobrar.</div>
+                    </section>
+
+                    <section class="section">
+                        <h2>Pago, cuenta y beneficiario</h2>
+                        <div class="grid two">
+                            <div class="field"><label>Forma de pago</label><select name="forma_pago">
+                                    <option value="">Seleccione</option>{% for x in
+                                    ['EFECTIVO','TRANSFERENCIA','PSE','CHEQUE','TARJETA','CREDITO','OTRO'] %}<option
+                                        value="{{ x }}" {% if movimiento and movimiento.forma_pago==x %}selected{%
+                                        endif %}>{{ x }}</option>{% endfor %}
+                                </select></div>
+                            <div class="field"><label>Cuenta CRV</label><select name="cuenta" id="cuenta" required>
+                                    <option value="71800002023" {% if not movimiento or movimiento.cuenta == '71800002023' %}selected{% endif %}>
+                                        71800002023
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Cuenta tercero</label>
+                                <input name="cuenta_destino" id="cuenta_destino" 
+                                    value="{{ (tercero_actual.numero_cuenta if tercero_actual and tercero_actual.numero_cuenta else (movimiento.cuenta_destino if movimiento else ''))|e }}">
+                            </div>
+
+                            <!-- BENEFICIARIO -->
+                            <div class="field">
+                                <label>Nombre Tercero</label>
+                                <input name="beneficiario" id="beneficiario" 
+                                    value="{{ (tercero_actual.titular_cuenta or tercero_actual.razon_social if tercero_actual else (movimiento.beneficiario if movimiento else ''))|e }}">
+                            </div>
+
+                            <div class="field"><label>Referencia pago</label><input name="referencia_pago"
+                                    value="{{ movimiento.referencia_pago if movimiento else '' }}"></div>
+                            <div class="field span2"><label>Observaciones</label><textarea
+                                    name="observaciones">{{ movimiento.observaciones if movimiento else '' }}</textarea>
+                            </div>
+                        </div>
+                    </section>
+                    <div class="actions"><a href="/crv/movimientos" class="btn light">Cancelar</a><button
+                            type="submit" class="btn gold">{{ 'Guardar cambios' if modo == 'editar' else 'Guardar
+                            movimiento' }}</button></div>
+                </form>
+            </div>
+        </main>
     </div>
+
     <script>
         const dinero = n => new Intl.NumberFormat(
             'es-CO',
@@ -830,12 +861,61 @@
             calcularTotales();
         }
 
+        function sincronizarValoresCliente() {
+            const capital = num('cliente_capital');
+            const intereses = num('valor_intereses');
+            const mora = num('valor_mora');
+            const totalConAccesorios = capital + intereses + mora;
+
+            const baseInput = document.getElementById('base_gravable');
+            const totalInput = document.getElementById('valor');
+            const netoInput = document.getElementById('valor_neto_preview');
+
+            if (baseInput) baseInput.value = capital;
+            if (totalInput) totalInput.value = totalConAccesorios;
+            if (netoInput) netoInput.value = totalConAccesorios;
+
+            document.getElementById('preview_cli_capital').textContent = dinero(capital);
+            document.getElementById('preview_cli_intereses').textContent = dinero(intereses);
+            document.getElementById('preview_cli_mora').textContent = dinero(mora);
+            document.getElementById('preview_cli_total').textContent = dinero(totalConAccesorios);
+        }
+
+        function alternarVistaValoresPorTercero() {
+            const selectorTipo = document.getElementById('tipo_tercero');
+            const tipoTercero = (selectorTipo ? selectorTipo.value : '').trim().toUpperCase();
+            const esCliente = (tipoTercero === 'CLIENTE' || tipoTercero === 'CLIENTE_ECOBIKE');
+
+            const secIva = document.getElementById('seccion_valores_iva');
+            const secCliente = document.getElementById('seccion_valores_cliente');
+            const baseInput = document.getElementById('base_gravable');
+
+            if (esCliente) {
+                if (secIva) secIva.style.display = 'none';
+                if (secCliente) secCliente.style.display = 'block';
+                if (baseInput) baseInput.required = false;
+                sincronizarValoresCliente();
+            } else {
+                if (secIva) secIva.style.display = 'block';
+                if (secCliente) secCliente.style.display = 'none';
+                if (baseInput) baseInput.required = true;
+                calcularTotales();
+            }
+        }
+
+        function prepararEnvioFormulario() {
+            const tipoSel = document.getElementById('tipo_tercero');
+            const docSel = document.getElementById('tipo_documento_tercero');
+            if (tipoSel) tipoSel.disabled = false;
+            if (docSel) docSel.disabled = false;
+            alternarVistaValoresPorTercero();
+        }
+
         function cargarTerceroDatalist(input) {
             const val = input.value;
             const datalist = document.getElementById('lista_terceros');
             let optionSeleccionada = null;
 
-            // Buscar si lo escrito coincide exactamente con alguna opción de la lista
             for (let i = 0; i < datalist.options.length; i++) {
                 if (datalist.options[i].value === val) {
                     optionSeleccionada = datalist.options[i];
@@ -850,19 +930,16 @@
             ];
             const selectoresId = ['tipo_tercero', 'tipo_documento_tercero'];
 
-            //  Si borra el texto del buscador o escribe un valor manual que no coincide
             if (!optionSeleccionada) {
-                // LIMPIAR Y DESBLOQUEAR INPUTS DE TEXTO
                 camposId.forEach(id => {
                     const el = document.getElementById(id);
                     if (el) {
-                        el.value = '';             
-                        el.readOnly = false;       
+                        el.value = '';
+                        el.readOnly = false;
                         el.style.backgroundColor = '#fff';
                     }
                 });
 
-                // RESTABLECER Y DESBLOQUEAR SELECTORES
                 selectoresId.forEach(id => {
                     const el = document.getElementById(id);
                     if (el) {
@@ -871,10 +948,10 @@
                         el.style.backgroundColor = '#fff';
                     }
                 });
+                alternarVistaValoresPorTercero();
                 return;
             }
 
-            //  Si selecciona un tercero de la lista desplegable
             const ds = optionSeleccionada.dataset;
             document.getElementById('tercero_nombre').value = ds.nombre || '';
             document.getElementById('tercero_identificacion').value = ds.id || '';
@@ -882,7 +959,7 @@
             document.getElementById('tercero_email').value = ds.email || '';
             document.getElementById('tercero_celular').value = ds.cel || '';
             document.getElementById('tercero_contacto').value = ds.contacto || '';
-            document.getElementById('tipo_tercero').value = ds.tipo || 'TERCERO';
+            document.getElementById('tipo_tercero').value = (ds.tipo || 'TERCERO').toUpperCase();
             document.getElementById('tipo_documento_tercero').value = ds.doc || '';
 
             const cuentaInput = document.getElementById('cuenta_destino');
@@ -891,7 +968,6 @@
             const benInput = document.getElementById('beneficiario');
             if (benInput) benInput.value = ds.titular || ds.nombre || '';
 
-            // BLOQUEAR CAMPOS PARA PROTEGERLOS
             camposId.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
@@ -908,31 +984,27 @@
                 }
             });
 
-            // Limpia el buscador superior tras seleccionar
             input.value = '';
+            alternarVistaValoresPorTercero();
         }
 
-        // =========================================================================
-        // NUEVO: FUNCIÓN PARA BLOQUEAR AUTOMÁTICAMENTE AL EDITAR UN MOVIMIENTO
-        // =========================================================================
         function bloquearCamposPrecargados() {
             const camposId = [
-                'tercero_nombre', 
-                'tercero_identificacion', 
+                'tercero_nombre',
+                'tercero_identificacion',
                 'tercero_contacto',
-                'tercero_direccion', 
-                'tercero_email', 
+                'tercero_direccion',
+                'tercero_email',
                 'tercero_celular',
-                'cuenta_destino', 
+                'cuenta_destino',
                 'beneficiario'
             ];
-            
+
             const selectoresId = [
-                'tipo_tercero', 
+                'tipo_tercero',
                 'tipo_documento_tercero'
             ];
 
-            // Bloquear inputs de texto
             camposId.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
@@ -941,7 +1013,6 @@
                 }
             });
 
-            // Bloquear selectores desplegables
             selectoresId.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
@@ -956,13 +1027,13 @@
             function () {
                 sincronizarSelectorTarifa();
                 ajustarTratamientoIVA();
-                calcularTotales();
 
-                // DETECTAR SI ES MODO EDICIÓN (Si el campo de nombre trae datos precargados)
                 const nombreInput = document.getElementById('tercero_nombre');
                 if (nombreInput && nombreInput.value.trim() !== '') {
                     bloquearCamposPrecargados();
                 }
+
+                alternarVistaValoresPorTercero();
             }
         );
     </script>

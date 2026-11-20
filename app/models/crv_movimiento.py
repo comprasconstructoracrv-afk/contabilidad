@@ -133,6 +133,12 @@ class CRVMovimiento(db.Model):
     usuario_registro = db.Column(db.String(120), nullable=True)
 
     # ============================================================
+    # CLIENTES CRV QUE TIENE CREDITOS O DEUDAS PENDIENTES (CUENTAS POR COBRAR)
+    # ============================================================
+    valor_intereses = db.Column(db.Float, nullable=True, default=0.0)
+    valor_mora= db.Column(db.Float, nullable=True, default=0.0)
+
+    # ============================================================
     # COMPROBANTE INDIVIDUAL PERMANENTE
     # ============================================================
 

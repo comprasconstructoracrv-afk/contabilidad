@@ -8,6 +8,8 @@ import openpyxl
 
 from .crv_core import (
     CRVMovimiento,
+    CRVCuentaCobrar,
+    CRVCobroCuentaCobrar,
     CRVTercero,
     Sede,
     _asignar_comprobante_permanente,
@@ -309,6 +311,41 @@ def nuevo_movimiento():
             request.form
         )
 
+        tipo_tercero_form = (
+            tercero_obj.tipo_tercero
+            if tercero_obj and tercero_obj.tipo_tercero
+            else request.form.get("tipo_tercero", "PROVEEDOR")
+        ).strip().upper()
+
+        es_cliente_credito = tipo_tercero_form in ("CLIENTE", "CLIENTE_ECOBIKE")
+
+        valor_intereses = convertir_numero(request.form.get("valor_intereses")) or 0.0
+        valor_mora = convertir_numero(request.form.get("valor_mora")) or 0.0
+
+        if es_cliente_credito:
+            base_gravable = convertir_numero(request.form.get("base_gravable")) or 0.0
+            tipo_iva = "NO_APLICA"
+            tarifa_iva = 0.0
+            valor_iva = 0.0
+            valor = round(base_gravable + valor_intereses + valor_mora, 2)
+            descuento = 0.0
+            retencion = 0.0
+            otros_descuentos = 0.0
+            valor_neto = valor
+        else:
+            iva_datos = calcular_iva_formulario(request.form)
+            base_gravable = iva_datos["base_gravable"]
+            tipo_iva = iva_datos["tipo_iva"]
+            tarifa_iva = iva_datos["tarifa_iva"]
+            valor_iva = iva_datos["valor_iva"]
+            valor = iva_datos["total_documento"]
+            descuento = convertir_numero(request.form.get("descuento"))
+            retencion = convertir_numero(request.form.get("retencion"))
+            otros_descuentos = convertir_numero(request.form.get("otros_descuentos"))
+            valor_neto = max(0, valor - descuento - retencion - otros_descuentos)
+            valor_intereses = 0.0
+            valor_mora = 0.0
+
         sede_id_texto = request.form.get(
             "sede_id",
             ""
@@ -455,15 +492,17 @@ def nuevo_movimiento():
                 )
             ),
 
-            base_gravable=iva_datos["base_gravable"],
-            tipo_iva=iva_datos["tipo_iva"],
-            tarifa_iva=iva_datos["tarifa_iva"],
-            valor_iva=iva_datos["valor_iva"],
+            base_gravable=base_gravable,
+            tipo_iva=tipo_iva,
+            tarifa_iva=tarifa_iva,
+            valor_iva=valor_iva,
             valor=valor,
             descuento=descuento,
             retencion=retencion,
             otros_descuentos=otros_descuentos,
             valor_neto=valor_neto,
+            valor_intereses=valor_intereses,
+            valor_mora=valor_mora,
 
             forma_pago=request.form.get(
                 "forma_pago",
@@ -529,6 +568,53 @@ def nuevo_movimiento():
         )
 
         db.session.add(movimiento)
+
+        db.session.flush()
+
+        if es_cliente_credito and tercero_obj and tipo in ("INGRESO", "COBRO CUENTA POR COBRAR"):
+            cuenta_activa = (
+                CRVCuentaCobrar.query.filter(
+                    CRVCuentaCobrar.empresa_id == empresa_id,
+                    CRVCuentaCobrar.cliente_id == tercero_obj.id,
+                    CRVCuentaCobrar.saldo_pendiente > 0,
+                )
+                .order_by(CRVCuentaCobrar.fecha_documento.asc(), CRVCuentaCobrar.id.asc())
+                .first()
+            )
+            if cuenta_activa:
+                abono_capital = min(base_gravable, float(cuenta_activa.saldo_pendiente or 0))
+                if abono_capital > 0 or valor_intereses > 0 or valor_mora > 0:
+                    detalle_desglose = []
+                    if abono_capital > 0:
+                        detalle_desglose.append(f"Capital: ${abono_capital:,.0f}")
+                    if valor_intereses > 0:
+                        detalle_desglose.append(f"Intereses: ${valor_intereses:,.0f}")
+                    if valor_mora > 0:
+                        detalle_desglose.append(f"Mora: ${valor_mora:,.0f}")
+
+                    nota_desglose = " | ".join(detalle_desglose)
+                    obs_cobro = f"[{nota_desglose}]"
+                    if movimiento.observaciones:
+                        obs_cobro += f" {movimiento.observaciones}"
+
+                    cobro_auto = CRVCobroCuentaCobrar(
+                        empresa_id=empresa_id,
+                        cuenta_cobrar_id=cuenta_activa.id,
+                        movimiento_id=movimiento.id,
+                        fecha=fecha,
+                        valor_cobrado=abono_capital, 
+                        forma_pago=movimiento.forma_pago or "",
+                        cuenta_receptora=movimiento.cuenta or "",
+                        cuenta_origen_cliente=movimiento.cuenta_destino or "",
+                        pagador=tercero_obj.razon_social,
+                        referencia_pago=movimiento.referencia_pago or "",
+                        numero_soporte=movimiento.numero_soporte or movimiento.comprobante_codigo or "",
+                        observaciones=obs_cobro,
+                        usuario_registro=str(session.get("usuario", "")),
+                    )
+                    db.session.add(cobro_auto)
+                    db.session.flush()
+                    cuenta_activa.recalcular_saldos()
 
         db.session.commit()
 
@@ -725,41 +811,44 @@ def editar_movimiento(movimiento_id):
             )
         )
 
-        iva_datos = calcular_iva_formulario(
-            request.form
-        )
+        tipo_tercero_edit = (
+            tercero_obj.tipo_tercero
+            if tercero_obj and tercero_obj.tipo_tercero
+            else request.form.get("tipo_tercero", "PROVEEDOR")
+        ).strip().upper()
 
-        movimiento.base_gravable = iva_datos[
-            "base_gravable"
-        ]
-        movimiento.tipo_iva = iva_datos[
-            "tipo_iva"
-        ]
-        movimiento.tarifa_iva = iva_datos[
-            "tarifa_iva"
-        ]
-        movimiento.valor_iva = iva_datos[
-            "valor_iva"
-        ]
-        movimiento.valor = iva_datos[
-            "total_documento"
-        ]
+        es_cliente_credito = tipo_tercero_edit in ("CLIENTE", "CLIENTE_ECOBIKE")
 
-        movimiento.descuento = convertir_numero(
-            request.form.get("descuento")
-        )
+        if es_cliente_credito:
+            base_gravable = convertir_numero(request.form.get("base_gravable")) or 0.0
+            val_intereses = convertir_numero(request.form.get("valor_intereses")) or 0.0
+            val_mora = convertir_numero(request.form.get("valor_mora")) or 0.0
+            total_cliente = round(base_gravable + val_intereses + val_mora, 2)
 
-        movimiento.retencion = convertir_numero(
-            request.form.get("retencion")
-        )
-
-        movimiento.otros_descuentos = convertir_numero(
-            request.form.get(
-                "otros_descuentos"
-            )
-        )
-
-        movimiento.recalcular_valor_neto()
+            movimiento.base_gravable = base_gravable
+            movimiento.tipo_iva = "NO_APLICA"
+            movimiento.tarifa_iva = 0.0
+            movimiento.valor_iva = 0.0
+            movimiento.valor = total_cliente
+            movimiento.descuento = 0.0
+            movimiento.retencion = 0.0
+            movimiento.otros_descuentos = 0.0
+            movimiento.valor_neto = total_cliente
+            movimiento.valor_intereses = val_intereses
+            movimiento.valor_mora = val_mora
+        else:
+            iva_datos = calcular_iva_formulario(request.form)
+            movimiento.base_gravable = iva_datos["base_gravable"]
+            movimiento.tipo_iva = iva_datos["tipo_iva"]
+            movimiento.tarifa_iva = iva_datos["tarifa_iva"]
+            movimiento.valor_iva = iva_datos["valor_iva"]
+            movimiento.valor = iva_datos["total_documento"]
+            movimiento.descuento = convertir_numero(request.form.get("descuento"))
+            movimiento.retencion = convertir_numero(request.form.get("retencion"))
+            movimiento.otros_descuentos = convertir_numero(request.form.get("otros_descuentos"))
+            movimiento.valor_intereses = 0.0
+            movimiento.valor_mora = 0.0
+            movimiento.recalcular_valor_neto()
 
         movimiento.forma_pago = request.form.get(
             "forma_pago",
