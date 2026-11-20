@@ -1238,14 +1238,14 @@
         <div class="topbar-right">
 
             <a
-                href="/crv/cuentas-por-pagar/pdf"
+                href="/crv/cuentas-por-pagar/pdf?mes={{ mes_actual or '' }}&proveedor_id={{ proveedor_actual or '' }}&estado={{ estado_actual or '' }}&buscar={{ buscar_actual or '' }}""
                 class="btn btn-light"
             >
                 📄 Exportar PDF
             </a>
 
             <a
-                href="/crv/cuentas-por-pagar/excel"
+                href="/crv/cuentas-por-pagar/excel?mes={{ mes_actual or '' }}&proveedor_id={{ proveedor_actual or '' }}&estado={{ estado_actual or '' }}&buscar={{ buscar_actual or '' }}""
                 class="btn btn-navy"
             >
                 📊 Exportar Excel
@@ -1992,10 +1992,8 @@
 
     <div class="info-footer">
 
-        ℹ️ Al registrar una obligación se genera automáticamente
-        el movimiento contable de tipo COMPRA en CRV. Cuando posteriormente
-        registres un pago, el sistema actualizará el saldo sin volver
-        a reconocer la compra como gasto.
+        ℹ️ Las obligaciones y abonos registrados en este módulo se gestionan directamente
+        en el historial de Cuentas por Pagar sin duplicar registros en el listado general de Movimientos.
 
     </div>
 

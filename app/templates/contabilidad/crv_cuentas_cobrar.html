@@ -592,8 +592,11 @@
                 <div class="topbar">
                     <div class="top-left"><a href="/crv/dashboard" class="btn black">← Volver</a><span
                             class="badge">Empresa activa</span><strong>{{ empresa_nombre }}</strong></div>
-                    <div class="top-right"><a href="/crv/cuentas-por-cobrar/pdf" class="btn light">📄 Exportar PDF</a><a
-                            href="/crv/cuentas-por-cobrar/excel" class="btn green">📊 Exportar Excel</a></div>
+
+                    <div class="top-right">
+                        <a href="/crv/cuentas-por-cobrar/pdf" class="btn light">📄 Exportar PDF</a>
+                        <a href="/crv/cuentas-por-cobrar/excel" class="btn green">📊 Exportar Excel</a>
+                    </div>
                 </div>
                 <div class="summary">
                     <div class="sum goldline"><label>TOTAL FACTURADO</label><strong>${{ "{:,.0f}".format(total_facturado

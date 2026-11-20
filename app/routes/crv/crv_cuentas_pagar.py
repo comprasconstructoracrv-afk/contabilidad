@@ -2,7 +2,6 @@
 
 from .crv_core import (
     CRVCuentaPagar,
-    CRVMovimiento,
     CRVPagoCuentaPagar,
     CRVTercero,
     Sede,
@@ -141,61 +140,6 @@ def cuentas_por_pagar():
         try:
             db.session.add(cuenta)
             db.session.flush()
-
-            movimiento_compra = CRVMovimiento(
-                empresa_id=empresa_id,
-                sede_id=sede_id,
-                fecha=fecha_documento,
-                tipo="COMPRA",
-                categoria=cuenta.categoria or "COMPRA",
-                subcategoria=cuenta.subcategoria or "",
-                concepto=cuenta.concepto,
-                descripcion=cuenta.descripcion or f"Cuenta por pagar {cuenta.numero_documento}",
-                tercero_id=proveedor.id,
-                tercero_nombre=proveedor.razon_social,
-                tercero_identificacion=proveedor.identificacion,
-                tercero_direccion=proveedor.direccion or "",
-                tercero_email=proveedor.email or "",
-                tercero_telefono=proveedor.celular or proveedor.telefono or "",
-                tercero_contacto=proveedor.contacto or "",
-                tipo_documento=cuenta.tipo_documento or "",
-                numero_documento=cuenta.numero_documento,
-                numero_soporte=f"CXP-{cuenta.id}",
-                fecha_documento=cuenta.fecha_documento,
-                fecha_vencimiento=cuenta.fecha_vencimiento,
-                base_gravable=cuenta.base_gravable or 0,
-                tipo_iva=cuenta.tipo_iva or "NO_APLICA",
-                tarifa_iva=cuenta.tarifa_iva or 0,
-                valor_iva=cuenta.valor_iva or 0,
-                valor=cuenta.valor_bruto or 0,
-                descuento=cuenta.descuento or 0,
-                retencion=cuenta.retencion or 0,
-                otros_descuentos=cuenta.otros_descuentos or 0,
-                valor_neto=cuenta.valor_neto or 0,
-                forma_pago="CREDITO",
-                cuenta="CUENTAS POR PAGAR",
-                cuenta_destino="",
-                beneficiario=proveedor.razon_social,
-                referencia_pago="",
-                proyecto=cuenta.proyecto or "",
-                centro_costo=cuenta.centro_costo or "",
-                obra=cuenta.obra or "",
-                observaciones=(
-                    "Registro automático generado al crear "
-                    f"la cuenta por pagar CXP-{cuenta.id}."
-                ),
-                revisado=False,
-                estado="ACTIVO",
-                origen_registro="CUENTAS_POR_PAGAR",
-                usuario_registro=str(session.get("usuario", ""))
-            )
-
-            _asignar_comprobante_permanente(
-                movimiento_compra
-            )
-
-            db.session.add(movimiento_compra)
-            db.session.commit()
 
             flash(
                 "Cuenta por pagar registrada correctamente. La compra también fue registrada en movimientos.",
@@ -755,66 +699,6 @@ def pagar_cuenta_por_pagar(cuenta_id):
         db.session.add(pago)
         db.session.flush()
 
-        movimiento_pago = CRVMovimiento(
-            empresa_id=empresa_id,
-            sede_id=cuenta.sede_id,
-            fecha=fecha_pago,
-            tipo="PAGO CUENTA POR PAGAR",
-            categoria="PAGO PROVEEDOR",
-            subcategoria=cuenta.categoria or "",
-            concepto=f"Pago cuenta por pagar {cuenta.numero_documento}",
-            descripcion=(
-                f"Abono/pago a "
-                f"{proveedor.razon_social if proveedor else 'proveedor'} "
-                f"- documento {cuenta.numero_documento}"
-            ),
-            tercero_id=proveedor.id if proveedor else None,
-            tercero_nombre=proveedor.razon_social if proveedor else "",
-            tercero_identificacion=proveedor.identificacion if proveedor else "",
-            tercero_direccion=proveedor.direccion if proveedor else "",
-            tercero_email=proveedor.email if proveedor else "",
-            tercero_telefono=(
-                (proveedor.celular or proveedor.telefono or "")
-                if proveedor else ""
-            ),
-            tercero_contacto=proveedor.contacto if proveedor else "",
-            tipo_documento="PAGO CXP",
-            numero_documento=cuenta.numero_documento,
-            numero_soporte=pago.numero_soporte or f"CXP-PAGO-{pago.id}",
-            fecha_documento=fecha_pago,
-            fecha_vencimiento=None,
-            valor=valor_pagado,
-            descuento=0,
-            retencion=0,
-            otros_descuentos=0,
-            valor_neto=valor_pagado,
-            forma_pago=pago.forma_pago or "",
-            cuenta=pago.cuenta_origen or "",
-            cuenta_destino=pago.cuenta_destino or "",
-            beneficiario=pago.beneficiario or "",
-            referencia_pago=pago.referencia_pago or "",
-            proyecto=cuenta.proyecto or "",
-            centro_costo=cuenta.centro_costo or "",
-            obra=cuenta.obra or "",
-            observaciones=(
-                pago.observaciones
-                or f"Movimiento automático generado desde la cuenta por pagar CXP-{cuenta.id}."
-            ),
-            revisado=False,
-            estado="ACTIVO",
-            origen_registro="PAGO_CUENTA_POR_PAGAR",
-            usuario_registro=str(session.get("usuario", ""))
-        )
-
-        _asignar_comprobante_permanente(
-            movimiento_pago
-        )
-
-        db.session.add(movimiento_pago)
-        db.session.flush()
-
-        pago.movimiento_id = movimiento_pago.id
-
         cuenta.recalcular_saldos()
 
         db.session.commit()
@@ -852,15 +736,6 @@ def eliminar_pago_cuenta_por_pagar(cuenta_id, pago_id):
         return redirect(f"/crv/cuentas-por-pagar/{cuenta.id}")
 
     try:
-        if pago.movimiento_id:
-            movimiento = CRVMovimiento.query.filter_by(
-                id=pago.movimiento_id,
-                empresa_id=empresa_id
-            ).first()
-
-            if movimiento:
-                db.session.delete(movimiento)
-
         db.session.delete(pago)
         db.session.flush()
 
