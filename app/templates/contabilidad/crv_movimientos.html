@@ -1005,7 +1005,7 @@
                 <span>Reportes contador</span>
             </a>
 
-            <a href="#">
+            <a href="/crv/cierre-mensual">
                 <span class="crv-menu-icon">📅</span>
                 <span>Cierre mensual</span>
             </a>
@@ -1059,11 +1059,11 @@
 
         <div class="topbar-right">
 
-            <a href="/crv/movimientos/pdf" class="btn btn-light">
+            <a href="/crv/movimientos/pdf?mes={{ mes_actual }}&sede_id={{ sede_actual }}&tipo={{ tipo_actual }}&tercero={{ tercero_actual }}" class="btn btn-light">
                 📄 Exportar PDF
             </a>
 
-            <a href="/crv/movimientos/excel" class="btn btn-primary">
+            <a href="/crv/movimientos/excel?mes={{ mes_actual }}&sede_id={{ sede_actual }}&tipo={{ tipo_actual }}&tercero={{ tercero_actual }}" class="btn btn-primary">
                 📊 Exportar Excel
             </a>
 

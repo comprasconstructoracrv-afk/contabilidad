@@ -288,7 +288,7 @@ def _pdf_tabla(headers, filas, widths=None):
                 "BACKGROUND",
                 (0, 0),
                 (-1, 0),
-                colors.HexColor("#17304F")
+                colors.HexColor("#BABEC4")
             ),
             (
                 "TEXTCOLOR",

@@ -39,38 +39,63 @@ from .crv_core import (
     send_file,
     session,
 )
-
 @crv_bp.route("/movimientos/excel")
 def movimientos_excel():
-
     bloqueo = proteger_crv()
-
     if bloqueo:
         return bloqueo
 
     empresa_id = session.get("empresa_id")
 
-    mes = request.args.get(
-        "mes",
-        ""
-    ).strip()
+    # 1. Leer filtros enviados desde la vista
+    mes = request.args.get("mes", "").strip()
+    sede_id = request.args.get("sede_id", "").strip()
+    tipo = request.args.get("tipo", "").strip().upper()
+    tercero = request.args.get("tercero", "").strip()
 
     query = CRVMovimiento.query.filter_by(
         empresa_id=empresa_id
     )
 
+    if sede_id.isdigit():
+        query = query.filter_by(
+            sede_id=int(sede_id)
+        )
+
+    if tipo:
+        tipo_normalizado = (
+            tipo.replace("_", " ")
+            .replace("Á", "A")
+            .replace("É", "E")
+            .replace("Í", "I")
+            .replace("Ó", "O")
+            .replace("Ú", "U")
+        )
+        tipo_con_guion = tipo_normalizado.replace(" ", "_")
+
+        query = query.filter(
+            db.or_(
+                db.func.upper(CRVMovimiento.tipo) == tipo,
+                db.func.upper(CRVMovimiento.tipo) == tipo_normalizado,
+                db.func.upper(CRVMovimiento.tipo) == tipo_con_guion,
+            )
+        )
+
+    if tercero:
+        campo_tercero = (
+            getattr(CRVMovimiento, "nombre_tercero", None)
+            or getattr(CRVMovimiento, "tercero_nombre")
+        )
+        query = query.filter(
+            campo_tercero.ilike(f"%{tercero}%")
+        )
+
     if mes:
         try:
             anio, numero_mes = mes.split("-")
             query = query.filter(
-                db.extract(
-                    "year",
-                    CRVMovimiento.fecha
-                ) == int(anio),
-                db.extract(
-                    "month",
-                    CRVMovimiento.fecha
-                ) == int(numero_mes)
+                db.extract("year", CRVMovimiento.fecha) == int(anio),
+                db.extract("month", CRVMovimiento.fecha) == int(numero_mes)
             )
         except ValueError:
             pass
@@ -114,14 +139,25 @@ def movimientos_excel():
         "Revisado"
     ]
 
+    # Subtítulo dinámico según los filtros aplicados
+    filtros_texto = []
+    if mes:
+        filtros_texto.append(f"Periodo: {mes}")
+    if tipo:
+        filtros_texto.append(f"Tipo: {tipo}")
+    if tercero:
+        filtros_texto.append(f"Tercero: {tercero}")
+
+    subtitulo_excel = (
+        " · ".join(filtros_texto)
+        if filtros_texto
+        else "Todos los registros"
+    )
+
     _excel_titulo(
         ws,
         "CRV CONSTRUCTORA - MOVIMIENTOS",
-        (
-            f"Periodo: {mes}"
-            if mes
-            else "Todos los registros"
-        ),
+        subtitulo_excel,
         len(headers)
     )
 
@@ -181,14 +217,15 @@ def movimientos_excel():
 
         for col in range(
             15,
-            20
+            24
         ):
-            _excel_moneda(
-                ws.cell(
-                    fila,
-                    col
+            if col not in (16, 17):
+                _excel_moneda(
+                    ws.cell(
+                        fila,
+                        col
+                    )
                 )
-            )
 
     ws.freeze_panes = "A5"
     ws.auto_filter.ref = (
@@ -199,12 +236,14 @@ def movimientos_excel():
 
     _excel_auto_ancho(ws)
 
+    nombre_archivo = (
+        f"CRV_movimientos_{tipo.lower() + '_' if tipo else ''}"
+        f"{date.today().isoformat()}.xlsx"
+    )
+
     return _enviar_excel(
         wb,
-        (
-            f"CRV_movimientos_"
-            f"{date.today().isoformat()}.xlsx"
-        )
+        nombre_archivo
     )
 
 
@@ -1328,62 +1367,175 @@ def movimiento_comprobante_pdf(movimiento_id):
         mimetype="application/pdf"
     )
 
+from reportlab.lib import colors
+from reportlab.platypus import Spacer, Table, TableStyle
+
 
 @crv_bp.route("/movimientos/pdf")
 def movimientos_pdf():
-
     bloqueo = proteger_crv()
-
     if bloqueo:
         return bloqueo
 
     empresa_id = session.get("empresa_id")
 
-    movimientos = (
-        CRVMovimiento.query
-        .filter_by(
-            empresa_id=empresa_id
+    # 1. Leer filtros enviados desde la vista
+    mes = request.args.get("mes", "").strip()
+    sede_id = request.args.get("sede_id", "").strip()
+    tipo = request.args.get("tipo", "").strip().upper()
+    tercero = request.args.get("tercero", "").strip()
+
+    query = CRVMovimiento.query.filter_by(empresa_id=empresa_id)
+
+    if sede_id.isdigit():
+        query = query.filter_by(sede_id=int(sede_id))
+
+    if tipo:
+        tipo_normalizado = (
+            tipo.replace("_", " ")
+            .replace("Á", "A")
+            .replace("É", "E")
+            .replace("Í", "I")
+            .replace("Ó", "O")
+            .replace("Ú", "U")
         )
-        .order_by(
-            CRVMovimiento.fecha.asc(),
-            CRVMovimiento.id.asc()
+        tipo_con_guion = tipo_normalizado.replace(" ", "_")
+
+        query = query.filter(
+            db.or_(
+                db.func.upper(CRVMovimiento.tipo) == tipo,
+                db.func.upper(CRVMovimiento.tipo) == tipo_normalizado,
+                db.func.upper(CRVMovimiento.tipo) == tipo_con_guion,
+            )
         )
-        .all()
-    )
+
+    if tercero:
+        campo_tercero = (
+            getattr(CRVMovimiento, "nombre_tercero", None)
+            or getattr(CRVMovimiento, "tercero_nombre")
+        )
+        query = query.filter(campo_tercero.ilike(f"%{tercero}%"))
+
+    if mes:
+        try:
+            anio_texto, mes_texto = mes.split("-")
+            query = query.filter(
+                db.extract("year", CRVMovimiento.fecha) == int(anio_texto),
+                db.extract("month", CRVMovimiento.fecha) == int(mes_texto),
+            )
+        except (ValueError, TypeError):
+            pass
+
+    movimientos = query.order_by(
+        CRVMovimiento.fecha.asc(),
+        CRVMovimiento.id.asc()
+    ).all()
+
+    # 2. Calcular totales del resumen
+    ingresos = 0.0
+    compras = 0.0
+    gastos = 0.0
+    nomina_obra = 0.0
+    nomina_crv = 0.0
+    anticipos = 0.0
 
     filas = []
 
     for m in movimientos:
+        val = float(m.valor_neto or m.valor or 0)
+        t = (m.tipo or "").strip().upper().replace("_", " ")
+        cat = (getattr(m, "categoria", "") or "").strip().upper()
+        sub = (getattr(m, "subcategoria", "") or "").strip().upper()
+        texto_clasificacion = f"{t} {cat} {sub}"
+
+        if t == "INGRESO":
+            ingresos += val
+        elif t == "COMPRA":
+            compras += val
+        elif any(p in texto_clasificacion for p in ("ANTICIPO", "PRESTAMO", "PRÉSTAMO")):
+            anticipos += val
+        elif any(p in texto_clasificacion for p in ("NOMINA", "NÓMINA", "SEGURIDAD SOCIAL", "SALARIO")):
+            if "OBRA" in texto_clasificacion:
+                nomina_obra += val
+            else:
+                nomina_crv += val
+        else:
+            gastos += val
+
         filas.append([
-            (
-                m.fecha.strftime("%d/%m/%Y")
-                if m.fecha
-                else ""
-            ),
+            m.fecha.strftime("%d/%m/%Y") if m.fecha else "",
             m.tipo or "",
             m.nombre_tercero or "",
             m.numero_documento or "",
             m.concepto or "",
             m.cuenta or "",
             m.proyecto or "",
-            _money_export(
-                m.valor_neto
-                or m.valor
-                or 0
-            )
+            _money_export(val),
         ])
+
+    nomina_total = nomina_obra + nomina_crv
+
+    # 3. Subtítulo con filtros aplicados
+    filtros_texto = []
+    if mes:
+        filtros_texto.append(f"Mes: {mes}")
+    if tipo:
+        filtros_texto.append(f"Tipo: {tipo}")
+    if tercero:
+        filtros_texto.append(f"Tercero: {tercero}")
+
+    subtitulo = (
+        " · ".join(filtros_texto)
+        if filtros_texto
+        else "Listado general de movimientos contables"
+    )
+    subtitulo += f" · Generado {date.today().strftime('%d/%m/%Y')}"
 
     story = []
 
     _pdf_encabezado_historia(
         story,
         "CRV CONSTRUCTORA - MOVIMIENTOS",
-        (
-            "Listado general de movimientos contables · "
-            f"Generado {date.today().strftime('%d/%m/%Y')}"
-        )
+        subtitulo,
     )
 
+    # 4. Cuadro de resumen (6 tarjetas)
+    datos_resumen = [
+        [
+            f"INGRESOS CONSULTADOS\n{_money_export(ingresos)}",
+            f"COMPRAS CONSULTADAS\n{_money_export(compras)}",
+            f"GASTOS OPERATIVOS\n{_money_export(gastos)}",
+        ],
+        [
+            f"NÓMINA EMPLEADOS\nObra: {_money_export(nomina_obra)} | CRV: {_money_export(nomina_crv)}\nTotal: {_money_export(nomina_total)}",
+            f"ANTICIPOS Y PRÉSTAMOS\n{_money_export(anticipos)}",
+            f"REGISTROS EN CONSULTA\n{len(movimientos)} movimientos",
+        ],
+    ]
+
+    tabla_resumen = Table(datos_resumen, colWidths=[85 * mm, 85 * mm, 87 * mm])
+    tabla_resumen.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f8fafc")),
+        ("BOX", (0, 0), (-1, -1), 0.75, colors.HexColor("#cbd5e1")),
+        ("INNERGRID", (0, 0), (-1, -1), 0.75, colors.HexColor("#cbd5e1")),
+        ("TEXTCOLOR", (0, 0), (-1, -1), colors.HexColor("#17283f")),
+        ("FONTNAME", (0, 0), (-1, -1), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 8.5),
+        ("LEADING", (0, 0), (-1, -1), 12),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, -1), 7),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+        ("LINEABOVE", (0, 0), (0, 0), 2.5, colors.HexColor("#16a05b")),
+        ("LINEABOVE", (1, 0), (1, 0), 2.5, colors.HexColor("#d8b541")),
+        ("LINEABOVE", (2, 0), (2, 0), 2.5, colors.HexColor("#ef2b2d")),
+        ("LINEABOVE", (0, 1), (2, 1), 2.5, colors.HexColor("#17304f")),
+    ]))
+
+    story.append(tabla_resumen)
+    story.append(Spacer(1, 5 * mm))
+
+    # 5. Tabla principal de movimientos
     story.append(
         _pdf_tabla(
             [
@@ -1394,7 +1546,7 @@ def movimientos_pdf():
                 "Concepto",
                 "Cuenta",
                 "Proyecto",
-                "Valor"
+                "Valor",
             ],
             filas,
             [
@@ -1405,18 +1557,15 @@ def movimientos_pdf():
                 48 * mm,
                 35 * mm,
                 32 * mm,
-                26 * mm
-            ]
+                26 * mm,
+            ],
         )
     )
 
-    return _enviar_pdf(
-        story,
-        (
-            f"CRV_movimientos_"
-            f"{date.today().isoformat()}.pdf"
-        )
+    nombre_archivo = (
+        f"CRV_movimientos_{tipo.lower() + '_' if tipo else ''}"
+        f"{date.today().isoformat()}.pdf"
     )
-
+    return _enviar_pdf(story, nombre_archivo)
 
 __all__ = ['movimiento_comprobante_pdf', 'movimientos_excel', 'movimientos_pdf']
