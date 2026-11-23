@@ -1,5 +1,7 @@
 """CRV report routes: terceros."""
 
+from flask import request
+
 from .crv_core import (
     CRVTercero,
     Workbook,
@@ -12,11 +14,63 @@ from .crv_core import (
     _pdf_tabla,
     crv_bp,
     date,
+    db,
     get_column_letter,
     mm,
     proteger_crv,
     session,
 )
+
+
+def _consultar_terceros_reporte(empresa_id):
+    """Filtra terceros según el modal seleccionado (?tipo=...) o el buscador (?buscar=...)."""
+    tipo = request.args.get("tipo", "").strip().upper()
+    busqueda = request.args.get("buscar", "").strip()
+
+    titulos_categoria = {
+        "PROVEEDOR": "Proveedores",
+        "CLIENTE": "Clientes CRV",
+        "CLIENTE_ECOBIKE": "Clientes ECOBIKE",
+        "EMPLEADO": "Empleados",
+        "EMPLEADO_OBRA": "Empleados de Obra",
+        "PASANTE": "Pasantes",
+        "CONTRATISTA": "Contratistas",
+        "ENTIDAD": "Entidades",
+        "TERCERO": "Otros Terceros",
+        "ACTIVOS": "Total de Terceros Activos",
+    }
+
+    query = CRVTercero.query.filter_by(empresa_id=empresa_id)
+
+    if tipo == "ACTIVOS":
+        query = query.filter(CRVTercero.activo.is_(True))
+    elif tipo:
+        query = query.filter(CRVTercero.tipo_tercero == tipo)
+
+    if busqueda:
+        patron = f"%{busqueda}%"
+        query = query.filter(
+            db.or_(
+                CRVTercero.razon_social.ilike(patron),
+                CRVTercero.identificacion.ilike(patron),
+                CRVTercero.nombre_comercial.ilike(patron),
+            )
+        )
+
+    terceros = query.order_by(CRVTercero.razon_social.asc()).all()
+
+    etiqueta = titulos_categoria.get(tipo, "Directorio general")
+    partes_subtitulo = [etiqueta]
+    if busqueda:
+        partes_subtitulo.append(f"Búsqueda: '{busqueda}'")
+    partes_subtitulo.append(f"{len(terceros)} registros")
+    partes_subtitulo.append(f"Generado {date.today().strftime('%d/%m/%Y')}")
+
+    subtitulo = " · ".join(partes_subtitulo)
+    slug = f"_{tipo.lower()}" if tipo else ""
+
+    return terceros, subtitulo, slug
+
 
 @crv_bp.route("/terceros/pdf")
 def terceros_pdf():
@@ -28,16 +82,7 @@ def terceros_pdf():
 
     empresa_id = session.get("empresa_id")
 
-    terceros = (
-        CRVTercero.query
-        .filter_by(
-            empresa_id=empresa_id
-        )
-        .order_by(
-            CRVTercero.razon_social.asc()
-        )
-        .all()
-    )
+    terceros, subtitulo, slug = _consultar_terceros_reporte(empresa_id)
 
     filas = []
 
@@ -66,10 +111,7 @@ def terceros_pdf():
     _pdf_encabezado_historia(
         story,
         "CRV CONSTRUCTORA - TERCEROS",
-        (
-            "Directorio general · "
-            f"Generado {date.today().strftime('%d/%m/%Y')}"
-        )
+        subtitulo
     )
 
     story.append(
@@ -101,7 +143,7 @@ def terceros_pdf():
     return _enviar_pdf(
         story,
         (
-            f"CRV_terceros_"
+            f"CRV_terceros{slug}_"
             f"{date.today().isoformat()}.pdf"
         )
     )
@@ -117,16 +159,7 @@ def terceros_excel():
 
     empresa_id = session.get("empresa_id")
 
-    terceros = (
-        CRVTercero.query
-        .filter_by(
-            empresa_id=empresa_id
-        )
-        .order_by(
-            CRVTercero.razon_social.asc()
-        )
-        .all()
-    )
+    terceros, subtitulo, slug = _consultar_terceros_reporte(empresa_id)
 
     wb = Workbook()
     ws = wb.active
@@ -155,7 +188,7 @@ def terceros_excel():
     _excel_titulo(
         ws,
         "CRV CONSTRUCTORA - TERCEROS",
-        "Directorio de proveedores, clientes, empleados y terceros",
+        subtitulo,
         len(headers)
     )
 
@@ -211,7 +244,7 @@ def terceros_excel():
     return _enviar_excel(
         wb,
         (
-            f"CRV_terceros_"
+            f"CRV_terceros{slug}_"
             f"{date.today().isoformat()}.xlsx"
         )
     )

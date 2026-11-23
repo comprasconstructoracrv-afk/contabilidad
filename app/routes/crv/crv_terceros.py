@@ -184,6 +184,11 @@ def terceros():
         ""
     ).strip()
 
+    tipo_actual = request.args.get(
+        "tipo",
+        ""
+    ).strip().upper()
+
     query = CRVTercero.query.filter_by(
         empresa_id=empresa_id
     )
@@ -219,7 +224,9 @@ def terceros():
 
         terceros=registros,
 
-        busqueda=busqueda
+        busqueda=busqueda,
+
+        tipo_actual=tipo_actual
     )
 
 @crv_bp.route(

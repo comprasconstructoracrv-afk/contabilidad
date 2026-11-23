@@ -1189,18 +1189,18 @@
 
         </div>
 
-
+   
         <div class="topbar-right">
 
             <a
-                href="/crv/terceros/pdf"
+                href="/crv/terceros/pdf?buscar={{ busqueda or '' }}&tipo={{ tipo_actual or '' }}"
                 class="btn btn-light"
             >
                 📄 Exportar PDF
             </a>
 
             <a
-                href="/crv/terceros/excel"
+                href="/crv/terceros/excel?buscar={{ busqueda or '' }}&tipo={{ tipo_actual or '' }}"
                 class="btn btn-navy"
             >
                 📊 Exportar Excel
@@ -1444,45 +1444,45 @@
             >
 
 
-            <select id="filtroTipo" onchange="filtrarTipoLocal()">
+            <select id="filtroTipo" name="tipo" onchange="filtrarTipoLocal(); actualizarUrlsExportacion();">
 
-                <option value="">
+                <option value="" {{ 'selected' if not tipo_actual else '' }}>
                     Todos los tipos
                 </option>
 
-                <option value="PROVEEDOR">
+                <option value="PROVEEDOR" {{ 'selected' if tipo_actual == 'PROVEEDOR' else '' }}>
                     Proveedores
                 </option>
 
-                <option value="CLIENTE">
+                <option value="CLIENTE" {{ 'selected' if tipo_actual == 'CLIENTE' else '' }}>
                     Clientes CRV
                 </option>
 
-                <option value="CLIENTE_ECOBIKE">
+                <option value="CLIENTE_ECOBIKE" {{ 'selected' if tipo_actual == 'CLIENTE_ECOBIKE' else '' }}>
                     Clientes ECOBIKE
                 </option>
 
-                <option value="EMPLEADO">
+                <option value="EMPLEADO" {{ 'selected' if tipo_actual == 'EMPLEADO' else '' }}>
                     Empleados
                 </option>
 
-                <option value="EMPLEADO_OBRA">
+                <option value="EMPLEADO_OBRA" {{ 'selected' if tipo_actual == 'EMPLEADO_OBRA' else '' }}>
                     Empleados de obra
                 </option>
 
-                <option value="PASANTE">
+                <option value="PASANTE" {{ 'selected' if tipo_actual == 'PASANTE' else '' }}>
                     Pasantes
                 </option>
 
-                <option value="CONTRATISTA">
+                <option value="CONTRATISTA" {{ 'selected' if tipo_actual == 'CONTRATISTA' else '' }}>
                     Contratistas
                 </option>
 
-                <option value="ENTIDAD">
+                <option value="ENTIDAD" {{ 'selected' if tipo_actual == 'ENTIDAD' else '' }}>
                     Entidades
                 </option>
 
-                <option value="TERCERO">
+                <option value="TERCERO" {{ 'selected' if tipo_actual == 'TERCERO' else '' }}>
                     Otros Terceros
                 </option>
 
@@ -2711,6 +2711,13 @@
             `;
         }
 
+        const btnModalPdf = document.getElementById("btnModalTipoPdf");
+        const btnModalExcel = document.getElementById("btnModalTipoExcel");
+        const paramTipo = tipoSeleccionado ? `?tipo=${encodeURIComponent(tipoSeleccionado)}` : "";
+
+        if (btnModalPdf) btnModalPdf.href = `/crv/terceros/pdf${paramTipo}`;
+        if (btnModalExcel) btnModalExcel.href = `/crv/terceros/excel${paramTipo}`;
+
         document.getElementById("overlayDetalleTipo").classList.add("active");
         document.getElementById("modalDetalleTipo").classList.add("active");
         document.body.classList.add("modal-open");
@@ -2722,7 +2729,35 @@
         if (overlay) overlay.classList.remove("active");
         if (modal) modal.classList.remove("active");
         document.body.classList.remove("modal-open");
+
     }
+
+    function actualizarUrlsExportacion() {
+        const inputBuscar = document.querySelector('input[name="buscar"]');
+        const selectTipo = document.getElementById("filtroTipo");
+        const btnPdf = document.getElementById("btnExportarPdf");
+        const btnExcel = document.getElementById("btnExportarExcel");
+
+        const params = new URLSearchParams();
+        const buscarVal = inputBuscar ? inputBuscar.value.trim() : "";
+        const tipoVal = selectTipo ? selectTipo.value.trim() : "";
+
+        if (buscarVal) params.set("buscar", buscarVal);
+        if (tipoVal) params.set("tipo", tipoVal);
+
+        const query = params.toString() ? `?${params.toString()}` : "";
+        if (btnPdf) btnPdf.href = `/crv/terceros/pdf${query}`;
+        if (btnExcel) btnExcel.href = `/crv/terceros/excel${query}`;
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const inputBuscar = document.querySelector('input[name="buscar"]');
+        if (inputBuscar) {
+            inputBuscar.addEventListener("input", actualizarUrlsExportacion);
+        }
+        filtrarTipoLocal();
+        actualizarUrlsExportacion();
+    });
 
 </script>
 
@@ -2801,6 +2836,19 @@
         </div>
 
         <div class="modal-actions" style="padding: 14px 22px; margin-top: 0; background: white;">
+            <a id="btnModalTipoPdf"
+               href="/crv/terceros/pdf"
+               class="btn btn-light"
+               target="_blank">
+                📄 Exportar PDF
+            </a>
+
+            <a id="btnModalTipoExcel"
+               href="/crv/terceros/excel"
+               class="btn btn-gold">
+                📊 Exportar Excel
+            </a>
+
             <button type="button" class="btn btn-navy" onclick="cerrarModalDetalleTipo()">Cerrar</button>
         </div>
     </div>
