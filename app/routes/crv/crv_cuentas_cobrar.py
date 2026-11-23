@@ -13,6 +13,7 @@ from .crv_core import (
     calcular_iva_formulario,
     convertir_fecha,
     convertir_numero,
+    _vincular_ingresos_existentes_cliente,
     crv_bp,
     db,
     flash,
@@ -22,6 +23,31 @@ from .crv_core import (
     request,
     session,
 )
+
+@crv_bp.route("/cuentas-por-cobrar/<int:cuenta_id>/vincular-movimientos", methods=["POST"])
+def cuenta_cobrar_vincular_movimientos(cuenta_id):
+    bloqueo = proteger_crv()
+    if bloqueo:
+        return bloqueo
+
+    empresa_id = session.get("empresa_id")
+    cuenta = CRVCuentaCobrar.query.get_or_404(cuenta_id)
+
+    if cuenta.empresa_id != empresa_id:
+        return redirect("/crv/cuentas-por-cobrar")
+
+    try:
+        cantidad = _vincular_ingresos_existentes_cliente(cuenta)
+        db.session.commit()
+        if cantidad > 0:
+            flash(f"Se vincularon {cantidad} ingreso(s) existente(s) del cliente al historial.", "success")
+        else:
+            flash("No se encontraron ingresos pendientes por vincular para este cliente.", "error")
+    except Exception as error:
+        db.session.rollback()
+        flash(f"No fue posible vincular los movimientos: {error}", "error")
+
+    return redirect(f"/crv/cuentas-por-cobrar/{cuenta.id}")
 
 @crv_bp.route("/cuentas-por-cobrar", methods=["GET", "POST"])
 def cuentas_por_cobrar():
@@ -191,14 +217,62 @@ def cuenta_cobrar_detalle(cuenta_id):
     if cuenta.empresa_id != empresa_id:
         return redirect("/crv/cuentas-por-cobrar")
 
+    _vincular_ingresos_existentes_cliente(cuenta)
     cuenta.recalcular_saldos()
     db.session.commit()
+
+    cobros_ordenados = sorted(
+        cuenta.cobros,
+        key=lambda x: (x.fecha, x.id),
+        reverse=True
+    )
+
+    historial_pagos = []
+    total_intereses_pagados = 0.0
+    total_mora_pagada = 0.0
+
+    for p in cobros_ordenados:
+        mov = p.movimiento
+        cap = float(p.valor_cobrado or 0)
+        inte = float(getattr(mov, "valor_intereses", 0) or 0) if mov else 0.0
+        mora = float(getattr(mov, "valor_mora", 0) or 0) if mov else 0.0
+
+        total_intereses_pagados += inte
+        total_mora_pagada += mora
+
+        tipos_aplicados = []
+        if cap > 0:
+            tipos_aplicados.append("Capital")
+        if inte > 0:
+            tipos_aplicados.append("Intereses")
+        if mora > 0:
+            tipos_aplicados.append("Mora")
+
+        historial_pagos.append({
+            "id": p.id,
+            "fecha": p.fecha,
+            "capital": cap,
+            "intereses": inte,
+            "mora": mora,
+            "total_pagado": round(cap + inte + mora, 2),
+            "tipos": tipos_aplicados,
+            "forma_pago": p.forma_pago,
+            "cuenta_receptora": p.cuenta_receptora,
+            "pagador": p.pagador,
+            "referencia_pago": p.referencia_pago,
+            "numero_soporte": p.numero_soporte,
+            "observaciones": p.observaciones,
+            "comprobante": mov.comprobante_codigo if mov else "",
+        })
 
     return render_template(
         "contabilidad/crv_cuenta_cobrar_detalle.html",
         empresa_nombre=session.get("empresa_nombre", "CRV CONSTRUCTORA"),
         cuenta=cuenta,
-        cobros=sorted(cuenta.cobros, key=lambda x: (x.fecha, x.id), reverse=True),
+        cobros=cobros_ordenados,
+        historial_pagos=historial_pagos,
+        total_intereses_pagados=total_intereses_pagados,
+        total_mora_pagada=total_mora_pagada,
         cuentas_financieras=_cuentas_financieras_crv(empresa_id)
     )
 
@@ -319,15 +393,22 @@ def cuenta_cobrar_registrar_cobro(cuenta_id):
     cuenta.recalcular_saldos()
 
     fecha = convertir_fecha(request.form.get("fecha"))
-    valor = convertir_numero(request.form.get("valor_cobrado"))
+    abono_capital = convertir_numero(request.form.get("valor_cobrado")) or 0.0
+    abono_intereses = convertir_numero(request.form.get("valor_intereses")) or 0.0
+    abono_mora = convertir_numero(request.form.get("valor_mora")) or 0.0
+    total_recibido = round(abono_capital + abono_intereses + abono_mora, 2)
     cuenta_receptora = request.form.get("cuenta_receptora", "").strip()
 
-    if not fecha or valor <= 0:
-        flash("Fecha y valor del cobro son obligatorios.", "error")
+    if not fecha or total_recibido <= 0:
+        flash("Debes indicar la fecha y al menos un valor mayor a $0 (Capital, Intereses o Mora).", "error")
         return redirect(f"/crv/cuentas-por-cobrar/{cuenta.id}")
 
-    if valor > float(cuenta.saldo_pendiente or 0):
-        flash("El cobro no puede superar el saldo pendiente.", "error")
+    if abono_capital < 0 or abono_intereses < 0 or abono_mora < 0:
+        flash("Los valores de capital, intereses y mora no pueden ser negativos.", "error")
+        return redirect(f"/crv/cuentas-por-cobrar/{cuenta.id}")
+
+    if abono_capital > float(cuenta.saldo_pendiente or 0):
+        flash("El abono a capital no puede superar el saldo pendiente del contrato.", "error")
         return redirect(f"/crv/cuentas-por-cobrar/{cuenta.id}")
 
     if not cuenta_receptora:
@@ -336,11 +417,12 @@ def cuenta_cobrar_registrar_cobro(cuenta_id):
 
     cliente = cuenta.cliente
 
+    # Solo el capital reduce el saldo de la deuda del contrato
     cobro = CRVCobroCuentaCobrar(
         empresa_id=empresa_id,
         cuenta_cobrar_id=cuenta.id,
         fecha=fecha,
-        valor_cobrado=valor,
+        valor_cobrado=abono_capital,
         forma_pago=request.form.get("forma_pago", "").strip(),
         cuenta_receptora=cuenta_receptora,
         cuenta_origen_cliente=request.form.get("cuenta_origen_cliente", "").strip(),
@@ -359,11 +441,11 @@ def cuenta_cobrar_registrar_cobro(cuenta_id):
             empresa_id=empresa_id,
             sede_id=cuenta.sede_id,
             fecha=fecha,
-            tipo="COBRO CUENTA POR COBRAR",
+            tipo="INGRESO",
             categoria="COBRO CLIENTE",
-            subcategoria=cuenta.categoria or "",
-            concepto=f"Cobro cuenta por cobrar {cuenta.numero_documento}",
-            descripcion=f"Cobro recibido de {cliente.razon_social if cliente else 'cliente'} - documento {cuenta.numero_documento}",
+            subcategoria="",
+            concepto=f"Cobro contrato {cuenta.numero_documento}",
+            descripcion=f"Cobro recibido de {cliente.razon_social if cliente else 'cliente'} - contrato {cuenta.numero_documento}",
             tercero_id=cliente.id if cliente else None,
             tercero_nombre=cliente.razon_social if cliente else "",
             tercero_identificacion=cliente.identificacion if cliente else "",
@@ -376,30 +458,33 @@ def cuenta_cobrar_registrar_cobro(cuenta_id):
             numero_soporte=cobro.numero_soporte or f"CXC-COBRO-{cobro.id}",
             fecha_documento=fecha,
             fecha_vencimiento=None,
-            valor=valor,
-            descuento=0,
-            retencion=0,
-            otros_descuentos=0,
-            valor_neto=valor,
+            base_gravable=abono_capital,
+            tipo_iva="NO_APLICA",
+            tarifa_iva=0.0,
+            valor_iva=0.0,
+            valor=total_recibido,
+            descuento=0.0,
+            retencion=0.0,
+            otros_descuentos=0.0,
+            valor_neto=total_recibido,
+            valor_intereses=abono_intereses,
+            valor_mora=abono_mora,
             forma_pago=cobro.forma_pago or "",
             cuenta=cuenta_receptora,
             cuenta_destino="",
             beneficiario="CRV CONSTRUCTORA",
             referencia_pago=cobro.referencia_pago or "",
             proyecto=cuenta.proyecto or "",
-            centro_costo=cuenta.centro_costo or "",
+            centro_costo="",
             obra=cuenta.obra or "",
-            observaciones=cobro.observaciones or "Cobro automático generado desde cuentas por cobrar.",
+            observaciones=cobro.observaciones or "Cobro registrado desde cuentas por cobrar.",
             revisado=False,
             estado="ACTIVO",
             origen_registro="COBRO_CUENTA_POR_COBRAR",
             usuario_registro=str(session.get("usuario", ""))
         )
 
-        _asignar_comprobante_permanente(
-            movimiento
-        )
-
+        _asignar_comprobante_permanente(movimiento)
         db.session.add(movimiento)
         db.session.flush()
         cobro.movimiento_id = movimiento.id
@@ -411,7 +496,6 @@ def cuenta_cobrar_registrar_cobro(cuenta_id):
         flash(f"No fue posible registrar el cobro: {error}", "error")
 
     return redirect(f"/crv/cuentas-por-cobrar/{cuenta.id}")
-
 @crv_bp.route("/cuentas-por-cobrar/<int:cuenta_id>/cobros/<int:cobro_id>/eliminar", methods=["POST"])
 def cuenta_cobrar_reversar_cobro(cuenta_id, cobro_id):
     bloqueo = proteger_crv()

@@ -173,7 +173,7 @@ def movimientos():
         sub = (m.subcategoria or "").strip().upper()
         texto_clasificacion = f"{t} {cat} {sub}"
 
-        if t == "INGRESO":
+        if t in ("INGRESO", "COBRO CUENTA POR COBRAR"):
             totales["ingresos"] += val
         elif t == "COMPRA":
             totales["compras"] += val
@@ -895,6 +895,43 @@ def editar_movimiento(movimiento_id):
             ""
         ).strip()
 
+        # --- SINCRONIZAR CON CUENTA POR COBRAR SI ESTE MOVIMIENTO ESTÁ VINCULADO ---
+        cobro_vinculado = CRVCobroCuentaCobrar.query.filter_by(
+            empresa_id=empresa_id,
+            movimiento_id=movimiento.id
+        ).first()
+
+        if cobro_vinculado:
+            cuenta_cxc = cobro_vinculado.cuenta_cobrar
+            es_ingreso_valido = (
+                (movimiento.estado or "").upper() == "ACTIVO"
+                and (movimiento.tipo or "").upper() in ("INGRESO", "COBRO CUENTA POR COBRAR")
+                and cuenta_cxc is not None
+                and cuenta_cxc.cliente_id == movimiento.tercero_id
+            )
+
+            if es_ingreso_valido:
+                cap_edit = float(movimiento.base_gravable or 0)
+                inte_edit = float(movimiento.valor_intereses or 0)
+                mora_edit = float(movimiento.valor_mora or 0)
+                if cap_edit <= 0 and inte_edit <= 0 and mora_edit <= 0:
+                    cap_edit = float(movimiento.valor_neto or movimiento.valor or 0)
+
+                cobro_vinculado.fecha = movimiento.fecha
+                cobro_vinculado.valor_cobrado = round(max(0.0, cap_edit), 2)
+                cobro_vinculado.forma_pago = movimiento.forma_pago or ""
+                cobro_vinculado.cuenta_receptora = movimiento.cuenta or ""
+                cobro_vinculado.referencia_pago = movimiento.referencia_pago or ""
+                cobro_vinculado.numero_soporte = movimiento.numero_soporte or movimiento.numero_documento or ""
+                cobro_vinculado.observaciones = movimiento.observaciones or movimiento.concepto or ""
+                db.session.flush()
+                cuenta_cxc.recalcular_saldos()
+            else:
+                db.session.delete(cobro_vinculado)
+                db.session.flush()
+                if cuenta_cxc:
+                    cuenta_cxc.recalcular_saldos()
+
         db.session.commit()
 
         flash(
@@ -959,18 +996,41 @@ def eliminar_movimiento(movimiento_id):
             "/crv/cuentas-por-pagar"
         )
 
-    db.session.delete(movimiento)
+    try:
+        # Buscar si este movimiento está asociado a algún abono en Cuentas por Cobrar
+        # (funciona tanto si el ingreso nació en Movimientos como si nació en CxC)
+        cobros_vinculados = CRVCobroCuentaCobrar.query.filter_by(
+            empresa_id=empresa_id,
+            movimiento_id=movimiento.id
+        ).all()
 
-    db.session.commit()
+        cuentas_afectadas = []
+        for cobro in cobros_vinculados:
+            if cobro.cuenta_cobrar and cobro.cuenta_cobrar not in cuentas_afectadas:
+                cuentas_afectadas.append(cobro.cuenta_cobrar)
+            db.session.delete(cobro)
 
-    flash(
-        "Movimiento eliminado correctamente.",
-        "success"
-    )
+        db.session.delete(movimiento)
+        db.session.flush()
 
-    return redirect(
-        "/crv/movimientos"
-    )
+        # Recalcular saldo y estado (PARCIAL -> PENDIENTE) de las cuentas afectadas
+        for cuenta_cxc in cuentas_afectadas:
+            cuenta_cxc.recalcular_saldos()
+
+        db.session.commit()
+
+        if cuentas_afectadas:
+            flash(
+                "Movimiento eliminado y saldo actualizado en Cuentas por Cobrar.",
+                "success"
+            )
+        else:
+            flash("Movimiento eliminado correctamente.", "success")
+    except Exception as error:
+        db.session.rollback()
+        flash(f"No fue posible eliminar el movimiento: {error}", "error")
+
+    return redirect("/crv/movimientos")
 
 @crv_bp.route("/movimientos/importar-excel", methods=["POST"])
 def importar_movimientos_excel():

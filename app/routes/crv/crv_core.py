@@ -96,6 +96,7 @@ from .services.reportes_exports import (
 from .services.cuentas_cobrar import (
     _clientes_crv,
     _sincronizar_movimiento_cxc,
+    _vincular_ingresos_existentes_cliente,
 )
 
 from .services.proyectos import (
