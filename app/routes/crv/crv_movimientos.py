@@ -1231,36 +1231,81 @@ def importar_movimientos_excel():
                     identificacion=identificacion,
                 ).first()
 
-            # --- 5. VALORES E IVA ---
-            base_gravable = float(convertir_numero(obtener_valor(fila, "BASE_GRAVABLE")) or 0)
-            tarifa_iva = float(convertir_numero(obtener_valor(fila, "TARIFA_IVA")) or 0)
-            valor_iva = float(convertir_numero(obtener_valor(fila, "VALOR_IVA")) or 0)
-            total_doc = float(convertir_numero(obtener_valor(fila, "TOTAL_DOCUMENTO")) or 0)
-            retencion = float(convertir_numero(obtener_valor(fila, "RETENCION")) or 0)
-            otro_descuento = float(
-                convertir_numero(obtener_valor(fila, "OTRO_DESCUENTO", "OTROS_DESCUENTOS")) or 0
+            tipo_tercero_bd = (
+                (tercero_obj.tipo_tercero or "").strip().upper()
+                if tercero_obj
+                else ""
+            )
+            es_cliente_ingreso = (
+                tipo == "INGRESO"
+                or tipo_tercero_bd in ("CLIENTE", "CLIENTE_ECOBIKE")
             )
 
-            if total_doc > 0 and base_gravable <= 0:
-                base_gravable = round(max(0.0, total_doc - valor_iva), 2)
+            # --- 5. VALORES DE BASE GRAVABLE, MORA, INTERESES E IVA ---
+            if es_cliente_ingreso:
+                base_gravable = float(
+                    convertir_numero(obtener_valor(fila, "BASE_GRAVABLE", "BASE_CAPITAL")) or 0
+                )
+                valor_intereses = float(
+                    convertir_numero(obtener_valor(fila, "INTERESES", "VALOR_INTERESES")) or 0
+                )
+                valor_mora = float(
+                    convertir_numero(obtener_valor(fila, "MORA", "VALOR_MORA")) or 0
+                )
+                total_doc = float(
+                    convertir_numero(obtener_valor(fila, "TOTAL_DOCUMENTO")) or 0
+                )
 
-            if base_gravable > 0 and tarifa_iva > 0 and valor_iva <= 0:
-                valor_iva = round(base_gravable * (tarifa_iva / 100.0), 2)
+                # Si viene Total, Intereses y Mora sin Base Gravable, deduce el Capital
+                if total_doc > 0 and base_gravable <= 0:
+                    base_gravable = round(
+                        max(0.0, total_doc - valor_intereses - valor_mora), 2
+                    )
 
-            if total_doc <= 0 and (base_gravable > 0 or valor_iva > 0):
-                total_doc = round(base_gravable + valor_iva, 2)
+                # Si viene Capital (y/o Intereses/Mora) sin Total Documento, suma el Total
+                if total_doc <= 0 and (
+                    base_gravable > 0 or valor_intereses > 0 or valor_mora > 0
+                ):
+                    total_doc = round(base_gravable + valor_intereses + valor_mora, 2)
 
-            if valor_iva > 0 and base_gravable > 0 and tarifa_iva <= 0:
-                porcentaje_calc = (valor_iva / base_gravable) * 100.0
-                for tarifa_estandar in (19.0, 5.0, 8.0, 16.0):
-                    if abs(porcentaje_calc - tarifa_estandar) <= 0.3:
-                        tarifa_iva = tarifa_estandar
-                        break
-                else:
-                    tarifa_iva = round(porcentaje_calc, 2)
+                tarifa_iva = 0.0
+                valor_iva = 0.0
+                retencion = 0.0
+                otro_descuento = 0.0
+                tipo_iva = "NO_APLICA"
+                valor_neto = round(max(0.0, total_doc), 2)
+            else:
+                valor_intereses = 0.0
+                valor_mora = 0.0
+                base_gravable = float(convertir_numero(obtener_valor(fila, "BASE_GRAVABLE")) or 0)
+                tarifa_iva = float(convertir_numero(obtener_valor(fila, "TARIFA_IVA")) or 0)
+                valor_iva = float(convertir_numero(obtener_valor(fila, "VALOR_IVA")) or 0)
+                total_doc = float(convertir_numero(obtener_valor(fila, "TOTAL_DOCUMENTO")) or 0)
+                retencion = float(convertir_numero(obtener_valor(fila, "RETENCION")) or 0)
+                otro_descuento = float(
+                    convertir_numero(obtener_valor(fila, "OTRO_DESCUENTO", "OTROS_DESCUENTOS")) or 0
+                )
 
-            tipo_iva = "DESCONTABLE" if valor_iva > 0 else "NO_APLICA"
-            valor_neto = round(max(0.0, total_doc - retencion - otro_descuento), 2)
+                if total_doc > 0 and base_gravable <= 0:
+                    base_gravable = round(max(0.0, total_doc - valor_iva), 2)
+
+                if base_gravable > 0 and tarifa_iva > 0 and valor_iva <= 0:
+                    valor_iva = round(base_gravable * (tarifa_iva / 100.0), 2)
+
+                if total_doc <= 0 and (base_gravable > 0 or valor_iva > 0):
+                    total_doc = round(base_gravable + valor_iva, 2)
+
+                if valor_iva > 0 and base_gravable > 0 and tarifa_iva <= 0:
+                    porcentaje_calc = (valor_iva / base_gravable) * 100.0
+                    for tarifa_estandar in (19.0, 5.0, 8.0, 16.0):
+                        if abs(porcentaje_calc - tarifa_estandar) <= 0.3:
+                            tarifa_iva = tarifa_estandar
+                            break
+                    else:
+                        tarifa_iva = round(porcentaje_calc, 2)
+
+                tipo_iva = "DESCONTABLE" if valor_iva > 0 else "NO_APLICA"
+                valor_neto = round(max(0.0, total_doc - retencion - otro_descuento), 2)
 
             forma_pago = str(obtener_valor(fila, "FORMA_PAGO") or "TRANSFERENCIA").strip().upper()
             cuenta = str(obtener_valor(fila, "CUENTA_ORIGEN", "CUENTA") or "71800002023").strip()
@@ -1292,6 +1337,8 @@ def importar_movimientos_excel():
                 retencion=retencion,
                 otros_descuentos=otro_descuento,
                 valor_neto=valor_neto,
+                valor_intereses=valor_intereses,
+                valor_mora=valor_mora,
                 forma_pago=forma_pago,
                 cuenta=cuenta,
                 cuenta_destino=tercero_obj.numero_cuenta if tercero_obj else "",
@@ -1307,6 +1354,50 @@ def importar_movimientos_excel():
 
             _asignar_comprobante_permanente(movimiento)
             db.session.add(movimiento)
+            db.session.flush()
+
+            # --- 6. VINCULAR CON CUENTA POR COBRAR ACTIVA SI ES INGRESO DE CLIENTE ---
+            if (
+                es_cliente_ingreso
+                and tercero_obj
+                and tipo in ("INGRESO", "COBRO CUENTA POR COBRAR")
+                and base_gravable > 0
+            ):
+                cuenta_cxc = (
+                    CRVCuentaCobrar.query.filter(
+                        CRVCuentaCobrar.empresa_id == empresa_id,
+                        CRVCuentaCobrar.cliente_id == tercero_obj.id,
+                        CRVCuentaCobrar.saldo_pendiente > 0,
+                    )
+                    .order_by(
+                        CRVCuentaCobrar.fecha_documento.asc(),
+                        CRVCuentaCobrar.id.asc(),
+                    )
+                    .first()
+                )
+                if cuenta_cxc:
+                    abono_cap = min(
+                        base_gravable, float(cuenta_cxc.saldo_pendiente or 0)
+                    )
+                    if abono_cap > 0:
+                        cobro = CRVCobroCuentaCobrar(
+                            empresa_id=empresa_id,
+                            cuenta_cobrar_id=cuenta_cxc.id,
+                            movimiento_id=movimiento.id,
+                            fecha=fecha,
+                            valor_cobrado=round(abono_cap, 2),
+                            forma_pago=forma_pago,
+                            cuenta_receptora=cuenta,
+                            cuenta_origen_cliente="",
+                            pagador=tercero_obj.razon_social or "",
+                            referencia_pago="",
+                            numero_soporte=numero_soporte or numero_documento,
+                            observaciones=observaciones or concepto,
+                            usuario_registro=str(session.get("usuario", "")),
+                        )
+                        db.session.add(cobro)
+                        db.session.flush()
+                        cuenta_cxc.recalcular_saldos()
             creados += 1
 
         db.session.commit()
