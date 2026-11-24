@@ -223,8 +223,8 @@ def cuenta_cobrar_detalle(cuenta_id):
 
     cobros_ordenados = sorted(
         cuenta.cobros,
-        key=lambda x: (x.fecha, x.id),
-        reverse=True
+        key=lambda x: (str(x.fecha or ""), x.id or 0),      
+        reverse=True    
     )
 
     historial_pagos = []
@@ -236,6 +236,7 @@ def cuenta_cobrar_detalle(cuenta_id):
         cap = float(p.valor_cobrado or 0)
         inte = float(getattr(mov, "valor_intereses", 0) or 0) if mov else 0.0
         mora = float(getattr(mov, "valor_mora", 0) or 0) if mov else 0.0
+        fecha_pago = convertir_fecha(p.fecha) if isinstance(p.fecha, str) else p.fecha
 
         total_intereses_pagados += inte
         total_mora_pagada += mora
@@ -250,7 +251,7 @@ def cuenta_cobrar_detalle(cuenta_id):
 
         historial_pagos.append({
             "id": p.id,
-            "fecha": p.fecha,
+            "fecha": fecha_pago,
             "capital": cap,
             "intereses": inte,
             "mora": mora,

@@ -1003,7 +1003,7 @@
                     <tbody>
                         {% for p in historial_pagos %}
                         <tr>
-                            <td>{{ p.fecha.strftime('%d/%m/%Y') if p.fecha else '' }}</td>
+                            <td>{{ p.fecha.strftime('%d/%m/%Y') if p.fecha and p.fecha is not string else (p.fecha or '') }}</td>
                             <td>
                                 {% for t in p.tipos %}
                                     {% if t == 'Capital' %}
