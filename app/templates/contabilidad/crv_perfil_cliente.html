@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CRV CONSTRUCTORA - Perfil Clientes CRV</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            color: #17283f;
+        }
+
+        .page {
+            min-height: 100vh;
+            padding: 28px;
+        }
+
+        .shell {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        /* =====================================================
+           MENÚ LATERAL PERMANENTE CRV
+        ===================================================== */
+        .crv-fixed-layout {
+            max-width: 1760px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 245px minmax(0, 1fr);
+            gap: 20px;
+            align-items: start;
+        }
+
+        .crv-fixed-sidebar {
+            position: sticky;
+            top: 18px;
+            background: #fff;
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 12px 30px rgba(18, 40, 64, .08);
+        }
+
+        .crv-fixed-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 10px;
+            margin-bottom: 10px;
+            border-radius: 999px;
+            background: #e8f7ee;
+            color: #168446;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .crv-fixed-badge::before {
+            content: "●";
+            font-size: 8px;
+        }
+
+        .crv-fixed-company {
+            color: #17304f;
+            font-size: 18px;
+            line-height: 1.2;
+            font-weight: 900;
+        }
+
+        .crv-fixed-subtitle {
+            margin: 3px 0 15px;
+            color: #cda52b;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .crv-fixed-menu {
+            display: grid;
+            gap: 7px;
+        }
+
+        .crv-fixed-menu a {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            min-height: 40px;
+            padding: 8px 10px;
+            border-radius: 9px;
+            background: #eef3f8;
+            color: #17304f;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 800;
+            transition: .15s ease;
+        }
+
+        .crv-fixed-menu a:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 14px rgba(18, 40, 64, .08);
+        }
+
+        .crv-fixed-icon {
+            width: 25px;
+            height: 25px;
+            min-width: 25px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 7px;
+            background: rgba(23, 48, 79, .08);
+            font-size: 13px;
+        }
+
+        .crv-fixed-menu a.active {
+            background: #17304f;
+            color: #fff;
+        }
+
+        .crv-fixed-menu a.gold {
+            background: #d8b541;
+            color: #fff;
+        }
+
+        .crv-fixed-menu a.danger {
+            justify-content: center;
+            margin-top: 5px;
+            background: #ef2b2d;
+            color: #fff;
+        }
+
+        .crv-fixed-menu a.active .crv-fixed-icon,
+        .crv-fixed-menu a.gold .crv-fixed-icon,
+        .crv-fixed-menu a.danger .crv-fixed-icon {
+            background: rgba(255, 255, 255, .16);
+        }
+
+        .crv-fixed-main {
+            min-width: 0;
+        }
+
+        /* =====================================================
+           ENCABEZADO
+        ===================================================== */
+        .header {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .header img {
+            width: 90px;
+            height: 75px;
+            object-fit: contain;
+            margin-bottom: 4px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 30px;
+            font-weight: 900;
+            color: #17304f;
+        }
+
+        .header p {
+            margin: 7px 0 0;
+            color: #6d7f93;
+            font-size: 14px;
+        }
+
+        /* =====================================================
+           BARRA SUPERIOR
+        ===================================================== */
+        .topbar {
+            background: white;
+            border-radius: 17px;
+            padding: 14px 17px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            box-shadow: 0 10px 28px rgba(18, 40, 64, .07);
+        }
+
+        .topbar-left,
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .empresa-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 11px;
+            border-radius: 999px;
+            background: #e5f8ec;
+            color: #138246;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .empresa-badge::before {
+            content: "●";
+            font-size: 8px;
+        }
+
+        /* =====================================================
+           BOTONES
+        ===================================================== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border: none;
+            outline: none;
+            border-radius: 10px;
+            padding: 11px 15px;
+            font-size: 12px;
+            font-weight: 900;
+            cursor: pointer;
+            text-decoration: none;
+            transition: .15s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-dark {
+            background: #111;
+            color: white;
+        }
+
+        .btn-navy {
+            background: #17304f;
+            color: white;
+        }
+
+        .btn-gold {
+            background: #d8b541;
+            color: white;
+        }
+
+        .btn-light {
+            background: #edf2f7;
+            color: #17304f;
+        }
+
+        /* =====================================================
+           TARJETAS RESUMEN
+        ===================================================== */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 17px;
+            padding: 18px;
+            box-shadow: 0 8px 24px rgba(18, 40, 64, .06);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            min-height: 100px;
+        }
+
+        .summary-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 23px;
+            flex: 0 0 auto;
+        }
+
+        .summary-icon.total {
+            background: #fff4d3;
+        }
+
+        .summary-icon.capital {
+            background: #dcf7e7;
+        }
+
+        .summary-icon.intereses {
+            background: #e4eeff;
+        }
+
+        .summary-icon.saldo {
+            background: #efe7ff;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            font-weight: 900;
+            color: #52687f;
+        }
+
+        .summary-value {
+            margin-top: 4px;
+            font-size: 23px;
+            font-weight: 900;
+            color: #17304f;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .summary-note {
+            font-size: 11px;
+            color: #8291a3;
+            margin-top: 3px;
+        }
+
+        /* =====================================================
+           TARJETA PRINCIPAL Y FILTROS
+        ===================================================== */
+        .directory-card {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 12px 32px rgba(18, 40, 64, .07);
+            overflow: hidden;
+            margin-bottom: 18px;
+        }
+
+        .directory-header {
+            padding: 20px 22px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #e7ecf1;
+        }
+
+        .directory-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .directory-icon {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: #edf3fa;
+            font-size: 20px;
+        }
+
+        .directory-header h2 {
+            margin: 0;
+            color: #17304f;
+            font-size: 21px;
+        }
+
+        .directory-header p {
+            margin: 4px 0 0;
+            color: #728399;
+            font-size: 12px;
+        }
+
+        .filters {
+            padding: 15px 22px;
+            display: grid;
+            grid-template-columns: minmax(220px, 1.2fr) minmax(180px, 1fr) minmax(180px, 1fr) auto auto;
+            gap: 9px;
+            border-bottom: 1px solid #e7ecf1;
+            background: #fbfcfd;
+            align-items: end;
+        }
+
+        .field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 900;
+            color: #435970;
+            margin-bottom: 5px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            border: 1px solid #d5dee7;
+            border-radius: 9px;
+            padding: 10px 12px;
+            background: white;
+            color: #17283f;
+            font-family: inherit;
+            font-size: 12px;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #d8b541;
+            box-shadow: 0 0 0 3px rgba(216, 181, 65, .12);
+        }
+
+        /* =====================================================
+           FICHA RESUMEN DEL CLIENTE
+        ===================================================== */
+        .cliente-summary-box {
+            padding: 16px 22px;
+            background: #fbfcfd;
+            border-bottom: 1px solid #e7ecf1;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .cliente-box-item {
+            background: #fff;
+            border: 1px solid #e8edf2;
+            border-radius: 12px;
+            padding: 12px 14px;
+        }
+
+        .cliente-box-item small {
+            display: block;
+            font-size: 10px;
+            font-weight: 900;
+            color: #728399;
+            text-transform: uppercase;
+        }
+
+        .cliente-box-item strong {
+            display: block;
+            margin-top: 4px;
+            font-size: 14px;
+            font-weight: 900;
+            color: #17304f;
+        }
+
+        /* =====================================================
+           TABLA
+        ===================================================== */
+        .table-wrap {
+            overflow-x: auto;
+            padding: 18px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 920px;
+        }
+
+        thead th {
+            background: #17304f;
+            color: white;
+            padding: 12px 11px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        thead th:first-child {
+            border-radius: 10px 0 0 0;
+        }
+
+        thead th:last-child {
+            border-radius: 0 10px 0 0;
+        }
+
+        tbody td {
+            padding: 13px 11px;
+            border-bottom: 1px solid #e8edf2;
+            font-size: 11.5px;
+            vertical-align: middle;
+        }
+
+        tbody tr:hover {
+            background: #fafcfe;
+        }
+
+        tfoot td {
+            padding: 13px 11px;
+            background: #f4f6f8;
+            border-top: 2px solid #cbd5e1;
+            font-size: 12px;
+            font-weight: 900;
+            color: #17304f;
+        }
+
+        .money {
+            text-align: right !important;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 55px 20px;
+            color: #7b8b9d;
+        }
+
+        .empty-icon {
+            font-size: 38px;
+            margin-bottom: 12px;
+        }
+
+        .empty strong {
+            display: block;
+            color: #17304f;
+            font-size: 18px;
+            margin-bottom: 6px;
+        }
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
+        @media (max-width: 1050px) {
+            .crv-fixed-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .crv-fixed-sidebar {
+                position: static;
+            }
+
+            .crv-fixed-menu {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .summary-grid,
+            .cliente-summary-box {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filters {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .crv-fixed-menu {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .page {
+                padding: 14px;
+            }
+
+            .header h1 {
+                font-size: 23px;
+            }
+
+            .summary-grid,
+            .cliente-summary-box,
+            .filters {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media print {
+            .crv-fixed-sidebar,
+            .topbar,
+            .filters,
+            .no-print {
+                display: none !important;
+            }
+
+            .page {
+                padding: 0;
+                background: #fff;
+            }
+
+            .crv-fixed-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='global-font.css') }}">
+</head>
+
+<body>
+<div class="page">
+<div class="crv-fixed-layout">
+    <aside class="crv-fixed-sidebar">
+        <div class="crv-fixed-badge">Empresa activa</div>
+        <div class="crv-fixed-company">CRV<br>CONSTRUCTORA</div>
+        <div class="crv-fixed-subtitle">Módulo Contable</div>
+        <nav class="crv-fixed-menu">
+            <a href="/empresas">
+                <span class="crv-fixed-icon">🏢</span>
+                <span>Cambiar empresa</span>
+            </a>
+            <a href="/crv/movimientos/nuevo" class="gold">
+                <span class="crv-fixed-icon">＋</span>
+                <span>Registrar movimiento</span>
+            </a>
+            <a href="/crv/movimientos">
+                <span class="crv-fixed-icon">📋</span>
+                <span>Movimientos</span>
+            </a>
+            <a href="/crv/terceros">
+                <span class="crv-fixed-icon">👤</span>
+                <span>Terceros</span>
+            </a>
+            <a href="/crv/cuentas-por-pagar">
+                <span class="crv-fixed-icon">🧾</span>
+                <span>Cuentas por pagar</span>
+            </a>
+            <a href="/crv/cuentas-por-cobrar">
+                <span class="crv-fixed-icon">💰</span>
+                <span>Cuentas por cobrar</span>
+            </a>
+            <a href="/crv/bancos-caja">
+                <span class="crv-fixed-icon">🏦</span>
+                <span>Bancos y caja</span>
+            </a>
+            <a href="/crv/conciliacion-bancaria">
+                <span class="crv-fixed-icon">⚖️</span>
+                <span>Conciliación bancaria</span>
+            </a>
+            <a href="/crv/proyectos">
+                <span class="crv-fixed-icon">🏗️</span>
+                <span>Proyectos / obras</span>
+            </a>
+            <a href="/crv/reportes-contador">
+                <span class="crv-fixed-icon">📊</span>
+                <span>Reportes contador</span>
+            </a>
+            <a href="/crv/cierre-mensual">
+                <span class="crv-fixed-icon">📅</span>
+                <span>Cierre mensual</span>
+            </a>
+            <a href="/crv/exportaciones">
+                <span class="crv-fixed-icon">⬇️</span>
+                <span>Importar / Exportar</span>
+            </a>
+            <a href="/crv/perfil-cliente" class="active">
+                <span class="crv-fixed-icon">👥</span>
+                <span>Perfil Clientes CRV</span>
+            </a>
+            <a href="/logout" class="danger">
+                <span class="crv-fixed-icon">⏻</span>
+                <span>Cerrar sesión</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main class="crv-fixed-main">
+    <div class="shell">
+        <!-- =====================================================
+             HEADER
+        ====================================================== -->
+        <div class="header">
+            <img src="{{ url_for('static', filename='logo_crv.png') }}" alt="CRV">
+            <h1>CRV CONSTRUCTORA - Perfil Clientes CRV</h1>
+            <p>Histórico consolidado de ingresos, abonos a capital, intereses y mora por cliente</p>
+        </div>
+
+        <!-- =====================================================
+             TOPBAR
+        ====================================================== -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <a href="/crv/dashboard" class="btn btn-dark">← Volver</a>
+                <span class="empresa-badge">Empresa activa</span>
+                <strong>{{ empresa_nombre }}</strong>
+            </div>
+
+            <div class="topbar-right">
+                <a href="/crv/cuentas-por-cobrar" class="btn btn-light">💰 Cuentas por cobrar</a>
+                <a href="/crv/movimientos?tipo=INGRESO" class="btn btn-light">📋 Movimientos</a>
+                <button type="button" onclick="window.print()" class="btn btn-gold">🖨️ Imprimir extracto</button>
+            </div>
+        </div>
+
+        <!-- =====================================================
+             TARJETAS RESUMEN
+        ====================================================== -->
+        {% set total_capital = ns_capital if ns_capital is defined else 0 %}
+        {% set total_intereses = ns_intereses if ns_intereses is defined else 0 %}
+        {% set total_mora = ns_mora if ns_mora is defined else 0 %}
+        {% set total_pagos_crv = total_capital + total_intereses + total_mora %}
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-icon total">💵</div>
+                <div>
+                    <div class="summary-label">Total pagos a CRV</div>
+                    <div class="summary-value">${{ "{:,.0f}".format(total_pagos_crv) }}</div>
+                    <div class="summary-note">Capital + Intereses + Mora</div>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-icon capital">✓</div>
+                <div>
+                    <div class="summary-label">Total abonos (Capital)</div>
+                    <div class="summary-value">${{ "{:,.0f}".format(total_capital) }}</div>
+                    <div class="summary-note">Abonos aplicados a capital</div>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-icon intereses">%</div>
+                <div>
+                    <div class="summary-label">Intereses y mora</div>
+                    <div class="summary-value">${{ "{:,.0f}".format(total_intereses + total_mora) }}</div>
+                    <div class="summary-note">Int: ${{ "{:,.0f}".format(total_intereses) }} · Mora: ${{ "{:,.0f}".format(total_mora) }}</div>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-icon saldo">📋</div>
+                <div>
+                    <div class="summary-label">Saldo pendiente CxC</div>
+                    <div class="summary-value">${{ "{:,.0f}".format(saldo_pendiente or 0) }}</div>
+                    <div class="summary-note">{{ movimientos|length if movimientos else 0 }} pagos registrados</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =====================================================
+             DIRECTORIO / HISTÓRICO DEL CLIENTE
+        ====================================================== -->
+        <div class="directory-card">
+            <div class="directory-header">
+                <div class="directory-title-wrap">
+                    <div class="directory-icon">👥</div>
+                    <div>
+                        <h2>Histórico de ingresos y abonos del cliente</h2>
+                        <p>Consulta el detalle cronológico de pagos registrados para el cliente o proyecto</p>
+                    </div>
+                </div>
+            </div>
+
+            <form method="GET" action="/crv/perfil-cliente" class="filters">
+                <div class="field">
+                    <label for="cliente_id">Cliente</label>
+                    <select name="cliente_id" id="cliente_id" onchange="this.form.submit()">
+                        <option value="">Selecciona un cliente...</option>
+                        {% for cli in clientes or [] %}
+                            <option value="{{ cli.id }}" {% if cliente_seleccionado and cliente_seleccionado.id == cli.id %}selected{% endif %}>
+                                {{ cli.razon_social }} {% if cli.identificacion %}({{ cli.identificacion }}){% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="proyecto">Proyecto / Lote / Obra</label>
+                    <input type="text" name="proyecto" id="proyecto" value="{{ proyecto or '' }}" placeholder="Ej. Lote 17 sector Almendros">
+                </div>
+
+                <div class="field">
+                    <label for="buscar">Nombre o identificación</label>
+                    <input type="text" name="buscar" id="buscar" value="{{ buscar or '' }}" placeholder="Buscar cliente o CC/NIT...">
+                </div>
+
+                <button type="submit" class="btn btn-navy">Filtrar</button>
+                <a href="/crv/perfil-cliente" class="btn btn-light">Limpiar</a>
+            </form>
+
+            {% if cliente_seleccionado or resumen_negocio %}
+            <div class="cliente-summary-box">
+                <div class="cliente-box-item">
+                    <small>Cliente</small>
+                    <strong>{{ cliente_seleccionado.razon_social if cliente_seleccionado else (buscar or '-') }}</strong>
+                </div>
+                <div class="cliente-box-item">
+                    <small>Identificación</small>
+                    <strong>{{ cliente_seleccionado.identificacion if cliente_seleccionado and cliente_seleccionado.identificacion else '-' }}</strong>
+                </div>
+                <div class="cliente-box-item">
+                    <small>Valor contrato / CxC</small>
+                    <strong>${{ "{:,.0f}".format(resumen_negocio.valor_total if resumen_negocio else 0) }}</strong>
+                </div>
+                <div class="cliente-box-item">
+                    <small>Saldo pendiente</small>
+                    <strong>${{ "{:,.0f}".format(saldo_pendiente or 0) }}</strong>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if movimientos %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha de pago</th>
+                            <th>Cliente</th>
+                            <th>Relación del abono</th>
+                            <th>Documento</th>
+                            <th class="money">Pago (Capital)</th>
+                            <th class="money">Intereses</th>
+                            <th class="money">Mora</th>
+                            <th class="money">Total pago</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in movimientos %}
+                        {% set cap = (m.base_gravable if m.base_gravable is not none else (m.valor_neto or m.valor or 0)) %}
+                        {% set inte = (m.valor_intereses or 0) %}
+                        {% set mora = (m.valor_mora or 0) %}
+                        {% set total_fila = cap + inte + mora %}
+                        <tr>
+                            <td>{{ m.fecha.strftime('%d/%m/%Y') if m.fecha else '-' }}</td>
+                            <td>
+                                <strong>{{ m.tercero_nombre or (cliente_seleccionado.razon_social if cliente_seleccionado else '-') }}</strong>
+                            </td>
+                            <td>
+                                <div>{{ m.concepto or m.categoria or 'Ingreso' }}</div>
+                                {% if m.observaciones %}
+                                    <div style="font-size: 10.5px; color: #8190a2; margin-top: 2px;">{{ m.observaciones }}</div>
+                                {% endif %}
+                            </td>
+                            <td>{{ m.numero_documento or m.numero_soporte or '-' }}</td>
+                            <td class="money">${{ "{:,.0f}".format(cap) }}</td>
+                            <td class="money">{% if inte > 0 %}${{ "{:,.0f}".format(inte) }}{% else %}-{% endif %}</td>
+                            <td class="money">{% if mora > 0 %}${{ "{:,.0f}".format(mora) }}{% else %}-{% endif %}</td>
+                            <td class="money">${{ "{:,.0f}".format(total_fila) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4">TOTALES CONSOLIDADOS</td>
+                            <td class="money">${{ "{:,.0f}".format(total_capital) }}</td>
+                            <td class="money">${{ "{:,.0f}".format(total_intereses) }}</td>
+                            <td class="money">${{ "{:,.0f}".format(total_mora) }}</td>
+                            <td class="money">${{ "{:,.0f}".format(total_pagos_crv) }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty">
+                <div class="empty-icon">🪪</div>
+                <strong>No hay ingresos registrados para mostrar</strong>
+                Selecciona un cliente o ajusta los filtros para consultar su histórico.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    </main>
+</div>
+</div>
+</body>
+</html>
