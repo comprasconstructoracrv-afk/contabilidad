@@ -370,6 +370,73 @@ def _extraer_tramos_globales_formulario(form):
     return items
 
 
+def _extraer_conceptos_y_tramos_formulario(form):
+    conceptos = form.getlist("base_concepto[]") or form.getlist("base_concepto")
+    valores = form.getlist("base_valor[]") or form.getlist("base_valor")
+    grupos_id = form.getlist("base_grupo_id[]")
+
+    tramo_grupos = form.getlist("tramo_grupo_id[]")
+    tramo_nombres = form.getlist("tramo_concepto[]")
+    tramo_porcentajes = form.getlist("tramo_porcentaje[]")
+
+    tramos_por_grupo = {}
+    for i in range(max(len(tramo_nombres), len(tramo_porcentajes))):
+        gid = (tramo_grupos[i] if i < len(tramo_grupos) else "").strip()
+        nom = (tramo_nombres[i] if i < len(tramo_nombres) else "").strip()
+        pct = max(
+            0.0,
+            convertir_porcentaje(
+                tramo_porcentajes[i] if i < len(tramo_porcentajes) else 0,
+                default=0.0,
+            ),
+        )
+        if pct > 0:
+            tramos_por_grupo.setdefault(gid, []).append(
+                {
+                    "concepto": nom,
+                    "porcentaje": round(pct, 2),
+                }
+            )
+
+    items_base = []
+    orden_base = 1
+    for i in range(max(len(conceptos), len(valores))):
+        conc = (conceptos[i] if i < len(conceptos) else "").strip()
+        val = max(
+            0.0,
+            convertir_numero(valores[i] if i < len(valores) else 0, default=0.0),
+        )
+        gid = (grupos_id[i] if i < len(grupos_id) else str(i)).strip()
+
+        if conc or val > 0:
+            tramos_de_este = tramos_por_grupo.get(gid, [])
+            tramos_limpios = []
+            for idx_t, tr in enumerate(tramos_de_este, start=1):
+                nom_tr = tr["concepto"] or (
+                    f"Pago único ({tr['porcentaje']:g}%)"
+                    if len(tramos_de_este) == 1
+                    else f"Tramo {idx_t} ({tr['porcentaje']:g}%)"
+                )
+                tramos_limpios.append(
+                    {
+                        "orden": idx_t,
+                        "concepto": nom_tr,
+                        "porcentaje": tr["porcentaje"],
+                    }
+                )
+
+            items_base.append(
+                {
+                    "orden": orden_base,
+                    "concepto": conc or f"Concepto base #{orden_base}",
+                    "valor": round(val, 2),
+                    "tramos": tramos_limpios,
+                }
+            )
+            orden_base += 1
+
+    return items_base
+
 def _guardar_o_actualizar_perfil(empresa_id, form, perfil=None):
     tercero_id_raw = (form.get("tercero_id") or form.get("cliente_id") or "").strip()
     if not tercero_id_raw.isdigit():
@@ -488,9 +555,6 @@ def _guardar_o_actualizar_perfil(empresa_id, form, perfil=None):
 
     db.session.commit()
     return perfil
-
-
-
 
 
 def _extraer_tramos_formulario(form):
