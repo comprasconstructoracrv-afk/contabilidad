@@ -32,13 +32,12 @@ TIPOS_CONCEPTO_BASE = {
     "VALOR_LOTE_CASA": "Valor Lote - Casa",
 }
 
-
 def _calcular_estructura_perfil(perfil):
     items_base = [
         it for it in perfil.items if (it.categoria or "").upper() == "BASE"
     ]
     items_tramo = [
-        it for it in perfil.items if (it.categoria or "").upper() == "TRAMO"
+        it for it in perfil.items if (it.categoria or "").upper().startswith("TRAMO")
     ]
 
     if items_base:
@@ -48,6 +47,7 @@ def _calcular_estructura_perfil(perfil):
                 "orden": it.orden,
                 "concepto": it.concepto,
                 "valor": round(float(it.valor or 0.0), 2),
+                "tramos": [],
             }
             for it in items_base
         ]
@@ -58,75 +58,100 @@ def _calcular_estructura_perfil(perfil):
                 "orden": 1,
                 "concepto": perfil.concepto_base_label or "Valor Base",
                 "valor": round(float(perfil.valor_base or 0.0), 2),
+                "tramos": [],
             }
         ]
 
     total_base = round(sum(c["valor"] for c in conceptos_base), 2)
+    mapa_base_por_orden = {c["orden"]: c for c in conceptos_base}
 
-    # Modo de aplicación de porcentajes: TODOS o SOLO_CONCEPTO:<indice_0_based>
     modo_raw = (perfil.tipo_concepto_base or "").strip()
-    aplica_a_indice = None
+    aplica_a_indice_legacy = None
     if modo_raw.startswith("SOLO_CONCEPTO:"):
         idx_str = modo_raw.split(":", 1)[1].strip()
-        if idx_str.isdigit():
-            idx_val = int(idx_str)
-            if 0 <= idx_val < len(conceptos_base):
-                aplica_a_indice = idx_val
+        if idx_str.isdigit() and 0 <= int(idx_str) < len(conceptos_base):
+            aplica_a_indice_legacy = int(idx_str)
 
-    if aplica_a_indice is not None:
-        base_para_tramos = conceptos_base[aplica_a_indice]["valor"]
-        concepto_tramos_objetivo = conceptos_base[aplica_a_indice]["concepto"]
-    else:
-        base_para_tramos = total_base
-        concepto_tramos_objetivo = None
+    tramos_globales = []
 
     if items_tramo:
-        tramos = []
         for it in items_tramo:
+            cat_upper = (it.categoria or "").upper().strip()
             pct = float(it.porcentaje or 0.0)
+
+            # Tramo individual de un concepto: TRAMO:<orden_base>
+            if ":" in cat_upper and cat_upper.split(":", 1)[1].isdigit():
+                orden_padre = int(cat_upper.split(":", 1)[1])
+                cb_padre = mapa_base_por_orden.get(orden_padre)
+                if cb_padre:
+                    monto = (
+                        round(cb_padre["valor"] * (pct / 100.0), 2)
+                        if pct > 0
+                        else round(float(it.valor or 0.0), 2)
+                    )
+                    cb_padre["tramos"].append(
+                        {
+                            "id": it.id,
+                            "orden": it.orden,
+                            "concepto": it.concepto,
+                            "porcentaje": pct,
+                            "monto": monto,
+                        }
+                    )
+                    continue
+
+            # Tramo global sobre subtotal (o sobre índice legacy)
+            base_ref = (
+                conceptos_base[aplica_a_indice_legacy]["valor"]
+                if aplica_a_indice_legacy is not None
+                else total_base
+            )
             monto = (
-                round(base_para_tramos * (pct / 100.0), 2)
+                round(base_ref * (pct / 100.0), 2)
                 if pct > 0
                 else round(float(it.valor or 0.0), 2)
             )
-            tramos.append(
-                {
-                    "id": it.id,
-                    "orden": it.orden,
-                    "concepto": it.concepto,
-                    "porcentaje": pct,
-                    "monto": monto,
-                }
-            )
+            tramo_obj = {
+                "id": it.id,
+                "orden": it.orden,
+                "concepto": it.concepto,
+                "porcentaje": pct,
+                "monto": monto,
+            }
+            if aplica_a_indice_legacy is not None:
+                conceptos_base[aplica_a_indice_legacy]["tramos"].append(tramo_obj)
+            else:
+                tramos_globales.append(tramo_obj)
     else:
         pct1 = float(perfil.porcentaje_tramo_1 or 0.0)
         pct2 = float(perfil.porcentaje_tramo_2 or 0.0)
-        tramos = [
+        tramos_globales.append(
             {
                 "id": None,
                 "orden": 1,
                 "concepto": f"Tramo 1 ({pct1:g}%)",
                 "porcentaje": pct1,
-                "monto": round(base_para_tramos * (pct1 / 100.0), 2),
+                "monto": round(total_base * (pct1 / 100.0), 2),
             }
-        ]
+        )
         if pct2 > 0:
-            tramos.append(
+            tramos_globales.append(
                 {
                     "id": None,
                     "orden": 2,
                     "concepto": f"Tramo 2 ({pct2:g}%)",
                     "porcentaje": pct2,
-                    "monto": round(base_para_tramos * (pct2 / 100.0), 2),
+                    "monto": round(total_base * (pct2 / 100.0), 2),
                 }
             )
 
-    # Conceptos base que NO entran en el porcentaje (ej. Construcción de la casa)
-    conceptos_sin_tramo = []
-    if aplica_a_indice is not None:
-        for idx, cb in enumerate(conceptos_base):
-            if idx != aplica_a_indice:
-                conceptos_sin_tramo.append(cb)
+    todos_tramos = []
+    for cb in conceptos_base:
+        todos_tramos.extend(cb["tramos"])
+    todos_tramos.extend(tramos_globales)
+
+    tiene_tramos_por_concepto = any(len(cb["tramos"]) > 0 for cb in conceptos_base)
+    modo_esquema = "POR_CONCEPTO" if tiene_tramos_por_concepto else "GLOBAL"
 
     adicionales = [
         {
@@ -139,20 +164,15 @@ def _calcular_estructura_perfil(perfil):
     ]
     total_adicionales = round(sum(a["valor"] for a in adicionales), 2)
     descuento = round(float(perfil.descuento or 0.0), 2)
-
-    total_proyecto = round(
-        max(0.0, total_base + total_adicionales - descuento),
-        2,
-    )
+    total_proyecto = round(max(0.0, total_base + total_adicionales - descuento), 2)
 
     return {
         "conceptos_base": conceptos_base,
         "total_base": total_base,
-        "aplica_a_indice": aplica_a_indice,
-        "concepto_tramos_objetivo": concepto_tramos_objetivo,
-        "base_para_tramos": round(base_para_tramos, 2),
-        "conceptos_sin_tramo": conceptos_sin_tramo,
-        "tramos": tramos,
+        "modo_esquema": modo_esquema,
+        "tiene_tramos_por_concepto": tiene_tramos_por_concepto,
+        "tramos": todos_tramos,
+        "tramos_globales": tramos_globales,
         "adicionales": adicionales,
         "total_adicionales": total_adicionales,
         "descuento": descuento,
@@ -161,33 +181,44 @@ def _calcular_estructura_perfil(perfil):
 
 
 def _aplicar_liberacion_cronologica(estructura, movimientos):
-    """
-    Libera cronológicamente según la fecha de los pagos:
-    1) Recorre cada tramo porcentual en orden (1 tramo contado, 2 tramos, 3+ tramos)
-    2) Luego cubre adicionales / saldo restante hasta el total del proyecto
-    """
     bloques = []
-    for idx, tr in enumerate(estructura["tramos"], start=1):
-        bloques.append(
-            {
-                "tipo": "TRAMO",
-                "orden": idx,
-                "titulo": tr["concepto"],
-                "objetivo": float(tr["monto"] or 0.0),
-                "cubierto": 0.0,
-            }
-        )
 
-    for idx, cb_libre in enumerate(estructura.get("conceptos_sin_tramo", []), start=1):
-        bloques.append(
-            {
-                "tipo": "CONCEPTO_DIRECTO",
-                "orden": idx,
-                "titulo": cb_libre["concepto"],
-                "objetivo": float(cb_libre["valor"] or 0.0),
-                "cubierto": 0.0,
-            }
-        )
+    if estructura.get("modo_esquema") == "POR_CONCEPTO":
+        # Respeta el orden exacto de cada concepto base y sus propios tramos (ej. Lote 70/30, Casa 50/50, 3ro directo)
+        for cb in estructura["conceptos_base"]:
+            if cb["tramos"]:
+                for t_idx, tr in enumerate(cb["tramos"], start=1):
+                    bloques.append(
+                        {
+                            "tipo": "TRAMO",
+                            "orden": t_idx,
+                            "titulo": f"{cb['concepto']} - {tr['concepto']}",
+                            "objetivo": float(tr["monto"] or 0.0),
+                            "cubierto": 0.0,
+                        }
+                    )
+            else:
+                bloques.append(
+                    {
+                        "tipo": "CONCEPTO_DIRECTO",
+                        "orden": cb["orden"],
+                        "titulo": cb["concepto"],
+                        "objetivo": float(cb["valor"] or 0.0),
+                        "cubierto": 0.0,
+                    }
+                )
+    else:
+        # Modo GLOBAL: aplica los porcentajes (ej. 70/30) sobre el subtotal de todos los conceptos base
+        for t_idx, tr in enumerate(estructura.get("tramos_globales", []), start=1):
+            bloques.append(
+                {
+                    "tipo": "TRAMO",
+                    "orden": t_idx,
+                    "titulo": tr["concepto"],
+                    "objetivo": float(tr["monto"] or 0.0),
+                    "cubierto": 0.0,
+                }
+            )
 
     for ad in estructura["adicionales"]:
         bloques.append(
@@ -200,15 +231,23 @@ def _aplicar_liberacion_cronologica(estructura, movimientos):
             }
         )
 
-    # El último bloque absorbe adicionales menos descuento (o diferencia si tramos != total_proyecto)
-    suma_tramos = round(sum(b["objetivo"] for b in bloques), 2)
-    resto_objetivo = max(0.0, round(float(estructura["total_proyecto"]) - suma_tramos, 2))
+    # Descuento se rebaja desde los últimos bloques
+    descuento_restante = float(estructura["descuento"] or 0.0)
+    for b in reversed(bloques):
+        if descuento_restante <= 0:
+            break
+        rebaja = min(b["objetivo"], descuento_restante)
+        b["objetivo"] = round(b["objetivo"] - rebaja, 2)
+        descuento_restante = round(descuento_restante - rebaja, 2)
+
+    suma_bloques = round(sum(b["objetivo"] for b in bloques), 2)
+    resto_objetivo = max(0.0, round(float(estructura["total_proyecto"]) - suma_bloques, 2))
     if resto_objetivo > 0:
         bloques.append(
             {
-                "key": "adicionales_saldo",
-                "titulo": "Adicionales y saldo restante",
-                "porcentaje": None,
+                "tipo": "RESTO",
+                "orden": len(bloques) + 1,
+                "titulo": "Saldo restante del proyecto",
                 "objetivo": resto_objetivo,
                 "cubierto": 0.0,
             }
@@ -250,10 +289,11 @@ def _aplicar_liberacion_cronologica(estructura, movimientos):
         acumulado_intereses = round(acumulado_intereses + inte, 2)
         acumulado_mora = round(acumulado_mora + mora, 2)
 
-        if etapas_tocadas:
-            etapa_liberada = " + ".join(etapas_tocadas)
-        else:
-            etapa_liberada = "Cubierto / Excedente"
+        etapa_liberada = (
+            " + ".join(dict.fromkeys(etapas_tocadas))
+            if etapas_tocadas
+            else "Cubierto / Excedente"
+        )
 
         filas_liberadas.append(
             {
@@ -299,24 +339,158 @@ def _aplicar_liberacion_cronologica(estructura, movimientos):
     }
 
 
-def _extraer_conceptos_base_formulario(form):
-    conceptos = form.getlist("base_concepto[]") or form.getlist("base_concepto")
-    valores = form.getlist("base_valor[]") or form.getlist("base_valor")
+def _extraer_tramos_globales_formulario(form):
+    nombres = form.getlist("global_tramo_concepto[]")
+    porcentajes = form.getlist("global_tramo_porcentaje[]")
     items = []
     orden = 1
-    for i in range(max(len(conceptos), len(valores))):
-        conc = (conceptos[i] if i < len(conceptos) else "").strip()
-        val = max(0.0, convertir_numero(valores[i] if i < len(valores) else 0, default=0.0))
-        if conc or val > 0:
+    for i in range(max(len(nombres), len(porcentajes))):
+        nom = (nombres[i] if i < len(nombres) else "").strip()
+        pct = max(
+            0.0,
+            convertir_porcentaje(porcentajes[i] if i < len(porcentajes) else 0, default=0.0),
+        )
+        if nom or pct > 0:
             items.append(
                 {
                     "orden": orden,
-                    "concepto": conc or f"Concepto base #{orden}",
-                    "valor": round(val, 2),
+                    "concepto": nom or (f"Pago único ({pct:g}%)" if orden == 1 and len(porcentajes) == 1 else f"Tramo {orden} ({pct:g}%)"),
+                    "porcentaje": round(pct, 2),
                 }
             )
             orden += 1
+    if not items:
+        items.append(
+            {
+                "orden": 1,
+                "concepto": "Pago único / Contado (100%)",
+                "porcentaje": 100.0,
+            }
+        )
     return items
+
+
+def _guardar_o_actualizar_perfil(empresa_id, form, perfil=None):
+    tercero_id_raw = (form.get("tercero_id") or form.get("cliente_id") or "").strip()
+    if not tercero_id_raw.isdigit():
+        raise ValueError("Debes seleccionar un cliente CRV válido.")
+
+    tercero = CRVTercero.query.filter_by(
+        id=int(tercero_id_raw),
+        empresa_id=empresa_id,
+    ).first()
+    if not tercero:
+        raise ValueError("El tercero seleccionado no existe en la empresa activa.")
+
+    if (tercero.tipo_tercero or "").strip().upper() != "CLIENTE":
+        raise ValueError("El Perfil Cliente CRV aplica únicamente para terceros de tipo CLIENTE.")
+
+    modo_esquema = (form.get("modo_esquema_tramos") or "GLOBAL").strip().upper()
+    conceptos_base = _extraer_conceptos_y_tramos_formulario(form)
+    if not conceptos_base:
+        raise ValueError("Debes ingresar al menos un concepto principal (Ej. Valor Lote o Valor Casa).")
+
+    tramos_globales = []
+    if modo_esquema == "POR_CONCEPTO":
+        for cb in conceptos_base:
+            if cb["tramos"]:
+                suma_pct = round(sum(t["porcentaje"] for t in cb["tramos"]), 2)
+                if abs(suma_pct - 100.0) > 0.05:
+                    raise ValueError(
+                        f"Los tramos de '{cb['concepto']}' deben sumar 100% (actualmente suman {suma_pct:g}%)."
+                    )
+    else:
+        tramos_globales = _extraer_tramos_globales_formulario(form)
+        suma_global = round(sum(t["porcentaje"] for t in tramos_globales), 2)
+        if abs(suma_global - 100.0) > 0.05:
+            raise ValueError(
+                f"Los tramos porcentuales globales deben sumar 100% (actualmente suman {suma_global:g}%)."
+            )
+
+    adicionales_data = _extraer_adicionales_formulario(form)
+    descuento = max(0.0, convertir_numero(form.get("descuento"), default=0.0))
+    proyecto = (form.get("proyecto") or "").strip()
+    observaciones = (form.get("observaciones") or "").strip()
+    total_base = round(sum(c["valor"] for c in conceptos_base), 2)
+
+    if perfil is None:
+        perfil = CRVPerfilCliente(
+            empresa_id=empresa_id,
+            usuario_registro=str(session.get("usuario", "")),
+        )
+        db.session.add(perfil)
+
+    ref_tramos = (
+        tramos_globales
+        if modo_esquema == "GLOBAL"
+        else next((c["tramos"] for c in conceptos_base if c["tramos"]), [])
+    )
+
+    perfil.tercero_id = tercero.id
+    perfil.proyecto = proyecto
+    perfil.tipo_concepto_base = (
+        "MULTITRAMO_POR_CONCEPTO"
+        if modo_esquema == "POR_CONCEPTO"
+        else ("MULTIPLE" if len(conceptos_base) > 1 else "VALOR_LOTE")
+    )
+    perfil.concepto_base_label = " + ".join(c["concepto"] for c in conceptos_base)[:150]
+    perfil.valor_base = total_base
+    perfil.porcentaje_tramo_1 = ref_tramos[0]["porcentaje"] if len(ref_tramos) >= 1 else 100.0
+    perfil.porcentaje_tramo_2 = ref_tramos[1]["porcentaje"] if len(ref_tramos) >= 2 else 0.0
+    perfil.descuento = round(descuento, 2)
+    perfil.observaciones = observaciones
+    perfil.activo = True
+
+    perfil.items.clear()
+    for cb in conceptos_base:
+        perfil.items.append(
+            CRVPerfilClienteItem(
+                categoria="BASE",
+                orden=cb["orden"],
+                concepto=cb["concepto"],
+                porcentaje=0.0,
+                valor=cb["valor"],
+            )
+        )
+        if modo_esquema == "POR_CONCEPTO":
+            for tr in cb["tramos"]:
+                perfil.items.append(
+                    CRVPerfilClienteItem(
+                        categoria=f"TRAMO:{cb['orden']}",
+                        orden=tr["orden"],
+                        concepto=tr["concepto"],
+                        porcentaje=tr["porcentaje"],
+                        valor=round(cb["valor"] * (tr["porcentaje"] / 100.0), 2),
+                    )
+                )
+
+    if modo_esquema == "GLOBAL":
+        for tr in tramos_globales:
+            perfil.items.append(
+                CRVPerfilClienteItem(
+                    categoria="TRAMO",
+                    orden=tr["orden"],
+                    concepto=tr["concepto"],
+                    porcentaje=tr["porcentaje"],
+                    valor=round(total_base * (tr["porcentaje"] / 100.0), 2),
+                )
+            )
+
+    perfil.adicionales.clear()
+    for ad in adicionales_data:
+        perfil.adicionales.append(
+            CRVPerfilClienteAdicional(
+                orden=ad["orden"],
+                concepto=ad["concepto"],
+                valor=ad["valor"],
+            )
+        )
+
+    db.session.commit()
+    return perfil
+
+
+
 
 
 def _extraer_tramos_formulario(form):
@@ -368,89 +542,6 @@ def _extraer_adicionales_formulario(form):
             )
             orden += 1
     return items
-
-
-def _guardar_o_actualizar_perfil(empresa_id, form, perfil=None):
-    tercero_id_raw = (form.get("tercero_id") or form.get("cliente_id") or "").strip()
-    if not tercero_id_raw.isdigit():
-        raise ValueError("Debes seleccionar un cliente CRV válido.")
-
-    tercero = CRVTercero.query.filter_by(
-        id=int(tercero_id_raw),
-        empresa_id=empresa_id,
-    ).first()
-    if not tercero:
-        raise ValueError("El tercero seleccionado no existe en la empresa activa.")
-
-    if (tercero.tipo_tercero or "").strip().upper() != "CLIENTE":
-        raise ValueError("El Perfil Cliente CRV aplica únicamente para terceros de tipo CLIENTE.")
-
-    conceptos_base = _extraer_conceptos_base_formulario(form)
-    if not conceptos_base:
-        raise ValueError("Debes ingresar al menos un concepto principal (Ej. Valor Lote o Valor Casa).")
-
-    tramos_data = _extraer_tramos_formulario(form)
-    adicionales_data = _extraer_adicionales_formulario(form)
-    descuento = max(0.0, convertir_numero(form.get("descuento"), default=0.0))
-    proyecto = (form.get("proyecto") or "").strip()
-    observaciones = (form.get("observaciones") or "").strip()
-
-    total_base = round(sum(c["valor"] for c in conceptos_base), 2)
-
-    if perfil is None:
-        perfil = CRVPerfilCliente(
-            empresa_id=empresa_id,
-            usuario_registro=str(session.get("usuario", "")),
-        )
-        db.session.add(perfil)
-
-    perfil.tercero_id = tercero.id
-    perfil.proyecto = proyecto
-    perfil.tipo_concepto_base = "MULTIPLE" if len(conceptos_base) > 1 else "VALOR_LOTE"
-    perfil.concepto_base_label = " + ".join(c["concepto"] for c in conceptos_base)[:150]
-    perfil.valor_base = total_base
-    perfil.porcentaje_tramo_1 = tramos_data[0]["porcentaje"] if len(tramos_data) >= 1 else 100.0
-    perfil.porcentaje_tramo_2 = tramos_data[1]["porcentaje"] if len(tramos_data) >= 2 else 0.0
-    perfil.descuento = round(descuento, 2)
-    perfil.observaciones = observaciones
-    perfil.activo = True
-
-    perfil.items.clear()
-    for cb in conceptos_base:
-        perfil.items.append(
-            CRVPerfilClienteItem(
-                categoria="BASE",
-                orden=cb["orden"],
-                concepto=cb["concepto"],
-                porcentaje=0.0,
-                valor=cb["valor"],
-            )
-        )
-
-    for tr in tramos_data:
-        perfil.items.append(
-            CRVPerfilClienteItem(
-                categoria="TRAMO",
-                orden=tr["orden"],
-                concepto=tr["concepto"],
-                porcentaje=tr["porcentaje"],
-                valor=round(total_base * (tr["porcentaje"] / 100.0), 2),
-            )
-        )
-
-    perfil.adicionales.clear()
-    for ad in adicionales_data:
-        perfil.adicionales.append(
-            CRVPerfilClienteAdicional(
-                orden=ad["orden"],
-                concepto=ad["concepto"],
-                valor=ad["valor"],
-            )
-        )
-
-    db.session.commit()
-    return perfil
-
 
 @crv_bp.route("/perfil-cliente/guardar", methods=["POST"])
 def guardar_perfil_cliente_crv():

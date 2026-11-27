@@ -69,7 +69,7 @@
         }
 
         .crv-fixed-badge::before {
-            content: "●";
+            content: "";
             font-size: 8px;
         }
 
@@ -205,7 +205,7 @@
         }
 
         .empresa-badge::before {
-            content: "●";
+            content: "";
             font-size: 8px;
         }
 
@@ -895,7 +895,7 @@
             <a href="/crv/cierre-mensual"><span class="crv-fixed-icon">📅</span><span>Cierre mensual</span></a>
             <a href="/crv/exportaciones"><span class="crv-fixed-icon">⬇️</span><span>Importar / Exportar</span></a>
             <a href="/crv/perfil-cliente" class="active"><span class="crv-fixed-icon">👥</span><span>Perfil Clientes CRV</span></a>
-            <a href="#" >
+            <a href="#">
                 <span class="crv-fixed-icon">🧾</span>
                 <span>BANCOLOMBIA</span>
             </a>
@@ -923,29 +923,29 @@
 
         <div class="topbar">
             <div class="topbar-left">
-                <a href="/crv/dashboard" class="btn btn-dark">← Volver</a>
+                <a href="/crv/dashboard" class="btn btn-dark">Volver</a>
                 <span class="empresa-badge">Empresa activa</span>
                 <strong>{{ empresa_nombre }}</strong>
             </div>
 
             <div class="topbar-right">
                 <button type="button" class="btn btn-gold" onclick="abrirModalNuevoContrato()">
-                    ＋ Crear contrato cliente
+                    Crear contrato cliente
                 </button>
                 {% if perfil_activo %}
                 <button type="button" class="btn btn-navy" onclick="abrirModalEditarContrato()">
-                    ✏️ Editar contrato / agregar adicionales
+                    Editar contrato / agregar adicionales
                 </button>
                 <form method="POST"
                       action="{{ url_for('crv.eliminar_perfil_cliente_crv', perfil_id=perfil_activo.id) }}"
                       style="display:inline;"
                       onsubmit="return confirm('¿Seguro que deseas eliminar este contrato ({{ perfil_activo.proyecto or perfil_activo.concepto_base_label or ('Contrato #' ~ perfil_activo.id) }})? Los pagos registrados en Movimientos no se borrarán.');">
                     <button type="submit" class="btn btn-danger">
-                        🗑️ Eliminar contrato
+                        Eliminar contrato
                     </button>
                 </form>
                 {% endif %}
-                <button type="button" onclick="window.print()" class="btn btn-light">🖨️ Imprimir</button>
+                <button type="button" onclick="window.print()" class="btn btn-light">Imprimir</button>
             </div>
         </div>
 
@@ -953,7 +953,7 @@
         {% set total_pagado = liberacion.total_pagos_crv if liberacion else ((ns_capital or 0) + (ns_intereses or 0) + (ns_mora or 0)) %}
         {% set saldo_final = liberacion.saldo_pendiente_proyecto if liberacion else (saldo_pendiente or 0) %}
         {% set total_extras = estructura_perfil.total_adicionales if estructura_perfil else (resumen_negocio.total_adicionales if resumen_negocio and resumen_negocio.total_adicionales is defined else 0) %}
-        
+
         <div class="summary-grid">
             <div class="summary-card">
                 <div class="summary-icon proyecto">🏗️</div>
@@ -1046,7 +1046,7 @@
 
             {% if estructura_perfil and liberacion %}
             <div class="contract-grid">
-                <!-- Tabla izquierda: Conceptos base separados, tramos, adicionales y descuento separado -->
+                <!-- Tabla izquierda: Conceptos base separados, sus tramos individuales o globales, adicionales y descuento -->
                 <div class="contract-box">
                     <div class="contract-box-title">
                         <span>ESTRUCTURA DEL CONTRATO DEL CLIENTE</span>
@@ -1058,12 +1058,18 @@
                     </div>
                     <table class="kv-table">
                         <tbody>
-                            <!-- Conceptos base separados (ej. Valor Lote + Valor Casa) -->
+                            <!-- Conceptos base separados con sus tramos individuales (si aplica) -->
                             {% for cb in estructura_perfil.conceptos_base %}
                             <tr class="{{ 'highlight-cream' if loop.odd else '' }}">
                                 <td class="money" style="width: 38%;">${{ "{:,.0f}".format(cb.valor) }}</td>
                                 <td>{{ cb.concepto|upper }}</td>
                             </tr>
+                                {% for tr in cb.tramos %}
+                                <tr>
+                                    <td class="money" style="color: #435970;">${{ "{:,.0f}".format(tr.monto) }}</td>
+                                    <td style="padding-left: 26px; color: #435970; font-size: 11.5px;">↳ {{ tr.concepto }}</td>
+                                </tr>
+                                {% endfor %}
                             {% endfor %}
 
                             {% if estructura_perfil.conceptos_base|length > 1 %}
@@ -1073,8 +1079,8 @@
                             </tr>
                             {% endif %}
 
-                            <!-- Tramos porcentuales (1 contado, 2 tramos o más) -->
-                            {% for tr in estructura_perfil.tramos %}
+                            <!-- Tramos globales sobre el subtotal (cuando aplica a todos los conceptos) -->
+                            {% for tr in estructura_perfil.tramos_globales %}
                             <tr>
                                 <td class="money">${{ "{:,.0f}".format(tr.monto) }}</td>
                                 <td>{{ tr.concepto }}</td>
@@ -1129,7 +1135,7 @@
                     </table>
                 </div>
 
-                <!-- Columna derecha: Liberación progresiva dinámica por cada tramo -->
+                <!-- Columna derecha: Liberación progresiva respetando el orden exacto de los conceptos -->
                 <div class="contract-box">
                     <div class="contract-box-title">
                         <span>LIBERACIÓN PROGRESIVA SEGÚN FECHA DE PAGOS</span>
@@ -1166,12 +1172,12 @@
                     <strong>{{ cliente_seleccionado.razon_social }}</strong> aún no tiene un contrato configurado en Perfil Cliente CRV.
                 </div>
                 <button type="button" class="btn btn-gold" onclick="abrirModalNuevoContrato({{ cliente_seleccionado.id }})">
-                    ＋ Crear contrato para este cliente
+                    Crear contrato para este cliente
                 </button>
             </div>
             {% endif %}
 
-            <!-- Tabla histórica de pagos reales desde Movimientos -->
+            <!-- Tabla histórica de pagos reales desde Movimientos o listado general -->
             {% if liberacion and liberacion.filas %}
             <div class="table-wrap">
                 <table class="hist-table">
@@ -1302,7 +1308,7 @@
                             </td>
                             <td style="text-align: right; white-space: nowrap;">
                                 <a href="{{ url_for('crv.perfil_cliente_crv', cliente_id=p.tercero_id, perfil_id=p.id) }}"
-                                class="btn btn-navy btn-small">
+                                   class="btn btn-navy btn-small">
                                     Ver ficha
                                 </a>
                             </td>
@@ -1313,7 +1319,7 @@
             </div>
             {% else %}
             <div class="empty">
-                <div class="empty-icon">🪪</div>
+                <div class="empty-icon"></div>
                 <strong>Aún no hay contratos de clientes CRV creados</strong>
                 Usa el buscador superior para consultar un cliente o haz clic en "Crear contrato cliente" para registrar el primero.
             </div>
@@ -1333,13 +1339,13 @@
     <div class="modal-box">
         <div class="modal-header">
             <div class="modal-header-left">
-                <div class="modal-icon">🪪</div>
+                <div class="modal-icon"></div>
                 <div>
                     <h2 id="modalTitulo">Crear contrato de Cliente CRV</h2>
-                    <p>Agrega uno o varios conceptos base (Lote, Casa, Construcción), tramos porcentuales, adicionales y descuento</p>
+                    <p>Agrega uno o varios conceptos base, elige si los porcentajes van globales o individuales, adicionales y descuento</p>
                 </div>
             </div>
-            <button type="button" class="modal-close" onclick="cerrarModalContrato()">✕</button>
+            <button type="button" class="modal-close" onclick="cerrarModalContrato()">×</button>
         </div>
 
         <div class="modal-body">
@@ -1365,33 +1371,45 @@
                 </div>
 
                 <div class="modal-section-title">
-                    <span>2. Conceptos principales del contrato (Ej. Valor Lote y Valor Casa)</span>
-                    <button type="button" class="btn btn-navy btn-small" onclick="agregarFilaBase('', '')">
+                    <span>2. Conceptos principales y distribución de porcentajes</span>
+                    <button type="button" class="btn btn-navy btn-small" onclick="agregarTarjetaConceptoBase('', '', [])">
                         ＋ Agregar concepto base
                     </button>
                 </div>
+
+                <div class="field" style="margin-bottom: 14px; background: #eef3f8; padding: 12px 14px; border-radius: 11px;">
+                    <label for="form_modo_esquema_tramos">¿Cómo se aplican los porcentajes del contrato?</label>
+                    <select name="modo_esquema_tramos" id="form_modo_esquema_tramos" onchange="alternarModoEsquemaTramos()">
+                        <option value="GLOBAL">Sobre el SUBTOTAL de todos los conceptos base (Ej. 3 conceptos divididos en 70% / 30%)</option>
+                        <option value="POR_CONCEPTO">Independiente por cada concepto (Ej. Concepto 1 en 70/30 y Concepto 2 en 50/50)</option>
+                    </select>
+                </div>
+
                 <div id="contenedorConceptosBase"></div>
 
-                <div class="modal-section-title">
-                    <span>3. Tramos / Cuotas porcentuales (1 de contado, 2 tramos o más)</span>
-                    <div class="preset-pills">
-                        <button type="button" class="btn btn-light btn-small" onclick="aplicarPresetTramos([100])">Contado (100%)</button>
-                        <button type="button" class="btn btn-light btn-small" onclick="aplicarPresetTramos([30, 70])">30% / 70%</button>
-                        <button type="button" class="btn btn-light btn-small" onclick="aplicarPresetTramos([50, 50])">50% / 50%</button>
-                        <button type="button" class="btn btn-navy btn-small" onclick="agregarFilaTramo('', '')">＋ Agregar tramo</button>
+                <!-- Bloque de tramos globales (visible cuando se elige GLOBAL) -->
+                <div id="bloqueTramosGlobales" style="margin-top: 14px; background: #fff; border: 1px solid #d5dee7; border-radius: 12px; padding: 12px 14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom: 10px;">
+                        <strong style="font-size: 12px; color: #17304f;">Tramos porcentuales sobre el Subtotal General</strong>
+                        <div class="preset-pills">
+                            <button type="button" class="btn btn-light btn-small" onclick="aplicarPresetGlobal([100])">Contado (100%)</button>
+                            <button type="button" class="btn btn-light btn-small" onclick="aplicarPresetGlobal([70, 30])">70% / 30%</button>
+                            <button type="button" class="btn btn-light btn-small" onclick="aplicarPresetGlobal([50, 50])">50% / 50%</button>
+                            <button type="button" class="btn btn-navy btn-small" onclick="agregarFilaTramoGlobal('', '')">＋ Agregar tramo</button>
+                        </div>
                     </div>
+                    <div id="contenedorTramosGlobales"></div>
                 </div>
-                <div id="contenedorTramos"></div>
 
                 <div class="modal-section-title">
-                    <span>4. Adicionales del cliente (Aire, Piscina, acabados, etc.)</span>
+                    <span>3. Adicionales del cliente (Aire, Piscina, acabados, etc.)</span>
                     <button type="button" class="btn btn-navy btn-small" onclick="agregarFilaAdicional('', '')">
                         ＋ Agregar adicional
                     </button>
                 </div>
                 <div id="contenedorAdicionales"></div>
 
-                <div class="modal-section-title">5. Descuento independiente y observaciones</div>
+                <div class="modal-section-title">4. Descuento independiente y observaciones</div>
                 <div class="modal-grid-2">
                     <div class="field">
                         <label for="form_descuento">Descuento aplicado ($) — Se muestra separado en la tabla</label>
@@ -1437,12 +1455,15 @@
         "id": perfil_activo.id,
         "tercero_id": perfil_activo.tercero_id,
         "proyecto": perfil_activo.proyecto or "",
+        "modo_esquema": estructura_perfil.modo_esquema,
         "conceptos_base": estructura_perfil.conceptos_base,
-        "tramos": estructura_perfil.tramos,
+        "tramos_globales": estructura_perfil.tramos_globales,
         "adicionales": estructura_perfil.adicionales,
         "descuento": estructura_perfil.descuento,
         "observaciones": perfil_activo.observaciones or ""
     } | tojson }}{% else %}null{% endif %};
+
+    let contadorGruposBase = 0;
 
     function formatoPesos(valor) {
         const num = Number(valor) || 0;
@@ -1456,61 +1477,148 @@
         });
     }
 
-    function agregarFilaBase(concepto = "", valor = "") {
+    function renumerarConceptosBase() {
+        document.querySelectorAll("#contenedorConceptosBase .concepto-card").forEach((card, idx) => {
+            const num = card.querySelector(".row-num");
+            if (num) num.textContent = (idx + 1) + ".";
+        });
+    }
+
+    function renumerarTramosDeTarjeta(card) {
+        card.querySelectorAll(".tramo-sub-row").forEach((row, idx) => {
+            const badge = row.querySelector(".tramo-idx");
+            if (badge) badge.textContent = (idx + 1) + ".";
+        });
+    }
+
+    function alternarModoEsquemaTramos() {
+        const modo = document.getElementById("form_modo_esquema_tramos").value;
+        const esPorConcepto = (modo === "POR_CONCEPTO");
+
+        document.getElementById("bloqueTramosGlobales").style.display = esPorConcepto ? "none" : "block";
+        document.querySelectorAll(".panel-tramos-individual").forEach(panel => {
+            panel.style.display = esPorConcepto ? "block" : "none";
+        });
+    }
+
+    function agregarTarjetaConceptoBase(concepto = "", valor = "", tramosIniciales = []) {
         const cont = document.getElementById("contenedorConceptosBase");
+        const gid = "grupo_" + (++contadorGruposBase);
+
+        const card = document.createElement("div");
+        card.className = "concepto-card";
+        card.dataset.grupoId = gid;
+        card.style.cssText = "background:#fff; border:1px solid #d5dee7; border-radius:12px; padding:12px 14px; margin-bottom:12px;";
+
+        card.innerHTML = `
+            <div class="dynamic-row" style="margin-bottom: 8px;">
+                <div class="row-num">1.</div>
+                <input type="hidden" name="base_grupo_id[]" value="${gid}">
+                <input type="text" name="base_concepto[]" placeholder="Ej. Valor Lote, Valor Casa, Construcción..." value="${concepto}" required>
+                <input type="number" step="0.01" min="0" name="base_valor[]" placeholder="Valor ($)" value="${valor}" required oninput="recalcularPreviewContrato()">
+                <button type="button" class="btn btn-danger btn-small" onclick="eliminarTarjetaConceptoBase(this)">Quitar</button>
+            </div>
+
+            <div class="panel-tramos-individual" style="display: none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding-top:8px; border-top:1px dashed #e2e8f0;">
+                    <span style="font-size:11px; font-weight:800; color:#52687f;">Forma de pago de este concepto:</span>
+                    <div class="preset-pills">
+                        <button type="button" class="btn btn-light btn-small" onclick="aplicarTramosEnTarjeta(this, [])">Pago directo (100% sin tramos)</button>
+                        <button type="button" class="btn btn-light btn-small" onclick="aplicarTramosEnTarjeta(this, [70, 30])">70% / 30%</button>
+                        <button type="button" class="btn btn-light btn-small" onclick="aplicarTramosEnTarjeta(this, [50, 50])">50% / 50%</button>
+                        <button type="button" class="btn btn-navy btn-small" onclick="agregarTramoEnTarjeta(this, '', '')">＋ Agregar tramo</button>
+                    </div>
+                </div>
+                <div class="lista-tramos-concepto" style="margin-top:8px;"></div>
+            </div>
+        `;
+
+        cont.appendChild(card);
+        renumerarConceptosBase();
+
+        if (tramosIniciales && tramosIniciales.length > 0) {
+            tramosIniciales.forEach(tr => {
+                agregarTramoEnTarjeta(card, tr.concepto || "", tr.porcentaje || "");
+            });
+        }
+
+        alternarModoEsquemaTramos();
+        recalcularPreviewContrato();
+    }
+
+    function eliminarTarjetaConceptoBase(btn) {
+        const cont = document.getElementById("contenedorConceptosBase");
+        if (cont.querySelectorAll(".concepto-card").length <= 1) return;
+        btn.closest(".concepto-card").remove();
+        renumerarConceptosBase();
+        recalcularPreviewContrato();
+    }
+
+    function agregarTramoEnTarjeta(origen, concepto = "", porcentaje = "") {
+        const card = origen.classList && origen.classList.contains("concepto-card")
+            ? origen
+            : origen.closest(".concepto-card");
+        const gid = card.dataset.grupoId;
+        const lista = card.querySelector(".lista-tramos-concepto");
+
+        const row = document.createElement("div");
+        row.className = "dynamic-row tramo-sub-row";
+        row.style.marginTop = "6px";
+        row.innerHTML = `
+            <div class="row-num tramo-idx" style="background:#e4eeff;">1.</div>
+            <input type="hidden" name="tramo_grupo_id[]" value="${gid}">
+            <input type="text" name="tramo_concepto[]" placeholder="Ej. Cuota inicial, Entrega..." value="${concepto}">
+            <input type="number" step="0.01" min="0" max="100" name="tramo_porcentaje[]" placeholder="Porcentaje (%)" value="${porcentaje}">
+            <button type="button" class="btn btn-danger btn-small" onclick="eliminarTramoDeTarjeta(this)">Quitar</button>
+        `;
+        lista.appendChild(row);
+        renumerarTramosDeTarjeta(card);
+    }
+
+    function eliminarTramoDeTarjeta(btn) {
+        const card = btn.closest(".concepto-card");
+        btn.closest(".tramo-sub-row").remove();
+        renumerarTramosDeTarjeta(card);
+    }
+
+    function aplicarTramosEnTarjeta(btn, listaPorcentajes) {
+        const card = btn.closest(".concepto-card");
+        const lista = card.querySelector(".lista-tramos-concepto");
+        lista.innerHTML = "";
+        listaPorcentajes.forEach((pct, i) => {
+            agregarTramoEnTarjeta(card, `Tramo ${i + 1} (${pct}%)`, pct);
+        });
+    }
+
+    function agregarFilaTramoGlobal(concepto = "", porcentaje = "") {
+        const cont = document.getElementById("contenedorTramosGlobales");
         const row = document.createElement("div");
         row.className = "dynamic-row";
         row.innerHTML = `
             <div class="row-num">1.</div>
-            <input type="text" name="base_concepto[]" placeholder="Ej. Valor Lote, Valor Casa, Valor Construcción..." value="${concepto}" required>
-            <input type="number" step="0.01" min="0" name="base_valor[]" placeholder="Valor ($)" value="${valor}" required oninput="recalcularPreviewContrato()">
-            <button type="button" class="btn btn-danger btn-small" onclick="eliminarFilaBase(this)">Quitar</button>
+            <input type="text" name="global_tramo_concepto[]" placeholder="Ej. Cuota inicial, Entrega..." value="${concepto}">
+            <input type="number" step="0.01" min="0" max="100" name="global_tramo_porcentaje[]" placeholder="Porcentaje (%)" value="${porcentaje}">
+            <button type="button" class="btn btn-danger btn-small" onclick="eliminarFilaTramoGlobal(this)">Quitar</button>
         `;
         cont.appendChild(row);
-        renumerarContenedor("#contenedorConceptosBase");
-        recalcularPreviewContrato();
+        renumerarContenedor("#contenedorTramosGlobales");
     }
 
-    function eliminarFilaBase(btn) {
-        const cont = document.getElementById("contenedorConceptosBase");
+    function eliminarFilaTramoGlobal(btn) {
+        const cont = document.getElementById("contenedorTramosGlobales");
         if (cont.querySelectorAll(".dynamic-row").length <= 1) return;
         btn.parentElement.remove();
-        renumerarContenedor("#contenedorConceptosBase");
-        recalcularPreviewContrato();
+        renumerarContenedor("#contenedorTramosGlobales");
     }
 
-    function agregarFilaTramo(concepto = "", porcentaje = "") {
-        const cont = document.getElementById("contenedorTramos");
-        const idx = cont.querySelectorAll(".dynamic-row").length + 1;
-        const row = document.createElement("div");
-        row.className = "dynamic-row";
-        row.innerHTML = `
-            <div class="row-num">${idx}.</div>
-            <input type="text" name="tramo_concepto[]" placeholder="Ej. Pago contado, Cuota inicial, Entrega..." value="${concepto}">
-            <input type="number" step="0.01" min="0" max="100" name="tramo_porcentaje[]" placeholder="Porcentaje (%)" value="${porcentaje}" oninput="recalcularPreviewContrato()">
-            <button type="button" class="btn btn-danger btn-small" onclick="eliminarFilaTramo(this)">Quitar</button>
-        `;
-        cont.appendChild(row);
-        renumerarContenedor("#contenedorTramos");
-        recalcularPreviewContrato();
-    }
-
-    function eliminarFilaTramo(btn) {
-        const cont = document.getElementById("contenedorTramos");
-        if (cont.querySelectorAll(".dynamic-row").length <= 1) return;
-        btn.parentElement.remove();
-        renumerarContenedor("#contenedorTramos");
-        recalcularPreviewContrato();
-    }
-
-    function aplicarPresetTramos(listaPorcentajes) {
-        const cont = document.getElementById("contenedorTramos");
+    function aplicarPresetGlobal(listaPorcentajes) {
+        const cont = document.getElementById("contenedorTramosGlobales");
         cont.innerHTML = "";
         listaPorcentajes.forEach((pct, i) => {
             const label = listaPorcentajes.length === 1
                 ? `Pago único / Contado (${pct}%)`
                 : `Tramo ${i + 1} (${pct}%)`;
-            agregarFilaTramo(label, pct);
+            agregarFilaTramoGlobal(label, pct);
         });
     }
 
@@ -1562,11 +1670,14 @@
         document.getElementById("form_descuento").value = "0";
         document.getElementById("form_observaciones").value = "";
 
+        document.getElementById("form_modo_esquema_tramos").value = "GLOBAL";
+
         const contBase = document.getElementById("contenedorConceptosBase");
         contBase.innerHTML = "";
-        agregarFilaBase("Valor Lote", "");
+        agregarTarjetaConceptoBase("Valor Lote", "", []);
 
-        aplicarPresetTramos([100]);
+        aplicarPresetGlobal([100]);
+        alternarModoEsquemaTramos();
 
         const contAd = document.getElementById("contenedorAdicionales");
         contAd.innerHTML = "";
@@ -1591,21 +1702,28 @@
         document.getElementById("form_descuento").value = DATOS_EDITAR.descuento;
         document.getElementById("form_observaciones").value = DATOS_EDITAR.observaciones;
 
+        const modo = DATOS_EDITAR.modo_esquema || "GLOBAL";
+        document.getElementById("form_modo_esquema_tramos").value = modo;
+
         const contBase = document.getElementById("contenedorConceptosBase");
         contBase.innerHTML = "";
         if (DATOS_EDITAR.conceptos_base && DATOS_EDITAR.conceptos_base.length > 0) {
-            DATOS_EDITAR.conceptos_base.forEach(cb => agregarFilaBase(cb.concepto, cb.valor));
+            DATOS_EDITAR.conceptos_base.forEach(cb => {
+                agregarTarjetaConceptoBase(cb.concepto, cb.valor, cb.tramos || []);
+            });
         } else {
-            agregarFilaBase("Valor Lote", "");
+            agregarTarjetaConceptoBase("Valor Lote", "", []);
         }
 
-        const contTramos = document.getElementById("contenedorTramos");
-        contTramos.innerHTML = "";
-        if (DATOS_EDITAR.tramos && DATOS_EDITAR.tramos.length > 0) {
-            DATOS_EDITAR.tramos.forEach(tr => agregarFilaTramo(tr.concepto, tr.porcentaje));
+        const contGlob = document.getElementById("contenedorTramosGlobales");
+        contGlob.innerHTML = "";
+        if (DATOS_EDITAR.tramos_globales && DATOS_EDITAR.tramos_globales.length > 0) {
+            DATOS_EDITAR.tramos_globales.forEach(tr => agregarFilaTramoGlobal(tr.concepto, tr.porcentaje));
         } else {
-            aplicarPresetTramos([100]);
+            aplicarPresetGlobal([100]);
         }
+
+        alternarModoEsquemaTramos();
 
         const contAd = document.getElementById("contenedorAdicionales");
         contAd.innerHTML = "";
