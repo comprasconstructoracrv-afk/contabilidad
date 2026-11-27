@@ -579,7 +579,7 @@
         }
 
         /* =====================================================
-           TABLA HISTÓRICA Y LISTADO DE CONTRATOS
+           TABLA HISTÓRICA DE MOVIMIENTOS
         ===================================================== */
         .table-wrap {
             overflow-x: auto;
@@ -895,6 +895,10 @@
             <a href="/crv/cierre-mensual"><span class="crv-fixed-icon">📅</span><span>Cierre mensual</span></a>
             <a href="/crv/exportaciones"><span class="crv-fixed-icon">⬇️</span><span>Importar / Exportar</span></a>
             <a href="/crv/perfil-cliente" class="active"><span class="crv-fixed-icon">👥</span><span>Perfil Clientes CRV</span></a>
+            <a href="#" >
+                <span class="crv-fixed-icon">🧾</span>
+                <span>BANCOLOMBIA</span>
+            </a>
             <a href="/logout" class="danger"><span class="crv-fixed-icon">⏻</span><span>Cerrar sesión</span></a>
         </nav>
     </aside>
@@ -949,7 +953,7 @@
         {% set total_pagado = liberacion.total_pagos_crv if liberacion else ((ns_capital or 0) + (ns_intereses or 0) + (ns_mora or 0)) %}
         {% set saldo_final = liberacion.saldo_pendiente_proyecto if liberacion else (saldo_pendiente or 0) %}
         {% set total_extras = estructura_perfil.total_adicionales if estructura_perfil else (resumen_negocio.total_adicionales if resumen_negocio and resumen_negocio.total_adicionales is defined else 0) %}
-
+        
         <div class="summary-grid">
             <div class="summary-card">
                 <div class="summary-icon proyecto">🏗️</div>
@@ -1069,14 +1073,6 @@
                             </tr>
                             {% endif %}
 
-                            {% if estructura_perfil.concepto_tramos_objetivo %}
-                            <tr>
-                                <td colspan="2" style="background: #eef6ff; color: #17304f; font-size: 11px; font-weight: 800;">
-                                    Porcentajes aplicados únicamente sobre: {{ estructura_perfil.concepto_tramos_objetivo|upper }} (${{ "{:,.0f}".format(estructura_perfil.base_para_tramos) }})
-                                </td>
-                            </tr>
-                            {% endif %}
-
                             <!-- Tramos porcentuales (1 contado, 2 tramos o más) -->
                             {% for tr in estructura_perfil.tramos %}
                             <tr>
@@ -1133,7 +1129,7 @@
                     </table>
                 </div>
 
-                <!-- Columna derecha: Liberación progresiva dinámica por cada tramo y concepto directo -->
+                <!-- Columna derecha: Liberación progresiva dinámica por cada tramo -->
                 <div class="contract-box">
                     <div class="contract-box-title">
                         <span>LIBERACIÓN PROGRESIVA SEGÚN FECHA DE PAGOS</span>
@@ -1175,7 +1171,7 @@
             </div>
             {% endif %}
 
-            <!-- Tabla histórica de pagos reales o listado general de contratos -->
+            <!-- Tabla histórica de pagos reales desde Movimientos -->
             {% if liberacion and liberacion.filas %}
             <div class="table-wrap">
                 <table class="hist-table">
@@ -1306,7 +1302,7 @@
                             </td>
                             <td style="text-align: right; white-space: nowrap;">
                                 <a href="{{ url_for('crv.perfil_cliente_crv', cliente_id=p.tercero_id, perfil_id=p.id) }}"
-                                   class="btn btn-navy btn-small">
+                                class="btn btn-navy btn-small">
                                     Ver ficha
                                 </a>
                             </td>
@@ -1385,22 +1381,6 @@
                         <button type="button" class="btn btn-navy btn-small" onclick="agregarFilaTramo('', '')">＋ Agregar tramo</button>
                     </div>
                 </div>
-
-                <div class="modal-grid-2" style="margin-bottom: 12px;">
-                    <div class="field">
-                        <label for="form_modo_tramos">¿A qué conceptos aplican estos porcentajes?</label>
-                        <select name="modo_tramos" id="form_modo_tramos" onchange="actualizarSelectorConceptoTramo()">
-                            <option value="TODOS">A todos los conceptos base (Subtotal)</option>
-                            <option value="SOLO_UNO">Únicamente a un concepto específico (Ej. Solo Lote)</option>
-                        </select>
-                    </div>
-
-                    <div class="field" id="campoConceptoObjetivoTramo" style="display: none;">
-                        <label for="form_tramo_concepto_index">Selecciona el concepto al que aplica el porcentaje</label>
-                        <select name="tramo_concepto_index" id="form_tramo_concepto_index"></select>
-                    </div>
-                </div>
-
                 <div id="contenedorTramos"></div>
 
                 <div class="modal-section-title">
@@ -1457,7 +1437,6 @@
         "id": perfil_activo.id,
         "tercero_id": perfil_activo.tercero_id,
         "proyecto": perfil_activo.proyecto or "",
-        "aplica_a_indice": estructura_perfil.aplica_a_indice,
         "conceptos_base": estructura_perfil.conceptos_base,
         "tramos": estructura_perfil.tramos,
         "adicionales": estructura_perfil.adicionales,
@@ -1477,47 +1456,18 @@
         });
     }
 
-    function actualizarSelectorConceptoTramo(indiceForzado = null) {
-        const modo = document.getElementById("form_modo_tramos").value;
-        const campoObjetivo = document.getElementById("campoConceptoObjetivoTramo");
-        const selectObjetivo = document.getElementById("form_tramo_concepto_index");
-
-        if (modo === "SOLO_UNO") {
-            campoObjetivo.style.display = "flex";
-        } else {
-            campoObjetivo.style.display = "none";
-        }
-
-        const valorPrevio = indiceForzado !== null ? String(indiceForzado) : selectObjetivo.value;
-        selectObjetivo.innerHTML = "";
-
-        document.querySelectorAll("#contenedorConceptosBase .dynamic-row").forEach((fila, idx) => {
-            const nombre = fila.querySelector('input[name="base_concepto[]"]').value.trim() || `Concepto ${idx + 1}`;
-            const valor = parseFloat(fila.querySelector('input[name="base_valor[]"]').value) || 0;
-            const opt = document.createElement("option");
-            opt.value = String(idx);
-            opt.textContent = `${idx + 1}. ${nombre} (${formatoPesos(valor)})`;
-            selectObjetivo.appendChild(opt);
-        });
-
-        if (valorPrevio !== "" && selectObjetivo.querySelector(`option[value="${valorPrevio}"]`)) {
-            selectObjetivo.value = valorPrevio;
-        }
-    }
-
     function agregarFilaBase(concepto = "", valor = "") {
         const cont = document.getElementById("contenedorConceptosBase");
         const row = document.createElement("div");
         row.className = "dynamic-row";
         row.innerHTML = `
             <div class="row-num">1.</div>
-            <input type="text" name="base_concepto[]" placeholder="Ej. Valor Lote, Valor Casa, Valor Construcción..." value="${concepto}" required oninput="actualizarSelectorConceptoTramo()">
-            <input type="number" step="0.01" min="0" name="base_valor[]" placeholder="Valor ($)" value="${valor}" required oninput="recalcularPreviewContrato(); actualizarSelectorConceptoTramo();">
+            <input type="text" name="base_concepto[]" placeholder="Ej. Valor Lote, Valor Casa, Valor Construcción..." value="${concepto}" required>
+            <input type="number" step="0.01" min="0" name="base_valor[]" placeholder="Valor ($)" value="${valor}" required oninput="recalcularPreviewContrato()">
             <button type="button" class="btn btn-danger btn-small" onclick="eliminarFilaBase(this)">Quitar</button>
         `;
         cont.appendChild(row);
         renumerarContenedor("#contenedorConceptosBase");
-        actualizarSelectorConceptoTramo();
         recalcularPreviewContrato();
     }
 
@@ -1526,7 +1476,6 @@
         if (cont.querySelectorAll(".dynamic-row").length <= 1) return;
         btn.parentElement.remove();
         renumerarContenedor("#contenedorConceptosBase");
-        actualizarSelectorConceptoTramo();
         recalcularPreviewContrato();
     }
 
@@ -1617,9 +1566,6 @@
         contBase.innerHTML = "";
         agregarFilaBase("Valor Lote", "");
 
-        document.getElementById("form_modo_tramos").value = "TODOS";
-        actualizarSelectorConceptoTramo();
-
         aplicarPresetTramos([100]);
 
         const contAd = document.getElementById("contenedorAdicionales");
@@ -1651,14 +1597,6 @@
             DATOS_EDITAR.conceptos_base.forEach(cb => agregarFilaBase(cb.concepto, cb.valor));
         } else {
             agregarFilaBase("Valor Lote", "");
-        }
-
-        if (DATOS_EDITAR.aplica_a_indice !== null && DATOS_EDITAR.aplica_a_indice !== undefined) {
-            document.getElementById("form_modo_tramos").value = "SOLO_UNO";
-            actualizarSelectorConceptoTramo(DATOS_EDITAR.aplica_a_indice);
-        } else {
-            document.getElementById("form_modo_tramos").value = "TODOS";
-            actualizarSelectorConceptoTramo();
         }
 
         const contTramos = document.getElementById("contenedorTramos");

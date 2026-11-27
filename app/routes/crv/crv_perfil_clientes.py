@@ -1,113 +1,36 @@
-from datetime import datetime
-from flask import render_template, request, redirect, url_for, session, flash
+"""CRV Perfil Cliente routes and dynamic contract/release logic."""
+
+from flask import url_for
 from sqlalchemy import or_
 
-from . import crv_bp
-from app.extensions import db
-from app.models.crv import (
-    CRVTercero,
-    CRVMovimiento,
-    CRVCuentaCobrar,
+from app.models.crv_perfil_cliente import (
     CRVPerfilCliente,
-    CRVPerfilClienteItem,
     CRVPerfilClienteAdicional,
+    CRVPerfilClienteItem,
+)
+from .crv_core import (
+    CRVCuentaCobrar,
+    CRVMovimiento,
+    CRVTercero,
+    convertir_numero,
+    convertir_porcentaje,
+    crv_bp,
+    db,
+    flash,
+    proteger_crv,
+    redirect,
+    render_template,
+    request,
+    session,
 )
 
-
-TIPOS_CONCEPTO_BASE = [
-    ("VALOR_LOTE", "Valor Lote"),
-    ("VALOR_CASA", "Valor Casa"),
-    ("CONSTRUCCION", "Construcción"),
-    ("MULTIPLE", "Múltiples conceptos (Lote + Casa / Construcción)"),
-    ("OTRO", "Otro concepto"),
-]
-
-
-def proteger_crv():
-    if "usuario_id" not in session:
-        return redirect("/login")
-    if session.get("empresa_modulo") != "crv":
-        return redirect("/empresas")
-    return None
-
-
-def _parse_float(raw, default=0.0):
-    if raw is None:
-        return default
-    txt = str(raw).strip().replace("$", "").replace(" ", "")
-    if not txt:
-        return default
-    if "," in txt and "." in txt:
-        if txt.rfind(",") > txt.rfind("."):
-            txt = txt.replace(".", "").replace(",", ".")
-        else:
-            txt = txt.replace(",", "")
-    elif "," in txt:
-        partes = txt.split(",")
-        if len(partes[-1]) == 3 and len(partes[0]) >= 1:
-            txt = txt.replace(",", "")
-        else:
-            txt = txt.replace(",", ".")
-    try:
-        return float(txt)
-    except ValueError:
-        return default
-
-
-def _extraer_conceptos_base_formulario(form):
-    nombres = form.getlist("base_concepto[]")
-    valores = form.getlist("base_valor[]")
-    items = []
-    for idx, nombre in enumerate(nombres):
-        concepto = (nombre or "").strip()
-        val = _parse_float(valores[idx] if idx < len(valores) else 0, 0.0)
-        if concepto and val > 0:
-            items.append(
-                {
-                    "orden": len(items) + 1,
-                    "concepto": concepto,
-                    "valor": round(val, 2),
-                }
-            )
-    return items
-
-
-def _extraer_tramos_formulario(form):
-    nombres = form.getlist("tramo_concepto[]")
-    porcentajes = form.getlist("tramo_porcentaje[]")
-    tramos = []
-    for idx, pct_raw in enumerate(porcentajes):
-        pct = _parse_float(pct_raw, 0.0)
-        nombre = (nombres[idx] if idx < len(nombres) else "").strip()
-        if pct > 0:
-            if not nombre:
-                nombre = f"Tramo {len(tramos) + 1} ({pct:g}%)"
-            tramos.append(
-                {
-                    "orden": len(tramos) + 1,
-                    "concepto": nombre,
-                    "porcentaje": round(pct, 4),
-                }
-            )
-    return tramos
-
-
-def _extraer_adicionales_formulario(form):
-    nombres = form.getlist("adicional_concepto[]")
-    valores = form.getlist("adicional_valor[]")
-    adicionales = []
-    for idx, nombre in enumerate(nombres):
-        concepto = (nombre or "").strip()
-        val = _parse_float(valores[idx] if idx < len(valores) else 0, 0.0)
-        if concepto and val > 0:
-            adicionales.append(
-                {
-                    "orden": len(adicionales) + 1,
-                    "concepto": concepto,
-                    "valor": round(val, 2),
-                }
-            )
-    return adicionales
+TIPOS_CONCEPTO_BASE = {
+    "VALOR_LOTE": "Valor Lote",
+    "VALOR_CASA": "Valor Casa",
+    "VALOR_CONSTRUCCION": "Valor Construcción",
+    "VALOR_LOTE_CONSTRUCCION": "Valor Lote - Construcción",
+    "VALOR_LOTE_CASA": "Valor Lote - Casa",
+}
 
 
 def _calcular_estructura_perfil(perfil):
@@ -238,6 +161,11 @@ def _calcular_estructura_perfil(perfil):
 
 
 def _aplicar_liberacion_cronologica(estructura, movimientos):
+    """
+    Libera cronológicamente según la fecha de los pagos:
+    1) Recorre cada tramo porcentual en orden (1 tramo contado, 2 tramos, 3+ tramos)
+    2) Luego cubre adicionales / saldo restante hasta el total del proyecto
+    """
     bloques = []
     for idx, tr in enumerate(estructura["tramos"], start=1):
         bloques.append(
@@ -272,85 +200,318 @@ def _aplicar_liberacion_cronologica(estructura, movimientos):
             }
         )
 
-    # El descuento reduce el saldo exigible empezando desde los últimos bloques
-    descuento_restante = float(estructura["descuento"] or 0.0)
-    for b in reversed(bloques):
-        if descuento_restante <= 0:
-            break
-        rebaja = min(b["objetivo"], descuento_restante)
-        b["objetivo"] = round(b["objetivo"] - rebaja, 2)
-        descuento_restante = round(descuento_restante - rebaja, 2)
+    # El último bloque absorbe adicionales menos descuento (o diferencia si tramos != total_proyecto)
+    suma_tramos = round(sum(b["objetivo"] for b in bloques), 2)
+    resto_objetivo = max(0.0, round(float(estructura["total_proyecto"]) - suma_tramos, 2))
+    if resto_objetivo > 0:
+        bloques.append(
+            {
+                "key": "adicionales_saldo",
+                "titulo": "Adicionales y saldo restante",
+                "porcentaje": None,
+                "objetivo": resto_objetivo,
+                "cubierto": 0.0,
+            }
+        )
 
     acumulado_capital = 0.0
-    total_intereses = 0.0
-    total_mora = 0.0
-    filas = []
+    acumulado_intereses = 0.0
+    acumulado_mora = 0.0
+    filas_liberadas = []
 
     for m in movimientos:
-        cap = float(
-            m.base_gravable
-            if m.base_gravable is not None
-            else (m.valor_neto or m.valor or 0.0)
+        cap = max(
+            0.0,
+            float(
+                m.base_gravable
+                if m.base_gravable is not None
+                else (m.valor_neto or m.valor or 0.0)
+            ),
         )
-        inte = float(m.valor_intereses or 0.0)
-        mora = float(m.valor_mora or 0.0)
+        inte = max(0.0, float(m.valor_intereses or 0.0))
+        mora = max(0.0, float(m.valor_mora or 0.0))
+        total_pago = round(cap + inte + mora, 2)
 
-        acumulado_capital += cap
-        total_intereses += inte
-        total_mora += mora
-
-        por_aplicar = cap
+        disponible = cap
         etapas_tocadas = []
 
         for b in bloques:
-            if por_aplicar <= 0:
+            if disponible <= 0:
                 break
-            faltante = round(b["objetivo"] - b["cubierto"], 2)
-            if faltante <= 0:
-                continue
-            abono_bloque = min(faltante, por_aplicar)
-            b["cubierto"] = round(b["cubierto"] + abono_bloque, 2)
-            por_aplicar = round(por_aplicar - abono_bloque, 2)
-            etapas_tocadas.append(b["titulo"])
+            faltante = max(0.0, round(b["objetivo"] - b["cubierto"], 2))
+            if faltante > 0:
+                asignado = min(disponible, faltante)
+                b["cubierto"] = round(b["cubierto"] + asignado, 2)
+                disponible = round(disponible - asignado, 2)
+                if asignado > 0:
+                    etapas_tocadas.append(b["titulo"])
 
-        if por_aplicar > 0:
-            etapas_tocadas.append("Excedente a favor del cliente")
-        elif not etapas_tocadas:
-            etapas_tocadas.append("Proyecto cubierto al 100%")
+        acumulado_capital = round(acumulado_capital + cap, 2)
+        acumulado_intereses = round(acumulado_intereses + inte, 2)
+        acumulado_mora = round(acumulado_mora + mora, 2)
 
-        filas.append(
+        if etapas_tocadas:
+            etapa_liberada = " + ".join(etapas_tocadas)
+        else:
+            etapa_liberada = "Cubierto / Excedente"
+
+        filas_liberadas.append(
             {
                 "movimiento": m,
                 "capital": round(cap, 2),
                 "intereses": round(inte, 2),
                 "mora": round(mora, 2),
-                "total_movimiento": round(cap + inte + mora, 2),
-                "acumulado_capital": round(acumulado_capital, 2),
-                "etapa_liberada": " + ".join(dict.fromkeys(etapas_tocadas)),
+                "total_pago": total_pago,
+                "excedente": max(0.0, disponible),
+                "acumulado_capital": acumulado_capital,
+                "etapa_liberada": etapa_liberada,
             }
         )
 
     for b in bloques:
-        b["pendiente"] = round(max(0.0, b["objetivo"] - b["cubierto"]), 2)
+        b["pendiente"] = max(0.0, round(b["objetivo"] - b["cubierto"], 2))
         b["avance_pct"] = (
             min(100.0, round((b["cubierto"] / b["objetivo"]) * 100.0, 1))
             if b["objetivo"] > 0
             else 100.0
         )
 
-    total_cubierto = round(sum(b["cubierto"] for b in bloques), 2)
-    saldo_pendiente = round(max(0.0, estructura["total_proyecto"] - total_cubierto), 2)
+    total_cubierto_proyecto = min(
+        float(estructura["total_proyecto"]),
+        round(sum(b["cubierto"] for b in bloques), 2),
+    )
+    saldo_pendiente_proyecto = max(
+        0.0,
+        round(float(estructura["total_proyecto"]) - total_cubierto_proyecto, 2),
+    )
 
     return {
+        "filas": filas_liberadas,
         "bloques": bloques,
-        "filas": filas,
-        "total_capital_pagado": round(acumulado_capital, 2),
-        "total_intereses_pagados": round(total_intereses, 2),
-        "total_mora_pagada": round(total_mora, 2),
-        "total_pagos_crv": round(acumulado_capital + total_intereses + total_mora, 2),
-        "total_cubierto_proyecto": total_cubierto,
-        "saldo_pendiente_proyecto": saldo_pendiente,
+        "total_capital_pagado": acumulado_capital,
+        "total_intereses_pagados": acumulado_intereses,
+        "total_mora_pagada": acumulado_mora,
+        "total_pagos_crv": round(
+            acumulado_capital + acumulado_intereses + acumulado_mora, 2
+        ),
+        "total_cubierto_proyecto": total_cubierto_proyecto,
+        "saldo_pendiente_proyecto": saldo_pendiente_proyecto,
     }
+
+
+def _extraer_conceptos_base_formulario(form):
+    conceptos = form.getlist("base_concepto[]") or form.getlist("base_concepto")
+    valores = form.getlist("base_valor[]") or form.getlist("base_valor")
+    items = []
+    orden = 1
+    for i in range(max(len(conceptos), len(valores))):
+        conc = (conceptos[i] if i < len(conceptos) else "").strip()
+        val = max(0.0, convertir_numero(valores[i] if i < len(valores) else 0, default=0.0))
+        if conc or val > 0:
+            items.append(
+                {
+                    "orden": orden,
+                    "concepto": conc or f"Concepto base #{orden}",
+                    "valor": round(val, 2),
+                }
+            )
+            orden += 1
+    return items
+
+
+def _extraer_tramos_formulario(form):
+    nombres = form.getlist("tramo_concepto[]") or form.getlist("tramo_concepto")
+    porcentajes = form.getlist("tramo_porcentaje[]") or form.getlist("tramo_porcentaje")
+    items = []
+    orden = 1
+    for i in range(max(len(nombres), len(porcentajes))):
+        nom = (nombres[i] if i < len(nombres) else "").strip()
+        pct = max(
+            0.0,
+            convertir_porcentaje(porcentajes[i] if i < len(porcentajes) else 0, default=0.0),
+        )
+        if nom or pct > 0:
+            items.append(
+                {
+                    "orden": orden,
+                    "concepto": nom or (f"Pago único ({pct:g}%)" if orden == 1 and len(porcentajes) == 1 else f"Tramo {orden} ({pct:g}%)"),
+                    "porcentaje": round(pct, 2),
+                }
+            )
+            orden += 1
+    if not items:
+        items.append(
+            {
+                "orden": 1,
+                "concepto": "Pago único / Contado (100%)",
+                "porcentaje": 100.0,
+            }
+        )
+    return items
+
+
+def _extraer_adicionales_formulario(form):
+    conceptos = form.getlist("adicional_concepto[]") or form.getlist("adicional_concepto")
+    valores = form.getlist("adicional_valor[]") or form.getlist("adicional_valor")
+    items = []
+    orden = 1
+    for i in range(max(len(conceptos), len(valores))):
+        conc = (conceptos[i] if i < len(conceptos) else "").strip()
+        val = max(0.0, convertir_numero(valores[i] if i < len(valores) else 0, default=0.0))
+        if conc or val > 0:
+            items.append(
+                {
+                    "orden": orden,
+                    "concepto": conc or f"Adicional #{orden}",
+                    "valor": round(val, 2),
+                }
+            )
+            orden += 1
+    return items
+
+
+def _guardar_o_actualizar_perfil(empresa_id, form, perfil=None):
+    tercero_id_raw = (form.get("tercero_id") or form.get("cliente_id") or "").strip()
+    if not tercero_id_raw.isdigit():
+        raise ValueError("Debes seleccionar un cliente CRV válido.")
+
+    tercero = CRVTercero.query.filter_by(
+        id=int(tercero_id_raw),
+        empresa_id=empresa_id,
+    ).first()
+    if not tercero:
+        raise ValueError("El tercero seleccionado no existe en la empresa activa.")
+
+    if (tercero.tipo_tercero or "").strip().upper() != "CLIENTE":
+        raise ValueError("El Perfil Cliente CRV aplica únicamente para terceros de tipo CLIENTE.")
+
+    conceptos_base = _extraer_conceptos_base_formulario(form)
+    if not conceptos_base:
+        raise ValueError("Debes ingresar al menos un concepto principal (Ej. Valor Lote o Valor Casa).")
+
+    tramos_data = _extraer_tramos_formulario(form)
+    adicionales_data = _extraer_adicionales_formulario(form)
+    descuento = max(0.0, convertir_numero(form.get("descuento"), default=0.0))
+    proyecto = (form.get("proyecto") or "").strip()
+    observaciones = (form.get("observaciones") or "").strip()
+
+    total_base = round(sum(c["valor"] for c in conceptos_base), 2)
+
+    if perfil is None:
+        perfil = CRVPerfilCliente(
+            empresa_id=empresa_id,
+            usuario_registro=str(session.get("usuario", "")),
+        )
+        db.session.add(perfil)
+
+    perfil.tercero_id = tercero.id
+    perfil.proyecto = proyecto
+    perfil.tipo_concepto_base = "MULTIPLE" if len(conceptos_base) > 1 else "VALOR_LOTE"
+    perfil.concepto_base_label = " + ".join(c["concepto"] for c in conceptos_base)[:150]
+    perfil.valor_base = total_base
+    perfil.porcentaje_tramo_1 = tramos_data[0]["porcentaje"] if len(tramos_data) >= 1 else 100.0
+    perfil.porcentaje_tramo_2 = tramos_data[1]["porcentaje"] if len(tramos_data) >= 2 else 0.0
+    perfil.descuento = round(descuento, 2)
+    perfil.observaciones = observaciones
+    perfil.activo = True
+
+    perfil.items.clear()
+    for cb in conceptos_base:
+        perfil.items.append(
+            CRVPerfilClienteItem(
+                categoria="BASE",
+                orden=cb["orden"],
+                concepto=cb["concepto"],
+                porcentaje=0.0,
+                valor=cb["valor"],
+            )
+        )
+
+    for tr in tramos_data:
+        perfil.items.append(
+            CRVPerfilClienteItem(
+                categoria="TRAMO",
+                orden=tr["orden"],
+                concepto=tr["concepto"],
+                porcentaje=tr["porcentaje"],
+                valor=round(total_base * (tr["porcentaje"] / 100.0), 2),
+            )
+        )
+
+    perfil.adicionales.clear()
+    for ad in adicionales_data:
+        perfil.adicionales.append(
+            CRVPerfilClienteAdicional(
+                orden=ad["orden"],
+                concepto=ad["concepto"],
+                valor=ad["valor"],
+            )
+        )
+
+    db.session.commit()
+    return perfil
+
+
+@crv_bp.route("/perfil-cliente/guardar", methods=["POST"])
+def guardar_perfil_cliente_crv():
+    bloqueo = proteger_crv()
+    if bloqueo:
+        return bloqueo
+
+    empresa_id = session.get("empresa_id")
+    try:
+        perfil = _guardar_o_actualizar_perfil(empresa_id, request.form, perfil=None)
+        flash("Contrato del cliente CRV guardado correctamente.", "success")
+        return redirect(
+            url_for("crv.perfil_cliente_crv", cliente_id=perfil.tercero_id, perfil_id=perfil.id)
+        )
+    except ValueError as exc:
+        db.session.rollback()
+        flash(str(exc), "error")
+        return redirect(url_for("crv.perfil_cliente_crv"))
+
+
+@crv_bp.route("/perfil-cliente/<int:perfil_id>/editar", methods=["POST"])
+def editar_perfil_cliente_crv(perfil_id):
+    bloqueo = proteger_crv()
+    if bloqueo:
+        return bloqueo
+
+    empresa_id = session.get("empresa_id")
+    perfil = CRVPerfilCliente.query.filter_by(
+        id=perfil_id,
+        empresa_id=empresa_id,
+    ).first_or_404()
+
+    try:
+        _guardar_o_actualizar_perfil(empresa_id, request.form, perfil=perfil)
+        flash("Contrato del cliente CRV actualizado y recalculado.", "success")
+    except ValueError as exc:
+        db.session.rollback()
+        flash(str(exc), "error")
+
+    return redirect(
+        url_for("crv.perfil_cliente_crv", cliente_id=perfil.tercero_id, perfil_id=perfil.id)
+    )
+
+@crv_bp.route("/perfil-cliente/<int:perfil_id>/eliminar", methods=["POST"])
+def eliminar_perfil_cliente_crv(perfil_id):
+    bloqueo = proteger_crv()
+    if bloqueo:
+        return bloqueo
+
+    empresa_id = session.get("empresa_id")
+    perfil = CRVPerfilCliente.query.filter_by(
+        id=perfil_id,
+        empresa_id=empresa_id,
+    ).first_or_404()
+
+    cliente_id = perfil.tercero_id
+    db.session.delete(perfil)
+    db.session.commit()
+
+    flash("Contrato del cliente CRV eliminado correctamente.", "success")
+    return redirect(url_for("crv.perfil_cliente_crv", cliente_id=cliente_id))
 
 
 @crv_bp.route("/perfil-cliente", methods=["GET"])
@@ -598,230 +759,3 @@ def perfil_cliente_crv():
         saldo_pendiente=round(saldo_pendiente, 2),
         resumen_negocio=resumen_negocio,
     )
-
-
-@crv_bp.route("/perfil-cliente/guardar", methods=["POST"])
-def guardar_perfil_cliente_crv():
-    bloqueo = proteger_crv()
-    if bloqueo:
-        return bloqueo
-
-    empresa_id = session.get("empresa_id")
-    tercero_id_raw = (request.form.get("tercero_id") or "").strip()
-    if not tercero_id_raw.isdigit():
-        flash("Debes seleccionar un cliente CRV válido.", "error")
-        return redirect(url_for("crv.perfil_cliente_crv"))
-
-    cliente = CRVTercero.query.filter_by(
-        id=int(tercero_id_raw),
-        empresa_id=empresa_id,
-        tipo_tercero="CLIENTE",
-    ).first()
-    if not cliente:
-        flash("El cliente seleccionado no pertenece a la empresa activa.", "error")
-        return redirect(url_for("crv.perfil_cliente_crv"))
-
-    conceptos_base_limpios = _extraer_conceptos_base_formulario(request.form)
-    if not conceptos_base_limpios:
-        flash("Debes agregar al menos un concepto base (ej. Valor Lote o Valor Casa) mayor a $0.", "error")
-        return redirect(url_for("crv.perfil_cliente_crv", cliente_id=cliente.id))
-
-    tramos_limpios = _extraer_tramos_formulario(request.form)
-    if not tramos_limpios:
-        tramos_limpios = [{"orden": 1, "concepto": "Pago único / Contado (100%)", "porcentaje": 100.0}]
-
-    suma_pct = round(sum(t["porcentaje"] for t in tramos_limpios), 2)
-    if abs(suma_pct - 100.0) > 0.05:
-        flash(f"La suma de los porcentajes de los tramos debe ser 100% (actualmente suma {suma_pct:g}%).", "error")
-        return redirect(url_for("crv.perfil_cliente_crv", cliente_id=cliente.id))
-
-    total_base = round(sum(c["valor"] for c in conceptos_base_limpios), 2)
-    etiqueta_resumen = " + ".join(c["concepto"] for c in conceptos_base_limpios)[:145]
-    proyecto = (request.form.get("proyecto") or "").strip() or None
-    descuento = max(0.0, _parse_float(request.form.get("descuento"), 0.0))
-    observaciones = (request.form.get("observaciones") or "").strip() or None
-    adicionales_limpios = _extraer_adicionales_formulario(request.form)
-
-    modo_tramos = (request.form.get("modo_tramos") or "TODOS").strip()
-    tramo_idx_raw = (request.form.get("tramo_concepto_index") or "").strip()
-
-    if modo_tramos == "SOLO_UNO" and tramo_idx_raw.isdigit() and int(tramo_idx_raw) < len(conceptos_base_limpios):
-        idx_objetivo = int(tramo_idx_raw)
-        tipo_concepto_guardar = f"SOLO_CONCEPTO:{idx_objetivo}"
-        base_calculo_tramos = conceptos_base_limpios[idx_objetivo]["valor"]
-    else:
-        tipo_concepto_guardar = "MULTIPLE" if len(conceptos_base_limpios) > 1 else "VALOR_LOTE"
-        base_calculo_tramos = total_base
-
-    pct1 = tramos_limpios[0]["porcentaje"]
-    pct2 = tramos_limpios[1]["porcentaje"] if len(tramos_limpios) > 1 else 0.0
-
-    perfil = CRVPerfilCliente(
-        empresa_id=empresa_id,
-        tercero_id=cliente.id,
-        proyecto=proyecto,
-        tipo_concepto_base=tipo_concepto_guardar,
-        concepto_base_label=etiqueta_resumen,
-        valor_base=total_base,
-        porcentaje_tramo_1=pct1,
-        porcentaje_tramo_2=pct2,
-        descuento=descuento,
-        observaciones=observaciones,
-        activo=True,
-        usuario_registro=session.get("usuario_nombre") or session.get("usuario"),
-    )
-
-    for cb in conceptos_base_limpios:
-        perfil.items.append(
-            CRVPerfilClienteItem(
-                categoria="BASE",
-                orden=cb["orden"],
-                concepto=cb["concepto"],
-                porcentaje=0.0,
-                valor=cb["valor"],
-            )
-        )
-
-    for tr in tramos_limpios:
-        monto_tramo = round(base_calculo_tramos * (tr["porcentaje"] / 100.0), 2)
-        perfil.items.append(
-            CRVPerfilClienteItem(
-                categoria="TRAMO",
-                orden=tr["orden"],
-                concepto=tr["concepto"],
-                porcentaje=tr["porcentaje"],
-                valor=monto_tramo,
-            )
-        )
-
-    for ad in adicionales_limpios:
-        perfil.adicionales.append(
-            CRVPerfilClienteAdicional(
-                orden=ad["orden"],
-                concepto=ad["concepto"],
-                valor=ad["valor"],
-            )
-        )
-
-    db.session.add(perfil)
-    db.session.commit()
-
-    flash("Contrato de Perfil Cliente CRV creado correctamente.", "success")
-    return redirect(
-        url_for("crv.perfil_cliente_crv", cliente_id=cliente.id, perfil_id=perfil.id)
-    )
-
-
-@crv_bp.route("/perfil-cliente/<int:perfil_id>/editar", methods=["POST"])
-def editar_perfil_cliente_crv(perfil_id):
-    bloqueo = proteger_crv()
-    if bloqueo:
-        return bloqueo
-
-    empresa_id = session.get("empresa_id")
-    perfil = CRVPerfilCliente.query.filter_by(
-        id=perfil_id,
-        empresa_id=empresa_id,
-    ).first_or_404()
-
-    conceptos_base_limpios = _extraer_conceptos_base_formulario(request.form)
-    if not conceptos_base_limpios:
-        flash("Debes mantener al menos un concepto base mayor a $0.", "error")
-        return redirect(
-            url_for("crv.perfil_cliente_crv", cliente_id=perfil.tercero_id, perfil_id=perfil.id)
-        )
-
-    tramos_limpios = _extraer_tramos_formulario(request.form)
-    if not tramos_limpios:
-        tramos_limpios = [{"orden": 1, "concepto": "Pago único / Contado (100%)", "porcentaje": 100.0}]
-
-    suma_pct = round(sum(t["porcentaje"] for t in tramos_limpios), 2)
-    if abs(suma_pct - 100.0) > 0.05:
-        flash(f"La suma de los porcentajes de los tramos debe ser 100% (actualmente suma {suma_pct:g}%).", "error")
-        return redirect(
-            url_for("crv.perfil_cliente_crv", cliente_id=perfil.tercero_id, perfil_id=perfil.id)
-        )
-
-    total_base = round(sum(c["valor"] for c in conceptos_base_limpios), 2)
-    etiqueta_resumen = " + ".join(c["concepto"] for c in conceptos_base_limpios)[:145]
-
-    modo_tramos = (request.form.get("modo_tramos") or "TODOS").strip()
-    tramo_idx_raw = (request.form.get("tramo_concepto_index") or "").strip()
-
-    if modo_tramos == "SOLO_UNO" and tramo_idx_raw.isdigit() and int(tramo_idx_raw) < len(conceptos_base_limpios):
-        idx_objetivo = int(tramo_idx_raw)
-        tipo_concepto_guardar = f"SOLO_CONCEPTO:{idx_objetivo}"
-        base_calculo_tramos = conceptos_base_limpios[idx_objetivo]["valor"]
-    else:
-        tipo_concepto_guardar = "MULTIPLE" if len(conceptos_base_limpios) > 1 else "VALOR_LOTE"
-        base_calculo_tramos = total_base
-
-    perfil.proyecto = (request.form.get("proyecto") or "").strip() or None
-    perfil.tipo_concepto_base = tipo_concepto_guardar
-    perfil.concepto_base_label = etiqueta_resumen
-    perfil.valor_base = total_base
-    perfil.porcentaje_tramo_1 = tramos_limpios[0]["porcentaje"]
-    perfil.porcentaje_tramo_2 = tramos_limpios[1]["porcentaje"] if len(tramos_limpios) > 1 else 0.0
-    perfil.descuento = max(0.0, _parse_float(request.form.get("descuento"), 0.0))
-    perfil.observaciones = (request.form.get("observaciones") or "").strip() or None
-    perfil.fecha_actualizacion = datetime.utcnow()
-
-    perfil.items.clear()
-    for cb in conceptos_base_limpios:
-        perfil.items.append(
-            CRVPerfilClienteItem(
-                categoria="BASE",
-                orden=cb["orden"],
-                concepto=cb["concepto"],
-                porcentaje=0.0,
-                valor=cb["valor"],
-            )
-        )
-
-    for tr in tramos_limpios:
-        monto_tramo = round(base_calculo_tramos * (tr["porcentaje"] / 100.0), 2)
-        perfil.items.append(
-            CRVPerfilClienteItem(
-                categoria="TRAMO",
-                orden=tr["orden"],
-                concepto=tr["concepto"],
-                porcentaje=tr["porcentaje"],
-                valor=monto_tramo,
-            )
-        )
-
-    perfil.adicionales.clear()
-    for ad in _extraer_adicionales_formulario(request.form):
-        perfil.adicionales.append(
-            CRVPerfilClienteAdicional(
-                orden=ad["orden"],
-                concepto=ad["concepto"],
-                valor=ad["valor"],
-            )
-        )
-
-    db.session.commit()
-    flash("Contrato actualizado correctamente.", "success")
-    return redirect(
-        url_for("crv.perfil_cliente_crv", cliente_id=perfil.tercero_id, perfil_id=perfil.id)
-    )
-
-
-@crv_bp.route("/perfil-cliente/<int:perfil_id>/eliminar", methods=["POST"])
-def eliminar_perfil_cliente_crv(perfil_id):
-    bloqueo = proteger_crv()
-    if bloqueo:
-        return bloqueo
-
-    empresa_id = session.get("empresa_id")
-    perfil = CRVPerfilCliente.query.filter_by(
-        id=perfil_id,
-        empresa_id=empresa_id,
-    ).first_or_404()
-
-    cliente_id = perfil.tercero_id
-    db.session.delete(perfil)
-    db.session.commit()
-
-    flash("Contrato del cliente CRV eliminado correctamente.", "success")
-    return redirect(url_for("crv.perfil_cliente_crv", cliente_id=cliente_id))
