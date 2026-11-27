@@ -6,8 +6,7 @@
 
     <title>CRV CONSTRUCTORA - Perfil Clientes CRV</title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
     <style>
         * {
@@ -19,6 +18,10 @@
             font-family: Arial, Helvetica, sans-serif;
             background: #f4f6f8;
             color: #17283f;
+        }
+
+        body.modal-open {
+            overflow: hidden;
         }
 
         .page {
@@ -121,16 +124,8 @@
             font-size: 13px;
         }
 
-        .crv-fixed-menu a.active {
-            background: #17304f;
-            color: #fff;
-        }
-
-        .crv-fixed-menu a.gold {
-            background: #d8b541;
-            color: #fff;
-        }
-
+        .crv-fixed-menu a.active { background: #17304f; color: #fff; }
+        .crv-fixed-menu a.gold { background: #d8b541; color: #fff; }
         .crv-fixed-menu a.danger {
             justify-content: center;
             margin-top: 5px;
@@ -149,7 +144,7 @@
         }
 
         /* =====================================================
-           ENCABEZADO
+           ENCABEZADO Y BARRA SUPERIOR
         ===================================================== */
         .header {
             text-align: center;
@@ -176,9 +171,6 @@
             font-size: 14px;
         }
 
-        /* =====================================================
-           BARRA SUPERIOR
-        ===================================================== */
         .topbar {
             background: white;
             border-radius: 17px;
@@ -217,6 +209,28 @@
             font-size: 8px;
         }
 
+        .flash-stack {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .flash-item {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 800;
+            background: #e5f8ec;
+            color: #087b3a;
+            border: 1px solid #bcebd0;
+        }
+
+        .flash-item.error {
+            background: #fee7e7;
+            color: #c51d22;
+            border-color: #f8bcbc;
+        }
+
         /* =====================================================
            BOTONES
         ===================================================== */
@@ -236,29 +250,13 @@
             transition: .15s ease;
         }
 
-        .btn:hover {
-            transform: translateY(-1px);
-        }
-
-        .btn-dark {
-            background: #111;
-            color: white;
-        }
-
-        .btn-navy {
-            background: #17304f;
-            color: white;
-        }
-
-        .btn-gold {
-            background: #d8b541;
-            color: white;
-        }
-
-        .btn-light {
-            background: #edf2f7;
-            color: #17304f;
-        }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-dark { background: #111; color: white; }
+        .btn-navy { background: #17304f; color: white; }
+        .btn-gold { background: #d8b541; color: white; }
+        .btn-light { background: #edf2f7; color: #17304f; }
+        .btn-danger { background: #fee7e7; color: #d5242a; }
+        .btn-small { padding: 7px 10px; font-size: 11px; }
 
         /* =====================================================
            TARJETAS RESUMEN
@@ -292,21 +290,10 @@
             flex: 0 0 auto;
         }
 
-        .summary-icon.total {
-            background: #fff4d3;
-        }
-
-        .summary-icon.capital {
-            background: #dcf7e7;
-        }
-
-        .summary-icon.intereses {
-            background: #e4eeff;
-        }
-
-        .summary-icon.saldo {
-            background: #efe7ff;
-        }
+        .summary-icon.proyecto { background: #fff4d3; }
+        .summary-icon.pagado { background: #dcf7e7; }
+        .summary-icon.saldo { background: #fee7e7; }
+        .summary-icon.extras { background: #e4eeff; }
 
         .summary-label {
             font-size: 12px;
@@ -316,7 +303,7 @@
 
         .summary-value {
             margin-top: 4px;
-            font-size: 23px;
+            font-size: 22px;
             font-weight: 900;
             color: #17304f;
             font-variant-numeric: tabular-nums;
@@ -381,7 +368,7 @@
         .filters {
             padding: 15px 22px;
             display: grid;
-            grid-template-columns: minmax(220px, 1.2fr) minmax(180px, 1fr) minmax(180px, 1fr) auto auto;
+            grid-template-columns: minmax(220px, 1.3fr) minmax(180px, 1fr) minmax(180px, 1fr) auto auto;
             gap: 9px;
             border-bottom: 1px solid #e7ecf1;
             background: #fbfcfd;
@@ -397,7 +384,8 @@
         }
 
         input,
-        select {
+        select,
+        textarea {
             width: 100%;
             border: 1px solid #d5dee7;
             border-radius: 9px;
@@ -410,61 +398,201 @@
         }
 
         input:focus,
-        select:focus {
+        select:focus,
+        textarea:focus {
             border-color: #d8b541;
             box-shadow: 0 0 0 3px rgba(216, 181, 65, .12);
         }
 
-        /* =====================================================
-           FICHA RESUMEN DEL CLIENTE
-        ===================================================== */
-        .cliente-summary-box {
-            padding: 16px 22px;
-            background: #fbfcfd;
+        .perfiles-tabs {
+            padding: 12px 22px;
+            background: #f8fafc;
             border-bottom: 1px solid #e7ecf1;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .perfiles-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .perfil-pill {
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            text-decoration: none;
+            background: #edf2f7;
+            color: #17304f;
+        }
+
+        .perfil-pill.active {
+            background: #17304f;
+            color: #fff;
+        }
+
+        /* =====================================================
+           FICHA RESUMEN DEL CONTRATO + LIBERACIÓN POR TRAMOS
+        ===================================================== */
+        .contract-grid {
+            padding: 18px 22px;
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 12px;
+            grid-template-columns: 1.18fr 1fr;
+            gap: 18px;
+            border-bottom: 1px solid #e7ecf1;
+            background: #fbfcfd;
         }
 
-        .cliente-box-item {
+        .contract-box {
             background: #fff;
-            border: 1px solid #e8edf2;
-            border-radius: 12px;
-            padding: 12px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            overflow: hidden;
         }
 
-        .cliente-box-item small {
-            display: block;
-            font-size: 10px;
+        .contract-box-title {
+            background: #17304f;
+            color: #fff;
+            padding: 10px 14px;
+            font-size: 12px;
             font-weight: 900;
-            color: #728399;
-            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .cliente-box-item strong {
-            display: block;
-            margin-top: 4px;
-            font-size: 14px;
+        .contract-box-sub {
+            background: #b9cde5;
+            color: #10243e;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 900;
+            text-align: center;
+        }
+
+        table.kv-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 0;
+        }
+
+        table.kv-table td {
+            padding: 9px 14px;
+            border-bottom: 1px solid #e8edf2;
+            font-size: 12px;
+        }
+
+        table.kv-table tr.highlight-cream td {
+            background: #fff8dc;
+            font-weight: 800;
+        }
+
+        table.kv-table tr.highlight-subtotal td {
+            background: #eef3f8;
             font-weight: 900;
             color: #17304f;
         }
 
+        table.kv-table tr.highlight-discount td {
+            background: #fff5f5;
+            color: #c51d22;
+            font-weight: 800;
+        }
+
+        table.kv-table tr.highlight-yellow td {
+            background: #fef08a;
+            font-weight: 900;
+            color: #10243e;
+            font-size: 13px;
+        }
+
+        table.kv-table tr.highlight-total td {
+            background: #17304f;
+            color: #fff;
+            font-weight: 900;
+            font-size: 13px;
+        }
+
+        table.kv-table tr.highlight-status-ok td {
+            background: #dcf7e7;
+            color: #087b3a;
+            font-weight: 900;
+            text-align: center;
+        }
+
+        table.kv-table tr.highlight-status-pending td {
+            background: #fee7e7;
+            color: #c51d22;
+            font-weight: 900;
+        }
+
+        .tramo-bar-wrap {
+            padding: 14px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .tramo-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 11px;
+            padding: 11px 13px;
+            background: #f8fafc;
+        }
+
+        .tramo-item-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 900;
+            color: #17304f;
+            margin-bottom: 6px;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 9px;
+            background: #e2e8f0;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #138246;
+            border-radius: 999px;
+        }
+
+        .tramo-item-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #52687f;
+            font-weight: 700;
+        }
+
         /* =====================================================
-           TABLA
+           TABLA HISTÓRICA DE MOVIMIENTOS
         ===================================================== */
         .table-wrap {
             overflow-x: auto;
             padding: 18px;
         }
 
-        table {
+        table.hist-table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 920px;
+            min-width: 1050px;
         }
 
-        thead th {
+        table.hist-table thead th {
             background: #17304f;
             color: white;
             padding: 12px 11px;
@@ -474,26 +602,19 @@
             white-space: nowrap;
         }
 
-        thead th:first-child {
-            border-radius: 10px 0 0 0;
-        }
+        table.hist-table thead th:first-child { border-radius: 10px 0 0 0; }
+        table.hist-table thead th:last-child { border-radius: 0 10px 0 0; }
 
-        thead th:last-child {
-            border-radius: 0 10px 0 0;
-        }
-
-        tbody td {
-            padding: 13px 11px;
+        table.hist-table tbody td {
+            padding: 12px 11px;
             border-bottom: 1px solid #e8edf2;
             font-size: 11.5px;
             vertical-align: middle;
         }
 
-        tbody tr:hover {
-            background: #fafcfe;
-        }
+        table.hist-table tbody tr:hover { background: #fafcfe; }
 
-        tfoot td {
+        table.hist-table tfoot td {
             padding: 13px 11px;
             background: #f4f6f8;
             border-top: 2px solid #cbd5e1;
@@ -509,17 +630,23 @@
             white-space: nowrap;
         }
 
+        .tag-etapa {
+            display: inline-flex;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 900;
+            background: #e4eeff;
+            color: #17304f;
+        }
+
         .empty {
             text-align: center;
-            padding: 55px 20px;
+            padding: 50px 20px;
             color: #7b8b9d;
         }
 
-        .empty-icon {
-            font-size: 38px;
-            margin-bottom: 12px;
-        }
-
+        .empty-icon { font-size: 38px; margin-bottom: 12px; }
         .empty strong {
             display: block;
             color: #17304f;
@@ -528,69 +655,220 @@
         }
 
         /* =====================================================
-           RESPONSIVE
+           MODAL CENTRAL CREAR / EDITAR CONTRATO
         ===================================================== */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(13, 29, 48, .52);
+            backdrop-filter: blur(3px);
+            opacity: 0;
+            visibility: hidden;
+            transition: .18s ease;
+            z-index: 9998;
+        }
+
+        .overlay.active { opacity: 1; visibility: visible; }
+
+        .modal-perfil {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 25px;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(.98);
+            transition: .18s ease;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .modal-perfil.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            width: 100%;
+            max-width: 1100px;
+            max-height: 92vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 30px 80px rgba(10, 28, 48, .28);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 18px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            border-bottom: 1px solid #e6ebf0;
+            background: #ffffff;
+        }
+
+        .modal-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-icon {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 11px;
+            background: #17304f;
+            color: white;
+            font-size: 20px;
+        }
+
+        .modal-header h2 { margin: 0; font-size: 20px; color: #17304f; }
+        .modal-header p { margin: 4px 0 0; font-size: 11px; color: #78899c; }
+
+        .modal-close {
+            width: 38px;
+            height: 38px;
+            border: none;
+            border-radius: 10px;
+            background: #edf2f7;
+            color: #17304f;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            overflow-y: auto;
+            padding: 22px 25px 25px;
+            background: #fbfcfd;
+        }
+
+        .modal-section-title {
+            margin: 4px 0 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e3e9ef;
+            font-size: 14px;
+            font-weight: 900;
+            color: #17304f;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .modal-section-title:not(:first-child) {
+            margin-top: 22px;
+        }
+
+        .modal-grid-2 {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 14px 16px;
+        }
+
+        .modal-body .field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .modal-body label {
+            color: #435970;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .dynamic-row {
+            display: grid;
+            grid-template-columns: 42px minmax(190px, 1.5fr) minmax(140px, 1fr) auto;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .row-num {
+            height: 36px;
+            border-radius: 9px;
+            background: #edf2f7;
+            color: #17304f;
+            font-weight: 900;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preset-pills {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .preview-totales {
+            margin-top: 18px;
+            background: #17304f;
+            color: #fff;
+            border-radius: 14px;
+            padding: 16px 18px;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .preview-totales small {
+            display: block;
+            font-size: 10.5px;
+            color: #cbd5e1;
+            font-weight: 800;
+        }
+
+        .preview-totales strong {
+            display: block;
+            font-size: 16px;
+            font-weight: 900;
+            margin-top: 3px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .preview-totales .gold-text { color: #facc15; }
+
+        .modal-actions {
+            margin-top: 22px;
+            padding-top: 16px;
+            border-top: 1px solid #e3e9ef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
         @media (max-width: 1050px) {
-            .crv-fixed-layout {
-                grid-template-columns: 1fr;
-            }
-
-            .crv-fixed-sidebar {
-                position: static;
-            }
-
-            .crv-fixed-menu {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-
-            .summary-grid,
-            .cliente-summary-box {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .filters {
-                grid-template-columns: 1fr 1fr;
-            }
+            .crv-fixed-layout { grid-template-columns: 1fr; }
+            .crv-fixed-sidebar { position: static; }
+            .crv-fixed-menu { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .summary-grid, .preview-totales { grid-template-columns: repeat(2, 1fr); }
+            .contract-grid, .modal-grid-2 { grid-template-columns: 1fr; }
+            .filters { grid-template-columns: 1fr 1fr; }
         }
 
         @media (max-width: 720px) {
-            .crv-fixed-menu {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 650px) {
-            .page {
-                padding: 14px;
-            }
-
-            .header h1 {
-                font-size: 23px;
-            }
-
-            .summary-grid,
-            .cliente-summary-box,
-            .filters {
-                grid-template-columns: 1fr;
-            }
+            .crv-fixed-menu { grid-template-columns: 1fr; }
+            .dynamic-row { grid-template-columns: 38px 1fr; }
         }
 
         @media print {
-            .crv-fixed-sidebar,
-            .topbar,
-            .filters,
-            .no-print {
-                display: none !important;
-            }
-
-            .page {
-                padding: 0;
-                background: #fff;
-            }
-
-            .crv-fixed-layout {
-                grid-template-columns: 1fr;
-            }
+            .crv-fixed-sidebar, .topbar, .filters, .perfiles-tabs, .no-print { display: none !important; }
+            .page { padding: 0; background: #fff; }
+            .crv-fixed-layout { grid-template-columns: 1fr; }
         }
     </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='global-font.css') }}">
@@ -604,79 +882,45 @@
         <div class="crv-fixed-company">CRV<br>CONSTRUCTORA</div>
         <div class="crv-fixed-subtitle">Módulo Contable</div>
         <nav class="crv-fixed-menu">
-            <a href="/empresas">
-                <span class="crv-fixed-icon">🏢</span>
-                <span>Cambiar empresa</span>
-            </a>
-            <a href="/crv/movimientos/nuevo" class="gold">
-                <span class="crv-fixed-icon">＋</span>
-                <span>Registrar movimiento</span>
-            </a>
-            <a href="/crv/movimientos">
-                <span class="crv-fixed-icon">📋</span>
-                <span>Movimientos</span>
-            </a>
-            <a href="/crv/terceros">
-                <span class="crv-fixed-icon">👤</span>
-                <span>Terceros</span>
-            </a>
-            <a href="/crv/cuentas-por-pagar">
+            <a href="/empresas"><span class="crv-fixed-icon">🏢</span><span>Cambiar empresa</span></a>
+            <a href="/crv/movimientos/nuevo" class="gold"><span class="crv-fixed-icon">＋</span><span>Registrar movimiento</span></a>
+            <a href="/crv/movimientos"><span class="crv-fixed-icon">📋</span><span>Movimientos</span></a>
+            <a href="/crv/terceros"><span class="crv-fixed-icon">👤</span><span>Terceros</span></a>
+            <a href="/crv/cuentas-por-pagar"><span class="crv-fixed-icon">🧾</span><span>Cuentas por pagar</span></a>
+            <a href="/crv/cuentas-por-cobrar"><span class="crv-fixed-icon">💰</span><span>Cuentas por cobrar</span></a>
+            <a href="/crv/bancos-caja"><span class="crv-fixed-icon">🏦</span><span>Bancos y caja</span></a>
+            <a href="/crv/conciliacion-bancaria"><span class="crv-fixed-icon">⚖️</span><span>Conciliación bancaria</span></a>
+            <a href="/crv/proyectos"><span class="crv-fixed-icon">🏗️</span><span>Proyectos / obras</span></a>
+            <a href="/crv/reportes-contador"><span class="crv-fixed-icon">📊</span><span>Reportes contador</span></a>
+            <a href="/crv/cierre-mensual"><span class="crv-fixed-icon">📅</span><span>Cierre mensual</span></a>
+            <a href="/crv/exportaciones"><span class="crv-fixed-icon">⬇️</span><span>Importar / Exportar</span></a>
+            <a href="/crv/perfil-cliente" class="active"><span class="crv-fixed-icon">👥</span><span>Perfil Clientes CRV</span></a>
+            <a href="#" >
                 <span class="crv-fixed-icon">🧾</span>
-                <span>Cuentas por pagar</span>
+                <span>BANCOLOMBIA</span>
             </a>
-            <a href="/crv/cuentas-por-cobrar">
-                <span class="crv-fixed-icon">💰</span>
-                <span>Cuentas por cobrar</span>
-            </a>
-            <a href="/crv/bancos-caja">
-                <span class="crv-fixed-icon">🏦</span>
-                <span>Bancos y caja</span>
-            </a>
-            <a href="/crv/conciliacion-bancaria">
-                <span class="crv-fixed-icon">⚖️</span>
-                <span>Conciliación bancaria</span>
-            </a>
-            <a href="/crv/proyectos">
-                <span class="crv-fixed-icon">🏗️</span>
-                <span>Proyectos / obras</span>
-            </a>
-            <a href="/crv/reportes-contador">
-                <span class="crv-fixed-icon">📊</span>
-                <span>Reportes contador</span>
-            </a>
-            <a href="/crv/cierre-mensual">
-                <span class="crv-fixed-icon">📅</span>
-                <span>Cierre mensual</span>
-            </a>
-            <a href="/crv/exportaciones">
-                <span class="crv-fixed-icon">⬇️</span>
-                <span>Importar / Exportar</span>
-            </a>
-            <a href="/crv/perfil-cliente" class="active">
-                <span class="crv-fixed-icon">👥</span>
-                <span>Perfil Clientes CRV</span>
-            </a>
-            <a href="/logout" class="danger">
-                <span class="crv-fixed-icon">⏻</span>
-                <span>Cerrar sesión</span>
-            </a>
+            <a href="/logout" class="danger"><span class="crv-fixed-icon">⏻</span><span>Cerrar sesión</span></a>
         </nav>
     </aside>
 
     <main class="crv-fixed-main">
     <div class="shell">
-        <!-- =====================================================
-             HEADER
-        ====================================================== -->
         <div class="header">
             <img src="{{ url_for('static', filename='logo_crv.png') }}" alt="CRV">
             <h1>CRV CONSTRUCTORA - Perfil Clientes CRV</h1>
-            <p>Histórico consolidado de ingresos, abonos a capital, intereses y mora por cliente</p>
+            <p>Contratos de clientes CRV, conceptos principales, tramos porcentuales, adicionales y liberación de pagos</p>
         </div>
 
-        <!-- =====================================================
-             TOPBAR
-        ====================================================== -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-stack no-print">
+                {% for category, message in messages %}
+                    <div class="flash-item {{ 'error' if category == 'error' else '' }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endwith %}
+
         <div class="topbar">
             <div class="topbar-left">
                 <a href="/crv/dashboard" class="btn btn-dark">← Volver</a>
@@ -685,77 +929,85 @@
             </div>
 
             <div class="topbar-right">
-                <a href="/crv/cuentas-por-cobrar" class="btn btn-light">💰 Cuentas por cobrar</a>
-                <a href="/crv/movimientos?tipo=INGRESO" class="btn btn-light">📋 Movimientos</a>
-                <button type="button" onclick="window.print()" class="btn btn-gold">🖨️ Imprimir extracto</button>
+                <button type="button" class="btn btn-gold" onclick="abrirModalNuevoContrato()">
+                    ＋ Crear contrato cliente
+                </button>
+                {% if perfil_activo %}
+                <button type="button" class="btn btn-navy" onclick="abrirModalEditarContrato()">
+                    ✏️ Editar contrato / agregar adicionales
+                </button>
+                <form method="POST"
+                      action="{{ url_for('crv.eliminar_perfil_cliente_crv', perfil_id=perfil_activo.id) }}"
+                      style="display:inline;"
+                      onsubmit="return confirm('¿Seguro que deseas eliminar este contrato ({{ perfil_activo.proyecto or perfil_activo.concepto_base_label or ('Contrato #' ~ perfil_activo.id) }})? Los pagos registrados en Movimientos no se borrarán.');">
+                    <button type="submit" class="btn btn-danger">
+                        🗑️ Eliminar contrato
+                    </button>
+                </form>
+                {% endif %}
+                <button type="button" onclick="window.print()" class="btn btn-light">🖨️ Imprimir</button>
             </div>
         </div>
 
-        <!-- =====================================================
-             TARJETAS RESUMEN
-        ====================================================== -->
-        {% set total_capital = ns_capital if ns_capital is defined else 0 %}
-        {% set total_intereses = ns_intereses if ns_intereses is defined else 0 %}
-        {% set total_mora = ns_mora if ns_mora is defined else 0 %}
-        {% set total_pagos_crv = total_capital + total_intereses + total_mora %}
-
+        {% set total_proyecto = estructura_perfil.total_proyecto if estructura_perfil else (resumen_negocio.valor_total if resumen_negocio else 0) %}
+        {% set total_pagado = liberacion.total_pagos_crv if liberacion else ((ns_capital or 0) + (ns_intereses or 0) + (ns_mora or 0)) %}
+        {% set saldo_final = liberacion.saldo_pendiente_proyecto if liberacion else (saldo_pendiente or 0) %}
+        {% set total_extras = estructura_perfil.total_adicionales if estructura_perfil else (resumen_negocio.total_adicionales if resumen_negocio and resumen_negocio.total_adicionales is defined else 0) %}
+        
         <div class="summary-grid">
             <div class="summary-card">
-                <div class="summary-icon total">💵</div>
+                <div class="summary-icon proyecto">🏗️</div>
+                <div>
+                    <div class="summary-label">Total costo proyecto</div>
+                    <div class="summary-value">${{ "{:,.0f}".format(total_proyecto) }}</div>
+                    <div class="summary-note">Base + adicionales - descuento</div>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-icon pagado">💵</div>
                 <div>
                     <div class="summary-label">Total pagos a CRV</div>
-                    <div class="summary-value">${{ "{:,.0f}".format(total_pagos_crv) }}</div>
-                    <div class="summary-note">Capital + Intereses + Mora</div>
+                    <div class="summary-value">${{ "{:,.0f}".format(total_pagado) }}</div>
+                    <div class="summary-note">Capital: ${{ "{:,.0f}".format(liberacion.total_capital_pagado if liberacion else (ns_capital or 0)) }}</div>
                 </div>
             </div>
 
             <div class="summary-card">
-                <div class="summary-icon capital">✓</div>
+                <div class="summary-icon extras">➕</div>
                 <div>
-                    <div class="summary-label">Total abonos (Capital)</div>
-                    <div class="summary-value">${{ "{:,.0f}".format(total_capital) }}</div>
-                    <div class="summary-note">Abonos aplicados a capital</div>
-                </div>
-            </div>
-
-            <div class="summary-card">
-                <div class="summary-icon intereses">%</div>
-                <div>
-                    <div class="summary-label">Intereses y mora</div>
-                    <div class="summary-value">${{ "{:,.0f}".format(total_intereses + total_mora) }}</div>
-                    <div class="summary-note">Int: ${{ "{:,.0f}".format(total_intereses) }} · Mora: ${{ "{:,.0f}".format(total_mora) }}</div>
+                    <div class="summary-label">Adicionales contratados</div>
+                    <div class="summary-value">${{ "{:,.0f}".format(total_extras) }}</div>
+                    <div class="summary-note">{{ estructura_perfil.adicionales|length if estructura_perfil else 0 }} adicional(es)</div>
                 </div>
             </div>
 
             <div class="summary-card">
                 <div class="summary-icon saldo">📋</div>
                 <div>
-                    <div class="summary-label">Saldo pendiente CxC</div>
-                    <div class="summary-value">${{ "{:,.0f}".format(saldo_pendiente or 0) }}</div>
-                    <div class="summary-note">{{ movimientos|length if movimientos else 0 }} pagos registrados</div>
+                    <div class="summary-label">Saldo pendiente</div>
+                    <div class="summary-value">${{ "{:,.0f}".format(saldo_final) }}</div>
+                    <div class="summary-note">{{ movimientos|length if movimientos else 0 }} movimiento(s)</div>
                 </div>
             </div>
         </div>
 
-        <!-- =====================================================
-             DIRECTORIO / HISTÓRICO DEL CLIENTE
-        ====================================================== -->
         <div class="directory-card">
             <div class="directory-header">
                 <div class="directory-title-wrap">
-                    <div class="directory-icon">👥</div>
+                    <div class="directory-icon">🪪</div>
                     <div>
-                        <h2>Histórico de ingresos y abonos del cliente</h2>
-                        <p>Consulta el detalle cronológico de pagos registrados para el cliente o proyecto</p>
+                        <h2>Ficha de contrato y estado de cuenta del cliente</h2>
+                        <p>Visualiza por separado lote, casa/construcción, tramos porcentuales, adicionales, descuento y abonos</p>
                     </div>
                 </div>
             </div>
 
             <form method="GET" action="/crv/perfil-cliente" class="filters">
                 <div class="field">
-                    <label for="cliente_id">Cliente</label>
+                    <label for="cliente_id">Cliente CRV</label>
                     <select name="cliente_id" id="cliente_id" onchange="this.form.submit()">
-                        <option value="">Selecciona un cliente...</option>
+                        <option value="">Selecciona un cliente CRV...</option>
                         {% for cli in clientes or [] %}
                             <option value="{{ cli.id }}" {% if cliente_seleccionado and cliente_seleccionado.id == cli.id %}selected{% endif %}>
                                 {{ cli.razon_social }} {% if cli.identificacion %}({{ cli.identificacion }}){% endif %}
@@ -765,43 +1017,211 @@
                 </div>
 
                 <div class="field">
-                    <label for="proyecto">Proyecto / Lote / Obra</label>
-                    <input type="text" name="proyecto" id="proyecto" value="{{ proyecto or '' }}" placeholder="Ej. Lote 17 sector Almendros">
+                    <label for="proyecto">Proyecto / Lote</label>
+                    <input type="text" name="proyecto" id="proyecto" value="{{ proyecto or '' }}" placeholder="Ej. Lote 13 sector Tamarindo">
                 </div>
 
                 <div class="field">
-                    <label for="buscar">Nombre o identificación</label>
+                    <label for="buscar">Buscar nombre o identificación</label>
                     <input type="text" name="buscar" id="buscar" value="{{ buscar or '' }}" placeholder="Buscar cliente o CC/NIT...">
                 </div>
 
-                <button type="submit" class="btn btn-navy">Filtrar</button>
+                <button type="submit" class="btn btn-navy">Consultar</button>
                 <a href="/crv/perfil-cliente" class="btn btn-light">Limpiar</a>
             </form>
 
-            {% if cliente_seleccionado or resumen_negocio %}
-            <div class="cliente-summary-box">
-                <div class="cliente-box-item">
-                    <small>Cliente</small>
-                    <strong>{{ cliente_seleccionado.razon_social if cliente_seleccionado else (buscar or '-') }}</strong>
-                </div>
-                <div class="cliente-box-item">
-                    <small>Identificación</small>
-                    <strong>{{ cliente_seleccionado.identificacion if cliente_seleccionado and cliente_seleccionado.identificacion else '-' }}</strong>
-                </div>
-                <div class="cliente-box-item">
-                    <small>Valor contrato / CxC</small>
-                    <strong>${{ "{:,.0f}".format(resumen_negocio.valor_total if resumen_negocio else 0) }}</strong>
-                </div>
-                <div class="cliente-box-item">
-                    <small>Saldo pendiente</small>
-                    <strong>${{ "{:,.0f}".format(saldo_pendiente or 0) }}</strong>
+            {% if perfiles_cliente and perfiles_cliente|length > 1 %}
+            <div class="perfiles-tabs no-print">
+                <span style="font-size: 11px; font-weight: 900; color: #52687f;">Contratos de este cliente:</span>
+                <div class="perfiles-pills">
+                    {% for p in perfiles_cliente %}
+                    <a href="{{ url_for('crv.perfil_cliente_crv', cliente_id=p.tercero_id, perfil_id=p.id) }}"
+                       class="perfil-pill {{ 'active' if perfil_activo and perfil_activo.id == p.id else '' }}">
+                        {{ p.proyecto or p.concepto_base_label or ('Contrato #' ~ p.id) }}
+                    </a>
+                    {% endfor %}
                 </div>
             </div>
             {% endif %}
 
-            {% if movimientos %}
+            {% if estructura_perfil and liberacion %}
+            <div class="contract-grid">
+                <!-- Tabla izquierda: Conceptos base separados, tramos, adicionales y descuento separado -->
+                <div class="contract-box">
+                    <div class="contract-box-title">
+                        <span>ESTRUCTURA DEL CONTRATO DEL CLIENTE</span>
+                        <span>{{ estructura_perfil.tramos|length }} tramo(s)</span>
+                    </div>
+                    <div class="contract-box-sub">
+                        {{ cliente_seleccionado.razon_social if cliente_seleccionado else '' }}
+                        {% if perfil_activo and perfil_activo.proyecto %} - {{ perfil_activo.proyecto }}{% endif %}
+                    </div>
+                    <table class="kv-table">
+                        <tbody>
+                            <!-- Conceptos base separados (ej. Valor Lote + Valor Casa) -->
+                            {% for cb in estructura_perfil.conceptos_base %}
+                            <tr class="{{ 'highlight-cream' if loop.odd else '' }}">
+                                <td class="money" style="width: 38%;">${{ "{:,.0f}".format(cb.valor) }}</td>
+                                <td>{{ cb.concepto|upper }}</td>
+                            </tr>
+                            {% endfor %}
+
+                            {% if estructura_perfil.conceptos_base|length > 1 %}
+                            <tr class="highlight-subtotal">
+                                <td class="money">${{ "{:,.0f}".format(estructura_perfil.total_base) }}</td>
+                                <td>SUBTOTAL CONCEPTOS BASE</td>
+                            </tr>
+                            {% endif %}
+
+                            <!-- Tramos porcentuales (1 contado, 2 tramos o más) -->
+                            {% for tr in estructura_perfil.tramos %}
+                            <tr>
+                                <td class="money">${{ "{:,.0f}".format(tr.monto) }}</td>
+                                <td>{{ tr.concepto }}</td>
+                            </tr>
+                            {% endfor %}
+
+                            <!-- Adicionales separados -->
+                            {% for ad in estructura_perfil.adicionales %}
+                            <tr>
+                                <td class="money">${{ "{:,.0f}".format(ad.valor) }}</td>
+                                <td>Adicional {{ ad.orden }}: {{ ad.concepto }}</td>
+                            </tr>
+                            {% endfor %}
+
+                            {% if estructura_perfil.total_adicionales > 0 %}
+                            <tr class="highlight-subtotal">
+                                <td class="money">${{ "{:,.0f}".format(estructura_perfil.total_adicionales) }}</td>
+                                <td>TOTAL ADICIONALES</td>
+                            </tr>
+                            {% endif %}
+
+                            <!-- Descuento separado en su propia fila -->
+                            {% if estructura_perfil.descuento > 0 %}
+                            <tr class="highlight-discount">
+                                <td class="money">- ${{ "{:,.0f}".format(estructura_perfil.descuento) }}</td>
+                                <td>DESCUENTO APLICADO</td>
+                            </tr>
+                            {% endif %}
+
+                            <!-- Total neto final -->
+                            <tr class="highlight-total">
+                                <td class="money">${{ "{:,.0f}".format(estructura_perfil.total_proyecto) }}</td>
+                                <td>TOTAL COSTO PROYECTO (BASE + ADICIONALES - DESCUENTO)</td>
+                            </tr>
+
+                            <tr class="highlight-yellow">
+                                <td class="money">${{ "{:,.0f}".format(liberacion.total_pagos_crv) }}</td>
+                                <td>TOTAL PAGOS A CRV</td>
+                            </tr>
+
+                            {% if liberacion.saldo_pendiente_proyecto <= 0 %}
+                            <tr class="highlight-status-ok">
+                                <td colspan="2">PAGADO EN SU TOTALIDAD</td>
+                            </tr>
+                            {% else %}
+                            <tr class="highlight-status-pending">
+                                <td class="money">${{ "{:,.0f}".format(liberacion.saldo_pendiente_proyecto) }}</td>
+                                <td>SALDO PENDIENTE POR PAGAR</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Columna derecha: Liberación progresiva dinámica por cada tramo -->
+                <div class="contract-box">
+                    <div class="contract-box-title">
+                        <span>LIBERACIÓN PROGRESIVA SEGÚN FECHA DE PAGOS</span>
+                        <span>Orden cronológico</span>
+                    </div>
+                    <div class="tramo-bar-wrap">
+                        {% for b in liberacion.bloques %}
+                        <div class="tramo-item">
+                            <div class="tramo-item-head">
+                                <span>{{ loop.index }}. {{ b.titulo }}</span>
+                                <span>${{ "{:,.0f}".format(b.cubierto) }} / ${{ "{:,.0f}".format(b.objetivo) }}</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width: {{ b.avance_pct }}%;"></div>
+                            </div>
+                            <div class="tramo-item-meta">
+                                <span>Cubierto: {{ "{:.1f}".format(b.avance_pct) }}%</span>
+                                <span>Pendiente: ${{ "{:,.0f}".format(b.pendiente) }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        {% if perfil_activo and perfil_activo.observaciones %}
+                        <div style="font-size: 11.5px; color: #52687f; background: #fff8dc; padding: 10px 12px; border-radius: 9px; border: 1px solid #f3e29e;">
+                            <strong>Notas del contrato:</strong> {{ perfil_activo.observaciones }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% elif cliente_seleccionado %}
+            <div style="padding: 18px 22px; background: #fffbeb; border-bottom: 1px solid #fde68a; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div style="font-size: 12.5px; color: #78350f;">
+                    <strong>{{ cliente_seleccionado.razon_social }}</strong> aún no tiene un contrato configurado en Perfil Cliente CRV.
+                </div>
+                <button type="button" class="btn btn-gold" onclick="abrirModalNuevoContrato({{ cliente_seleccionado.id }})">
+                    ＋ Crear contrato para este cliente
+                </button>
+            </div>
+            {% endif %}
+
+            <!-- Tabla histórica de pagos reales desde Movimientos -->
+            {% if liberacion and liberacion.filas %}
             <div class="table-wrap">
-                <table>
+                <table class="hist-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha de pago</th>
+                            <th>Relación del abono</th>
+                            <th>Documento</th>
+                            <th class="money">Pago (Capital)</th>
+                            <th class="money">Intereses</th>
+                            <th class="money">Mora</th>
+                            <th>Tramo / Etapa liberada</th>
+                            <th class="money">Acumulado capital</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in liberacion.filas %}
+                        {% set m = item.movimiento %}
+                        <tr>
+                            <td>{{ m.fecha.strftime('%d/%m/%Y') if m.fecha else '-' }}</td>
+                            <td>
+                                <strong>{{ m.concepto or m.categoria or 'Abono cliente' }}</strong>
+                                {% if m.observaciones %}
+                                    <div style="font-size: 10.5px; color: #8190a2; margin-top: 2px;">{{ m.observaciones }}</div>
+                                {% endif %}
+                            </td>
+                            <td>{{ m.numero_documento or m.numero_soporte or '-' }}</td>
+                            <td class="money">${{ "{:,.0f}".format(item.capital) }}</td>
+                            <td class="money">{% if item.intereses > 0 %}${{ "{:,.0f}".format(item.intereses) }}{% else %}-{% endif %}</td>
+                            <td class="money">{% if item.mora > 0 %}${{ "{:,.0f}".format(item.mora) }}{% else %}-{% endif %}</td>
+                            <td><span class="tag-etapa">{{ item.etapa_liberada }}</span></td>
+                            <td class="money">${{ "{:,.0f}".format(item.acumulado_capital) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3">TOTAL ABONOS REALIZADOS</td>
+                            <td class="money">${{ "{:,.0f}".format(liberacion.total_capital_pagado) }}</td>
+                            <td class="money">${{ "{:,.0f}".format(liberacion.total_intereses_pagados) }}</td>
+                            <td class="money">${{ "{:,.0f}".format(liberacion.total_mora_pagada) }}</td>
+                            <td>Saldo pendiente:</td>
+                            <td class="money">${{ "{:,.0f}".format(liberacion.saldo_pendiente_proyecto) }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            {% elif movimientos %}
+            <div class="table-wrap">
+                <table class="hist-table">
                     <thead>
                         <tr>
                             <th>Fecha de pago</th>
@@ -819,42 +1239,83 @@
                         {% set cap = (m.base_gravable if m.base_gravable is not none else (m.valor_neto or m.valor or 0)) %}
                         {% set inte = (m.valor_intereses or 0) %}
                         {% set mora = (m.valor_mora or 0) %}
-                        {% set total_fila = cap + inte + mora %}
                         <tr>
                             <td>{{ m.fecha.strftime('%d/%m/%Y') if m.fecha else '-' }}</td>
-                            <td>
-                                <strong>{{ m.tercero_nombre or (cliente_seleccionado.razon_social if cliente_seleccionado else '-') }}</strong>
-                            </td>
-                            <td>
-                                <div>{{ m.concepto or m.categoria or 'Ingreso' }}</div>
-                                {% if m.observaciones %}
-                                    <div style="font-size: 10.5px; color: #8190a2; margin-top: 2px;">{{ m.observaciones }}</div>
-                                {% endif %}
-                            </td>
+                            <td><strong>{{ m.tercero_nombre or '-' }}</strong></td>
+                            <td>{{ m.concepto or m.categoria or 'Ingreso' }}</td>
                             <td>{{ m.numero_documento or m.numero_soporte or '-' }}</td>
                             <td class="money">${{ "{:,.0f}".format(cap) }}</td>
                             <td class="money">{% if inte > 0 %}${{ "{:,.0f}".format(inte) }}{% else %}-{% endif %}</td>
                             <td class="money">{% if mora > 0 %}${{ "{:,.0f}".format(mora) }}{% else %}-{% endif %}</td>
-                            <td class="money">${{ "{:,.0f}".format(total_fila) }}</td>
+                            <td class="money">${{ "{:,.0f}".format(cap + inte + mora) }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
-                    <tfoot>
+                </table>
+            </div>
+            {% elif contratos_listado %}
+            <div class="table-wrap">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                    <strong style="color: #17304f; font-size: 14px;">Contratos de Clientes CRV registrados ({{ contratos_listado|length }})</strong>
+                    <span style="font-size: 11.5px; color: #6d7f93;">Haz clic en "Ver ficha" para abrir el contrato, editar adicionales o ver sus abonos</span>
+                </div>
+                <table class="hist-table">
+                    <thead>
                         <tr>
-                            <td colspan="4">TOTALES CONSOLIDADOS</td>
-                            <td class="money">${{ "{:,.0f}".format(total_capital) }}</td>
-                            <td class="money">${{ "{:,.0f}".format(total_intereses) }}</td>
-                            <td class="money">${{ "{:,.0f}".format(total_mora) }}</td>
-                            <td class="money">${{ "{:,.0f}".format(total_pagos_crv) }}</td>
+                            <th>Cliente CRV</th>
+                            <th>Proyecto / Lote</th>
+                            <th>Conceptos</th>
+                            <th class="money">Total proyecto</th>
+                            <th class="money">Pagos a CRV</th>
+                            <th class="money">Saldo pendiente</th>
+                            <th>Avance</th>
+                            <th style="text-align: right;">Acciones</th>
                         </tr>
-                    </tfoot>
+                    </thead>
+                    <tbody>
+                        {% for item in contratos_listado %}
+                        {% set p = item.perfil %}
+                        {% set cli = item.cliente %}
+                        {% set est = item.estructura %}
+                        {% set lib = item.liberacion %}
+                        <tr>
+                            <td>
+                                <strong>{{ cli.razon_social if cli else 'Cliente #' ~ p.tercero_id }}</strong>
+                                {% if cli and cli.identificacion %}
+                                    <div style="font-size: 10.5px; color: #8190a2;">CC/NIT: {{ cli.identificacion }}</div>
+                                {% endif %}
+                            </td>
+                            <td><strong>{{ p.proyecto or '-' }}</strong></td>
+                            <td>
+                                {{ p.concepto_base_label or 'Contrato' }}
+                                {% if est.adicionales %}
+                                    <div style="font-size: 10.5px; color: #138246; font-weight: 800;">+ {{ est.adicionales|length }} adicional(es)</div>
+                                {% endif %}
+                            </td>
+                            <td class="money">${{ "{:,.0f}".format(est.total_proyecto) }}</td>
+                            <td class="money" style="color: #087b3a;">${{ "{:,.0f}".format(lib.total_pagos_crv) }}</td>
+                            <td class="money" style="color: {{ '#c51d22' if lib.saldo_pendiente_proyecto > 0 else '#087b3a' }};">
+                                ${{ "{:,.0f}".format(lib.saldo_pendiente_proyecto) }}
+                            </td>
+                            <td>
+                                <span class="tag-etapa">{{ "{:.0f}".format(item.avance_pct) }}% pagado</span>
+                            </td>
+                            <td style="text-align: right; white-space: nowrap;">
+                                <a href="{{ url_for('crv.perfil_cliente_crv', cliente_id=p.tercero_id, perfil_id=p.id) }}"
+                                class="btn btn-navy btn-small">
+                                    Ver ficha
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
                 </table>
             </div>
             {% else %}
             <div class="empty">
                 <div class="empty-icon">🪪</div>
-                <strong>No hay ingresos registrados para mostrar</strong>
-                Selecciona un cliente o ajusta los filtros para consultar su histórico.
+                <strong>Aún no hay contratos de clientes CRV creados</strong>
+                Usa el buscador superior para consultar un cliente o haz clic en "Crear contrato cliente" para registrar el primero.
             </div>
             {% endif %}
         </div>
@@ -862,5 +1323,309 @@
     </main>
 </div>
 </div>
+
+<!-- =====================================================
+     MODAL CENTRAL: CREAR / EDITAR CONTRATO CLIENTE CRV
+====================================================== -->
+<div class="overlay" id="overlayPerfil" onclick="cerrarModalContrato()"></div>
+
+<div class="modal-perfil" id="modalPerfil">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div class="modal-header-left">
+                <div class="modal-icon">🪪</div>
+                <div>
+                    <h2 id="modalTitulo">Crear contrato de Cliente CRV</h2>
+                    <p>Agrega uno o varios conceptos base (Lote, Casa, Construcción), tramos porcentuales, adicionales y descuento</p>
+                </div>
+            </div>
+            <button type="button" class="modal-close" onclick="cerrarModalContrato()">✕</button>
+        </div>
+
+        <div class="modal-body">
+            <form id="formPerfilCliente" method="POST" action="/crv/perfil-cliente/guardar">
+                <div class="modal-section-title">1. Cliente y ubicación del proyecto</div>
+                <div class="modal-grid-2">
+                    <div class="field">
+                        <label for="form_tercero_id">Cliente CRV *</label>
+                        <select name="tercero_id" id="form_tercero_id" required>
+                            <option value="">Selecciona un cliente CRV...</option>
+                            {% for cli in clientes or [] %}
+                                <option value="{{ cli.id }}">
+                                    {{ cli.razon_social }} {% if cli.identificacion %}({{ cli.identificacion }}){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="form_proyecto">Proyecto / Lote / Sector</label>
+                        <input type="text" name="proyecto" id="form_proyecto" placeholder="Ej. Lote 13 sector Tamarindo">
+                    </div>
+                </div>
+
+                <div class="modal-section-title">
+                    <span>2. Conceptos principales del contrato (Ej. Valor Lote y Valor Casa)</span>
+                    <button type="button" class="btn btn-navy btn-small" onclick="agregarFilaBase('', '')">
+                        ＋ Agregar concepto base
+                    </button>
+                </div>
+                <div id="contenedorConceptosBase"></div>
+
+                <div class="modal-section-title">
+                    <span>3. Tramos / Cuotas porcentuales (1 de contado, 2 tramos o más)</span>
+                    <div class="preset-pills">
+                        <button type="button" class="btn btn-light btn-small" onclick="aplicarPresetTramos([100])">Contado (100%)</button>
+                        <button type="button" class="btn btn-light btn-small" onclick="aplicarPresetTramos([30, 70])">30% / 70%</button>
+                        <button type="button" class="btn btn-light btn-small" onclick="aplicarPresetTramos([50, 50])">50% / 50%</button>
+                        <button type="button" class="btn btn-navy btn-small" onclick="agregarFilaTramo('', '')">＋ Agregar tramo</button>
+                    </div>
+                </div>
+                <div id="contenedorTramos"></div>
+
+                <div class="modal-section-title">
+                    <span>4. Adicionales del cliente (Aire, Piscina, acabados, etc.)</span>
+                    <button type="button" class="btn btn-navy btn-small" onclick="agregarFilaAdicional('', '')">
+                        ＋ Agregar adicional
+                    </button>
+                </div>
+                <div id="contenedorAdicionales"></div>
+
+                <div class="modal-section-title">5. Descuento independiente y observaciones</div>
+                <div class="modal-grid-2">
+                    <div class="field">
+                        <label for="form_descuento">Descuento aplicado ($) — Se muestra separado en la tabla</label>
+                        <input type="number" step="0.01" min="0" name="descuento" id="form_descuento" value="0" oninput="recalcularPreviewContrato()">
+                    </div>
+
+                    <div class="field">
+                        <label for="form_observaciones">Observaciones / Próximos pagos acordados</label>
+                        <input type="text" name="observaciones" id="form_observaciones" placeholder="Notas del acuerdo comercial o fechas pactadas...">
+                    </div>
+                </div>
+
+                <div class="preview-totales">
+                    <div>
+                        <small>Subtotal Conceptos Base</small>
+                        <strong id="valPreviewBase">$0</strong>
+                    </div>
+                    <div>
+                        <small>Total Adicionales</small>
+                        <strong id="valPreviewAdicionales">$0</strong>
+                    </div>
+                    <div>
+                        <small>Descuento Aplicado</small>
+                        <strong id="valPreviewDescuento">- $0</strong>
+                    </div>
+                    <div>
+                        <small>TOTAL COSTO PROYECTO</small>
+                        <strong class="gold-text" id="valPreviewTotal">$0</strong>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-light" onclick="cerrarModalContrato()">Cancelar</button>
+                    <button type="submit" class="btn btn-gold" id="btnGuardarContrato">Guardar contrato cliente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const DATOS_EDITAR = {% if perfil_activo and estructura_perfil %}{{ {
+        "id": perfil_activo.id,
+        "tercero_id": perfil_activo.tercero_id,
+        "proyecto": perfil_activo.proyecto or "",
+        "conceptos_base": estructura_perfil.conceptos_base,
+        "tramos": estructura_perfil.tramos,
+        "adicionales": estructura_perfil.adicionales,
+        "descuento": estructura_perfil.descuento,
+        "observaciones": perfil_activo.observaciones or ""
+    } | tojson }}{% else %}null{% endif %};
+
+    function formatoPesos(valor) {
+        const num = Number(valor) || 0;
+        return "$" + Math.round(num).toLocaleString("es-CO");
+    }
+
+    function renumerarContenedor(selector) {
+        document.querySelectorAll(selector + " .dynamic-row").forEach((fila, idx) => {
+            const num = fila.querySelector(".row-num");
+            if (num) num.textContent = (idx + 1) + ".";
+        });
+    }
+
+    function agregarFilaBase(concepto = "", valor = "") {
+        const cont = document.getElementById("contenedorConceptosBase");
+        const row = document.createElement("div");
+        row.className = "dynamic-row";
+        row.innerHTML = `
+            <div class="row-num">1.</div>
+            <input type="text" name="base_concepto[]" placeholder="Ej. Valor Lote, Valor Casa, Valor Construcción..." value="${concepto}" required>
+            <input type="number" step="0.01" min="0" name="base_valor[]" placeholder="Valor ($)" value="${valor}" required oninput="recalcularPreviewContrato()">
+            <button type="button" class="btn btn-danger btn-small" onclick="eliminarFilaBase(this)">Quitar</button>
+        `;
+        cont.appendChild(row);
+        renumerarContenedor("#contenedorConceptosBase");
+        recalcularPreviewContrato();
+    }
+
+    function eliminarFilaBase(btn) {
+        const cont = document.getElementById("contenedorConceptosBase");
+        if (cont.querySelectorAll(".dynamic-row").length <= 1) return;
+        btn.parentElement.remove();
+        renumerarContenedor("#contenedorConceptosBase");
+        recalcularPreviewContrato();
+    }
+
+    function agregarFilaTramo(concepto = "", porcentaje = "") {
+        const cont = document.getElementById("contenedorTramos");
+        const idx = cont.querySelectorAll(".dynamic-row").length + 1;
+        const row = document.createElement("div");
+        row.className = "dynamic-row";
+        row.innerHTML = `
+            <div class="row-num">${idx}.</div>
+            <input type="text" name="tramo_concepto[]" placeholder="Ej. Pago contado, Cuota inicial, Entrega..." value="${concepto}">
+            <input type="number" step="0.01" min="0" max="100" name="tramo_porcentaje[]" placeholder="Porcentaje (%)" value="${porcentaje}" oninput="recalcularPreviewContrato()">
+            <button type="button" class="btn btn-danger btn-small" onclick="eliminarFilaTramo(this)">Quitar</button>
+        `;
+        cont.appendChild(row);
+        renumerarContenedor("#contenedorTramos");
+        recalcularPreviewContrato();
+    }
+
+    function eliminarFilaTramo(btn) {
+        const cont = document.getElementById("contenedorTramos");
+        if (cont.querySelectorAll(".dynamic-row").length <= 1) return;
+        btn.parentElement.remove();
+        renumerarContenedor("#contenedorTramos");
+        recalcularPreviewContrato();
+    }
+
+    function aplicarPresetTramos(listaPorcentajes) {
+        const cont = document.getElementById("contenedorTramos");
+        cont.innerHTML = "";
+        listaPorcentajes.forEach((pct, i) => {
+            const label = listaPorcentajes.length === 1
+                ? `Pago único / Contado (${pct}%)`
+                : `Tramo ${i + 1} (${pct}%)`;
+            agregarFilaTramo(label, pct);
+        });
+    }
+
+    function agregarFilaAdicional(concepto = "", valor = "") {
+        const cont = document.getElementById("contenedorAdicionales");
+        const row = document.createElement("div");
+        row.className = "dynamic-row";
+        row.innerHTML = `
+            <div class="row-num">1.</div>
+            <input type="text" name="adicional_concepto[]" placeholder="Ej. Aire acondicionado, Piscina..." value="${concepto}">
+            <input type="number" step="0.01" min="0" name="adicional_valor[]" placeholder="Valor ($)" value="${valor}" oninput="recalcularPreviewContrato()">
+            <button type="button" class="btn btn-danger btn-small" onclick="this.parentElement.remove(); renumerarContenedor('#contenedorAdicionales'); recalcularPreviewContrato();">Quitar</button>
+        `;
+        cont.appendChild(row);
+        renumerarContenedor("#contenedorAdicionales");
+        recalcularPreviewContrato();
+    }
+
+    function recalcularPreviewContrato() {
+        let sumaBase = 0;
+        document.querySelectorAll('input[name="base_valor[]"]').forEach(inp => {
+            sumaBase += parseFloat(inp.value) || 0;
+        });
+
+        let sumaAdicionales = 0;
+        document.querySelectorAll('input[name="adicional_valor[]"]').forEach(inp => {
+            sumaAdicionales += parseFloat(inp.value) || 0;
+        });
+
+        const desc = parseFloat(document.getElementById("form_descuento").value) || 0;
+        const total = Math.max(0, sumaBase + sumaAdicionales - desc);
+
+        document.getElementById("valPreviewBase").textContent = formatoPesos(sumaBase);
+        document.getElementById("valPreviewAdicionales").textContent = formatoPesos(sumaAdicionales);
+        document.getElementById("valPreviewDescuento").textContent = "- " + formatoPesos(desc);
+        document.getElementById("valPreviewTotal").textContent = formatoPesos(total);
+    }
+
+    function abrirModalNuevoContrato(clientePreseleccionado = null) {
+        const form = document.getElementById("formPerfilCliente");
+        form.action = "/crv/perfil-cliente/guardar";
+        document.getElementById("modalTitulo").textContent = "Crear contrato de Cliente CRV";
+        document.getElementById("btnGuardarContrato").textContent = "Guardar contrato cliente";
+
+        const selectCliente = document.getElementById("form_tercero_id");
+        const clienteFiltro = document.getElementById("cliente_id").value;
+        selectCliente.value = clientePreseleccionado || clienteFiltro || "";
+        document.getElementById("form_proyecto").value = "";
+        document.getElementById("form_descuento").value = "0";
+        document.getElementById("form_observaciones").value = "";
+
+        const contBase = document.getElementById("contenedorConceptosBase");
+        contBase.innerHTML = "";
+        agregarFilaBase("Valor Lote", "");
+
+        aplicarPresetTramos([100]);
+
+        const contAd = document.getElementById("contenedorAdicionales");
+        contAd.innerHTML = "";
+        agregarFilaAdicional("", "");
+
+        recalcularPreviewContrato();
+        document.getElementById("overlayPerfil").classList.add("active");
+        document.getElementById("modalPerfil").classList.add("active");
+        document.body.classList.add("modal-open");
+    }
+
+    function abrirModalEditarContrato() {
+        if (!DATOS_EDITAR) return;
+
+        const form = document.getElementById("formPerfilCliente");
+        form.action = `/crv/perfil-cliente/${DATOS_EDITAR.id}/editar`;
+        document.getElementById("modalTitulo").textContent = "Editar contrato y adicionales del Cliente CRV";
+        document.getElementById("btnGuardarContrato").textContent = "Guardar cambios del contrato";
+
+        document.getElementById("form_tercero_id").value = DATOS_EDITAR.tercero_id;
+        document.getElementById("form_proyecto").value = DATOS_EDITAR.proyecto;
+        document.getElementById("form_descuento").value = DATOS_EDITAR.descuento;
+        document.getElementById("form_observaciones").value = DATOS_EDITAR.observaciones;
+
+        const contBase = document.getElementById("contenedorConceptosBase");
+        contBase.innerHTML = "";
+        if (DATOS_EDITAR.conceptos_base && DATOS_EDITAR.conceptos_base.length > 0) {
+            DATOS_EDITAR.conceptos_base.forEach(cb => agregarFilaBase(cb.concepto, cb.valor));
+        } else {
+            agregarFilaBase("Valor Lote", "");
+        }
+
+        const contTramos = document.getElementById("contenedorTramos");
+        contTramos.innerHTML = "";
+        if (DATOS_EDITAR.tramos && DATOS_EDITAR.tramos.length > 0) {
+            DATOS_EDITAR.tramos.forEach(tr => agregarFilaTramo(tr.concepto, tr.porcentaje));
+        } else {
+            aplicarPresetTramos([100]);
+        }
+
+        const contAd = document.getElementById("contenedorAdicionales");
+        contAd.innerHTML = "";
+        if (DATOS_EDITAR.adicionales && DATOS_EDITAR.adicionales.length > 0) {
+            DATOS_EDITAR.adicionales.forEach(ad => agregarFilaAdicional(ad.concepto, ad.valor));
+        } else {
+            agregarFilaAdicional("", "");
+        }
+
+        recalcularPreviewContrato();
+        document.getElementById("overlayPerfil").classList.add("active");
+        document.getElementById("modalPerfil").classList.add("active");
+        document.body.classList.add("modal-open");
+    }
+
+    function cerrarModalContrato() {
+        document.getElementById("overlayPerfil").classList.remove("active");
+        document.getElementById("modalPerfil").classList.remove("active");
+        document.body.classList.remove("modal-open");
+    }
+</script>
 </body>
 </html>

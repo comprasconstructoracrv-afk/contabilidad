@@ -1546,7 +1546,7 @@
 
                 {% for t in terceros %}
 
-                    <tr data-tipo="{{ t.tipo_tercero or '' }}">
+                    <tr data-id="{{ t.id }}" data-tipo="{{ t.tipo_tercero or '' }}">
 
 
                         <!-- TIPO -->
@@ -2693,6 +2693,16 @@
                 if (coincide && celdas.length >= 7) {
                     contador++;
                     const nuevaFila = document.createElement("tr");
+                    const terceroId = fila.dataset.id || "";
+                    const esClienteCrv = tipoFila === "CLIENTE" && terceroId;
+
+                    if (esClienteCrv) {
+                        nuevaFila.style.cursor = "pointer";
+                        nuevaFila.title = "Clic para ver ficha del contrato";
+                        nuevaFila.onclick = function() {
+                            window.location.href = `/crv/perfil-cliente?cliente_id=${encodeURIComponent(terceroId)}`;
+                        };
+                    }
                     // Copiamos exactamente el HTML de las columnas: Nombre(1), ID(2), Contacto(3), Ciudad(4), Banco(5), Estado(6)
                     nuevaFila.innerHTML = `
                         <td>${celdas[1].innerHTML}</td>
@@ -2700,7 +2710,12 @@
                         <td>${celdas[3].innerHTML}</td>
                         <td>${celdas[4].innerHTML}</td>
                         <td>${celdas[5].innerHTML}</td>
-                        <td>${celdas[6].innerHTML}</td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                ${celdas[6].innerHTML}
+                                ${esClienteCrv ? `<a href="/crv/perfil-cliente?cliente_id=${encodeURIComponent(terceroId)}" class="btn btn-navy btn-small" onclick="event.stopPropagation();">Ver ficha</a>` : ""}
+                            </div>
+                        </td>
                     `;
                     cuerpoModal.appendChild(nuevaFila);
                 }

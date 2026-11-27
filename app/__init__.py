@@ -13,6 +13,7 @@ from app.models.movimiento import Movimiento
 from app.models.venta_ecobike import VentaEcobike
 from app.models.empresa_config import EmpresaConfig
 from app.models.documento_consecutivo import DocumentoConsecutivo
+from app.models.crv_perfil_cliente import CRVPerfilCliente, CRVPerfilClienteAdicional
 
 # ============================================================
 # MODELOS HOTEL SKY VIEW

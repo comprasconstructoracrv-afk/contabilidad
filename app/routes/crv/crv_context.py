@@ -41,6 +41,8 @@ from app.models.crv_cobro_cuenta_cobrar import CRVCobroCuentaCobrar
 from app.models.crv_proyecto import CRVProyecto
 from app.models.crv_cierre_mensual import CRVCierreMensual
 from app.models.crv_conciliacion_bancaria import CRVConciliacionBancaria
+from app.models.crv_perfil_cliente import CRVPerfilCliente, CRVPerfilClienteAdicional
+
 
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
